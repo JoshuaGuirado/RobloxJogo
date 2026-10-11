@@ -1,0 +1,4774 @@
+<roblox version="4">
+  <Item class="Lighting" referent="0">
+    <Properties>
+      <string name="Name">Lighting</string>
+      <token name="Technology">4</token>
+    </Properties>
+  </Item>
+  <Item class="ReplicatedStorage" referent="1">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="ModuleScript" referent="2">
+      <Properties>
+        <string name="Name">ConfigHerois</string>
+        <string name="Source"><![CDATA[--[[
+	ROUBE UM HERÓI - Configuração (compartilhada entre servidor e jogadores)
+
+	Onde colocar: ReplicatedStorage -> ModuleScript (nome: ConfigHerois)
+
+	Aqui você muda TUDO do jogo sem mexer na lógica:
+	heróis, preços, raridades, mutações, melhorias, eventos, sons e Robux.
+]]
+
+local Config = {}
+
+--------------------------------------------------------------------------
+-- GERAL
+--------------------------------------------------------------------------
+Config.Geral = {
+	DinheiroInicial = 100,
+
+	-- Passarela
+	IntervaloSpawn = 2.5, -- segundos entre cada herói que sai do portal
+	VelocidadePassarela = 9, -- studs por segundo
+	ComprimentoPassarela = 300,
+
+	-- Roubo e defesa
+	TempoParaRoubar = 1.2, -- segundos segurando E
+	MultiplicadorCarregando = 0.65, -- quem carrega um herói fica 35% mais lento
+	RecuperarEncostando = false, -- true = o dono recupera o herói só de encostar no ladrão
+	RecargaTranca = 20, -- segundos de espera depois que a tranca acaba
+	RecargaSoco = 0.8,
+	AlcanceSoco = 8,
+	ForcaSoco = 75,
+
+	-- Economia
+	PorcentagemVenda = 0.5, -- vender devolve 50% do valor
+	HorasOfflineMaximo = 4, -- quantas horas de renda offline o jogador pode acumular
+	PorcentagemOffline = 0.5, -- offline rende 50%
+
+	-- Mundo
+	CicloDiaNoite = true,
+	DuracaoDiaMinutos = 15,
+	HoraInicial = 16.5,
+	RemoverBaseplate = true, -- apaga o Baseplate e o SpawnLocation do modelo padrão
+
+	-- Eventos
+	IntervaloEventoMinutos = 7,
+	DuracaoEventoMinutos = 2,
+
+	-- Salvamento (DataStore)
+	SalvarDados = true,
+	NomeDataStore = "RoubeUmHeroi_v1",
+	IntervaloAutoSave = 90, -- segundos
+	IntervaloRanking = 120, -- segundos entre atualizações do ranking global
+
+	-- Anúncios para o servidor inteiro
+	AnunciarSpawnAPartirDe = "Lendario",
+	AnunciarCompraAPartirDe = "Mitico",
+	AnunciarRouboAPartirDe = "Epico",
+
+	-- Comandos de teste (/dinheiro, /evento, /heroi) funcionam no Studio e para o dono do jogo
+	ComandosDeTeste = true,
+}
+
+--------------------------------------------------------------------------
+-- SONS (troque pelos IDs que quiser - Caixa de ferramentas > Áudio)
+-- Para música de fundo: pegue um ID de música na Caixa de ferramentas,
+-- clique com o botão direito > "Copiar ID do recurso" e cole como "rbxassetid://NUMERO"
+--------------------------------------------------------------------------
+Config.Sons = {
+	Musica = "", -- exemplo: "rbxassetid://1234567890"
+	VolumeMusica = 0.3,
+	Clique = "rbxasset://sounds/clickfast.wav",
+	Notificacao = "rbxasset://sounds/electronicpingshort.wav",
+	Moeda = "rbxasset://sounds/electronicpingshort.wav",
+	Compra = "rbxasset://sounds/electronicpingshort.wav",
+	Alarme = "rbxasset://sounds/electronicpingshort.wav",
+	Soco = "rbxasset://sounds/swordlunge.wav",
+	Erro = "rbxasset://sounds/clickfast.wav",
+}
+
+--------------------------------------------------------------------------
+-- RARIDADES (em ordem: da mais comum para a mais rara)
+-- chance = peso no sorteio da passarela | escala = tamanho do herói
+--------------------------------------------------------------------------
+Config.Raridades = {
+	{ id = "Comum", nome = "Comum", cor = Color3.fromRGB(200, 200, 200), chance = 55, escala = 0.9 },
+	{ id = "Incomum", nome = "Incomum", cor = Color3.fromRGB(90, 220, 90), chance = 25, escala = 1.0 },
+	{ id = "Raro", nome = "Raro", cor = Color3.fromRGB(70, 150, 255), chance = 12, escala = 1.1 },
+	{ id = "Epico", nome = "Épico", cor = Color3.fromRGB(170, 80, 255), chance = 5, escala = 1.2 },
+	{ id = "Lendario", nome = "Lendário", cor = Color3.fromRGB(255, 200, 40), chance = 2, escala = 1.35 },
+	{ id = "Mitico", nome = "Mítico", cor = Color3.fromRGB(255, 60, 60), chance = 0.7, escala = 1.5 },
+	{ id = "Divino", nome = "Divino", cor = Color3.fromRGB(255, 240, 150), chance = 0.25, escala = 1.65 },
+	{ id = "Secreto", nome = "SECRETO", cor = Color3.fromRGB(0, 255, 200), chance = 0.05, escala = 1.8 },
+}
+
+--------------------------------------------------------------------------
+-- MUTAÇÕES (chance de cada herói da passarela nascer mutado)
+--------------------------------------------------------------------------
+Config.Mutacoes = {
+	{ id = "Normal", nome = "Normal", cor = Color3.fromRGB(255, 255, 255), multiplicador = 1, chance = 0 },
+	{ id = "Ouro", nome = "OURO", cor = Color3.fromRGB(255, 200, 40), multiplicador = 2, chance = 0.05 },
+	{ id = "Diamante", nome = "DIAMANTE", cor = Color3.fromRGB(120, 230, 255), multiplicador = 3, chance = 0.02 },
+	{ id = "ArcoIris", nome = "ARCO-ÍRIS", cor = Color3.fromRGB(255, 120, 255), multiplicador = 5, chance = 0.007 },
+	{ id = "Cosmico", nome = "CÓSMICO", cor = Color3.fromRGB(150, 70, 255), multiplicador = 10, chance = 0.002 },
+}
+
+--------------------------------------------------------------------------
+-- HERÓIS
+-- cabeca: "mascara", "capacete", "coroa" ou "antena"
+-- renda = dinheiro por segundo
+--------------------------------------------------------------------------
+local PELE_CLARA = Color3.fromRGB(255, 214, 180)
+local PELE_MEDIA = Color3.fromRGB(224, 172, 120)
+local PELE_MORENA = Color3.fromRGB(170, 110, 70)
+local PELE_ESCURA = Color3.fromRGB(110, 70, 45)
+
+local function cores(traje, capa, emblema, pele, botas)
+	return { traje = traje, capa = capa, emblema = emblema, pele = pele, botas = botas }
+end
+local rgb = Color3.fromRGB
+
+Config.Herois = {
+	-- Comum
+	{ id = "GarotoBolha", nome = "Garoto Bolha", raridade = "Comum", preco = 25, renda = 1, icone = "🫧", cabeca = "mascara",
+		cores = cores(rgb(90, 180, 255), rgb(255, 255, 255), rgb(200, 240, 255), PELE_CLARA, rgb(40, 90, 170)) },
+	{ id = "GarotaMola", nome = "Garota Mola", raridade = "Comum", preco = 40, renda = 2, icone = "🌀", cabeca = "mascara",
+		cores = cores(rgb(255, 120, 180), rgb(120, 60, 160), rgb(255, 230, 0), PELE_MORENA, rgb(120, 60, 160)) },
+	{ id = "CapitaoChinelo", nome = "Capitão Chinelo", raridade = "Comum", preco = 60, renda = 3, icone = "🩴", cabeca = "capacete",
+		cores = cores(rgb(60, 140, 60), rgb(230, 60, 60), rgb(255, 255, 255), PELE_MEDIA, rgb(230, 60, 60)) },
+	{ id = "SenhorPipoca", nome = "Senhor Pipoca", raridade = "Comum", preco = 90, renda = 4, icone = "🍿", cabeca = "antena",
+		cores = cores(rgb(255, 230, 150), rgb(220, 40, 40), rgb(255, 255, 255), PELE_CLARA, rgb(220, 40, 40)) },
+
+	-- Incomum
+	{ id = "Ventania", nome = "Ventania", raridade = "Incomum", preco = 200, renda = 8, icone = "🌪️", cabeca = "mascara",
+		cores = cores(rgb(170, 220, 230), rgb(40, 90, 140), rgb(255, 255, 255), PELE_ESCURA, rgb(40, 90, 140)) },
+	{ id = "DoutorGelinho", nome = "Doutor Gelinho", raridade = "Incomum", preco = 300, renda = 12, icone = "❄️", cabeca = "capacete",
+		cores = cores(rgb(180, 230, 255), rgb(40, 120, 200), rgb(255, 255, 255), PELE_CLARA, rgb(40, 120, 200)) },
+	{ id = "Faisca", nome = "Faísca", raridade = "Incomum", preco = 450, renda = 17, icone = "⚡", cabeca = "mascara",
+		cores = cores(rgb(255, 210, 0), rgb(30, 30, 30), rgb(255, 120, 0), PELE_MEDIA, rgb(30, 30, 30)) },
+	{ id = "EscudeiroMirim", nome = "Escudeiro Mirim", raridade = "Incomum", preco = 600, renda = 22, icone = "🛡️", cabeca = "capacete",
+		cores = cores(rgb(40, 70, 170), rgb(200, 30, 30), rgb(255, 255, 255), PELE_MORENA, rgb(200, 30, 30)) },
+
+	-- Raro
+	{ id = "Trovoada", nome = "Trovoada", raridade = "Raro", preco = 1200, renda = 40, icone = "🌩️", cabeca = "antena",
+		cores = cores(rgb(60, 60, 90), rgb(120, 160, 255), rgb(255, 255, 120), PELE_ESCURA, rgb(120, 160, 255)) },
+	{ id = "LaminaNoturna", nome = "Lâmina Noturna", raridade = "Raro", preco = 1800, renda = 55, icone = "🗡️", cabeca = "mascara",
+		cores = cores(rgb(25, 25, 35), rgb(90, 0, 0), rgb(255, 40, 40), PELE_CLARA, rgb(90, 0, 0)) },
+	{ id = "PunhoDeAco", nome = "Punho de Aço", raridade = "Raro", preco = 2500, renda = 75, icone = "👊", cabeca = "capacete",
+		cores = cores(rgb(150, 150, 160), rgb(255, 140, 0), rgb(255, 200, 0), PELE_MEDIA, rgb(80, 80, 90)) },
+	{ id = "SombraVeloz", nome = "Sombra Veloz", raridade = "Raro", preco = 3500, renda = 100, icone = "💨", cabeca = "mascara",
+		cores = cores(rgb(80, 40, 120), rgb(20, 20, 20), rgb(200, 120, 255), PELE_MORENA, rgb(20, 20, 20)) },
+
+	-- Épico
+	{ id = "CapitaoCometa", nome = "Capitão Cometa", raridade = "Epico", preco = 8000, renda = 200, icone = "☄️", cabeca = "capacete",
+		cores = cores(rgb(30, 60, 150), rgb(255, 120, 0), rgb(255, 220, 0), PELE_CLARA, rgb(255, 120, 0)) },
+	{ id = "FenixRubra", nome = "Fênix Rubra", raridade = "Epico", preco = 12000, renda = 300, icone = "🔥", cabeca = "coroa",
+		cores = cores(rgb(220, 40, 20), rgb(255, 170, 0), rgb(255, 230, 120), PELE_MEDIA, rgb(255, 170, 0)) },
+	{ id = "GuardiaoEsmeralda", nome = "Guardião Esmeralda", raridade = "Epico", preco = 18000, renda = 420, icone = "💚", cabeca = "mascara",
+		cores = cores(rgb(20, 160, 80), rgb(10, 60, 30), rgb(120, 255, 160), PELE_ESCURA, rgb(10, 60, 30)) },
+
+	-- Lendário
+	{ id = "TitaDourado", nome = "Titã Dourado", raridade = "Lendario", preco = 50000, renda = 1000, icone = "🏆", cabeca = "coroa",
+		cores = cores(rgb(230, 180, 30), rgb(130, 20, 20), rgb(255, 255, 255), PELE_MORENA, rgb(130, 20, 20)) },
+	{ id = "DamaDoRelampago", nome = "Dama do Relâmpago", raridade = "Lendario", preco = 80000, renda = 1500, icone = "🌟", cabeca = "antena",
+		cores = cores(rgb(250, 250, 255), rgb(90, 130, 255), rgb(255, 230, 0), PELE_CLARA, rgb(90, 130, 255)) },
+	{ id = "CoronelGalaxia", nome = "Coronel Galáxia", raridade = "Lendario", preco = 120000, renda = 2200, icone = "🪐", cabeca = "capacete",
+		cores = cores(rgb(40, 20, 80), rgb(200, 60, 255), rgb(120, 255, 255), PELE_ESCURA, rgb(200, 60, 255)) },
+
+	-- Mítico
+	{ id = "ImperadorSolar", nome = "Imperador Solar", raridade = "Mitico", preco = 400000, renda = 6000, icone = "☀️", cabeca = "coroa",
+		cores = cores(rgb(255, 150, 0), rgb(255, 240, 120), rgb(255, 255, 255), PELE_MEDIA, rgb(200, 80, 0)) },
+	{ id = "RainhaNebulosa", nome = "Rainha Nebulosa", raridade = "Mitico", preco = 650000, renda = 9000, icone = "🌌", cabeca = "coroa",
+		cores = cores(rgb(120, 60, 200), rgb(255, 100, 200), rgb(150, 255, 255), PELE_ESCURA, rgb(255, 100, 200)) },
+
+	-- Divino
+	{ id = "ArcanjoSupremo", nome = "Arcanjo Supremo", raridade = "Divino", preco = 2000000, renda = 25000, icone = "😇", cabeca = "coroa",
+		cores = cores(rgb(255, 255, 255), rgb(255, 215, 0), rgb(255, 240, 150), PELE_CLARA, rgb(255, 215, 0)) },
+	{ id = "OraculoEterno", nome = "Oráculo Eterno", raridade = "Divino", preco = 3500000, renda = 40000, icone = "🔮", cabeca = "antena",
+		cores = cores(rgb(60, 0, 90), rgb(0, 255, 200), rgb(255, 255, 255), PELE_MORENA, rgb(0, 255, 200)) },
+
+	-- Secreto
+	{ id = "HeroiDesconhecido", nome = "O Herói Desconhecido", raridade = "Secreto", preco = 15000000, renda = 150000, icone = "❓", cabeca = "mascara",
+		cores = cores(rgb(15, 15, 15), rgb(255, 0, 60), rgb(255, 0, 60), PELE_MEDIA, rgb(255, 0, 60)) },
+	{ id = "MestreMultiverso", nome = "Mestre Multiverso", raridade = "Secreto", preco = 30000000, renda = 280000, icone = "♾️", cabeca = "capacete",
+		cores = cores(rgb(0, 0, 0), rgb(0, 200, 255), rgb(255, 255, 255), PELE_ESCURA, rgb(0, 200, 255)) },
+}
+
+--------------------------------------------------------------------------
+-- MELHORIAS (Loja)
+--------------------------------------------------------------------------
+Config.Melhorias = {
+	{
+		id = "Velocidade",
+		nome = "Botas Turbo",
+		icone = "👟",
+		precos = { 300, 1500, 6000, 25000, 100000, 400000, 1500000, 6000000, 25000000, 100000000 },
+	},
+	{
+		id = "Pedestais",
+		nome = "Mais Pedestais",
+		icone = "🏛️",
+		precos = { 800, 5000, 30000, 200000, 1200000, 8000000 },
+	},
+	{
+		id = "Tranca",
+		nome = "Tranca Reforçada",
+		icone = "🔒",
+		precos = { 1500, 12000, 90000, 700000, 5000000, 40000000 },
+	},
+	{
+		id = "Coletor",
+		nome = "Coletor Automático",
+		icone = "🧲",
+		precos = { 250000 },
+	},
+}
+
+function Config.velocidadeDoNivel(nivel)
+	return 16 + 2 * nivel
+end
+
+function Config.pedestaisDoNivel(nivel)
+	return 6 + nivel
+end
+
+function Config.trancaDoNivel(nivel)
+	return 30 + 10 * nivel
+end
+
+-- Texto mostrado na Loja para cada melhoria
+function Config.descricaoMelhoria(id, nivel)
+	if id == "Velocidade" then
+		return "Velocidade " .. Config.velocidadeDoNivel(nivel)
+	elseif id == "Pedestais" then
+		return Config.pedestaisDoNivel(nivel) .. " pedestais na base"
+	elseif id == "Tranca" then
+		return "Tranca dura " .. Config.trancaDoNivel(nivel) .. "s"
+	elseif id == "Coletor" then
+		return nivel > 0 and "Dinheiro cai direto na conta" or "Coleta tudo sozinho"
+	end
+	return ""
+end
+
+--------------------------------------------------------------------------
+-- RENASCIMENTO
+--------------------------------------------------------------------------
+Config.Renascimento = {
+	CustoBase = 1000000,
+	CrescimentoCusto = 4, -- cada renascimento custa 4x o anterior
+	BonusPorRenascimento = 0.5, -- +50% de renda por renascimento
+}
+
+function Config.custoRenascimento(renascimentos)
+	return Config.Renascimento.CustoBase * Config.Renascimento.CrescimentoCusto ^ renascimentos
+end
+
+function Config.multiplicadorRenascimento(renascimentos)
+	return 1 + Config.Renascimento.BonusPorRenascimento * renascimentos
+end
+
+function Config.dinheiroInicial(renascimentos)
+	return Config.Geral.DinheiroInicial * (1 + 2 * renascimentos)
+end
+
+--------------------------------------------------------------------------
+-- RECOMPENSA DIÁRIA
+--------------------------------------------------------------------------
+Config.Diaria = {
+	IntervaloHoras = 20,
+	PerdeSequenciaHoras = 48,
+	ValorBase = 200,
+}
+
+function Config.recompensaDiaria(dia, renascimentos)
+	local bonusDia7 = dia == 7 and 2 or 1
+	return math.floor(Config.Diaria.ValorBase * dia * bonusDia7 * (1 + renascimentos))
+end
+
+--------------------------------------------------------------------------
+-- EVENTOS (um sorteado a cada IntervaloEventoMinutos)
+--------------------------------------------------------------------------
+Config.Eventos = {
+	{ id = "HoraDourada", nome = "HORA DOURADA", icone = "✨", descricao = "Mutações 4x mais comuns!",
+		cor = Color3.fromRGB(255, 200, 40), multMutacao = 4 },
+	{ id = "InvasaoLendaria", nome = "INVASÃO LENDÁRIA", icone = "🌟", descricao = "Heróis Lendários ou melhores 5x mais comuns!",
+		cor = Color3.fromRGB(255, 120, 40), multRaros = 5 },
+	{ id = "ChuvaDeHerois", nome = "CHUVA DE HERÓIS", icone = "🌧️", descricao = "Heróis saem do portal 2x mais rápido!",
+		cor = Color3.fromRGB(80, 170, 255), multSpawn = 2 },
+	{ id = "RendaDobrada", nome = "RENDA EM DOBRO", icone = "💸", descricao = "Todos os heróis rendem 2x!",
+		cor = Color3.fromRGB(60, 220, 100), multRenda = 2 },
+}
+
+--------------------------------------------------------------------------
+-- ROBUX (opcional) - crie no Creator Dashboard e cole os IDs. 0 = desligado
+--------------------------------------------------------------------------
+Config.Robux = {
+	PasseDinheiroDobrado = 0, -- ID do Game Pass "Dinheiro em Dobro"
+	Produtos = {
+		{ id = 0, nome = "Saco de Moedas", icone = "💰", valorBase = 5000 },
+		{ id = 0, nome = "Cofre Heroico", icone = "🏦", valorBase = 50000 },
+		{ id = 0, nome = "Tesouro Lendário", icone = "👑", valorBase = 500000 },
+	},
+}
+
+function Config.valorProduto(produto, renascimentos)
+	return produto.valorBase * (1 + renascimentos)
+end
+
+--------------------------------------------------------------------------
+-- FUNÇÕES DE AJUDA (não precisa mexer)
+--------------------------------------------------------------------------
+local SUFIXOS = { "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp" }
+
+function Config.formatarNumero(numero)
+	numero = math.floor(numero or 0)
+	if numero < 0 then
+		return "-" .. Config.formatarNumero(-numero)
+	end
+	if numero < 1000 then
+		return tostring(numero)
+	end
+	local valor = numero
+	local i = 0
+	-- 999.95 em vez de 1000 para 999999 virar "1M" e não "1000K"
+	while valor >= 999.95 and i < #SUFIXOS do
+		valor /= 1000
+		i += 1
+	end
+	local texto = string.format("%.1f", valor):gsub("%.0$", "")
+	return texto .. SUFIXOS[i]
+end
+
+function Config.formatar(numero)
+	return "$" .. Config.formatarNumero(numero)
+end
+
+function Config.formatarTempo(segundos)
+	segundos = math.max(0, math.floor(segundos))
+	local h = math.floor(segundos / 3600)
+	local m = math.floor((segundos % 3600) / 60)
+	local s = segundos % 60
+	if h > 0 then
+		return string.format("%d:%02d:%02d", h, m, s)
+	end
+	return string.format("%d:%02d", m, s)
+end
+
+-- Tabelas de busca rápida
+Config.RaridadePorId = {}
+for ordem, raridade in Config.Raridades do
+	raridade.ordem = ordem
+	raridade.quantidade = 0
+	Config.RaridadePorId[raridade.id] = raridade
+end
+
+Config.MutacaoPorId = {}
+for _, mutacao in Config.Mutacoes do
+	Config.MutacaoPorId[mutacao.id] = mutacao
+end
+
+Config.HeroiPorId = {}
+for ordem, heroi in Config.Herois do
+	heroi.ordem = ordem
+	Config.HeroiPorId[heroi.id] = heroi
+	local raridade = Config.RaridadePorId[heroi.raridade]
+	raridade.quantidade += 1
+end
+
+Config.MelhoriaPorId = {}
+for _, melhoria in Config.Melhorias do
+	Config.MelhoriaPorId[melhoria.id] = melhoria
+end
+
+Config.EventoPorId = {}
+for _, evento in Config.Eventos do
+	Config.EventoPorId[evento.id] = evento
+end
+
+return Config
+]]></string>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="3">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="ModuleScript" referent="4">
+      <Properties>
+        <string name="Name">Dados</string>
+        <string name="Source"><![CDATA[--[[
+	ROUBE UM HERÓI - Salvamento de dados (DataStore) e ranking global
+
+	Onde colocar: ServerScriptService -> ModuleScript (nome: Dados)
+
+	IMPORTANTE: para salvar no Studio, publique o jogo e ative
+	Configurações do jogo > Segurança > "Permitir acesso do Studio aos serviços de API".
+	Sem isso o jogo funciona normalmente, só não salva o progresso.
+]]
+
+local DataStoreService = game:GetService("DataStoreService")
+
+local Dados = {}
+Dados.desativado = false
+Dados.motivo = ""
+
+local loja = nil
+local ordenados = {}
+
+local CATEGORIAS = { "Dinheiro", "Roubos", "Renascimentos" }
+
+function Dados.padrao()
+	return {
+		versao = 1,
+		dinheiro = 0,
+		totalGanho = 0,
+		renascimentos = 0,
+		roubos = 0,
+		niveis = { Velocidade = 0, Pedestais = 0, Tranca = 0, Coletor = 0 },
+		herois = {}, -- { {slot = 1, id = "GarotoBolha", mut = "Normal"}, ... }
+		descobertos = {}, -- [id] = true
+		ultimaDiaria = 0,
+		sequenciaDiaria = 0,
+		ultimoLogin = 0,
+		tutorial = false,
+		config = { musica = true, sons = true },
+	}
+end
+
+local function copiar(valor)
+	if type(valor) ~= "table" then
+		return valor
+	end
+	local copia = {}
+	for chave, item in valor do
+		copia[chave] = copiar(item)
+	end
+	return copia
+end
+
+-- Completa campos que não existiam em saves antigos
+local function reconciliar(dados, padrao)
+	for chave, valor in padrao do
+		if dados[chave] == nil then
+			dados[chave] = copiar(valor)
+		elseif type(valor) == "table" and type(dados[chave]) == "table" and next(valor) ~= nil and #valor == 0 then
+			reconciliar(dados[chave], valor)
+		end
+	end
+end
+
+local function erroSemAcesso(mensagem)
+	mensagem = tostring(mensagem)
+	return mensagem:find("403") ~= nil
+		or mensagem:find("StudioAccessToApisNotAllowed") ~= nil
+		or mensagem:find("publish") ~= nil
+		or mensagem:find("API Services") ~= nil
+end
+
+local function desativar(motivo)
+	if not Dados.desativado then
+		warn("[Dados] Salvamento desativado: " .. tostring(motivo))
+	end
+	Dados.desativado = true
+	Dados.motivo = tostring(motivo)
+end
+
+function Dados.iniciar(Config)
+	if not Config.Geral.SalvarDados then
+		desativar("SalvarDados = false no ConfigHerois")
+		return
+	end
+	local ok, resultado = pcall(function()
+		return DataStoreService:GetDataStore(Config.Geral.NomeDataStore)
+	end)
+	if not ok then
+		desativar(resultado)
+		return
+	end
+	loja = resultado
+	for _, categoria in CATEGORIAS do
+		local ok2, ordenado = pcall(function()
+			return DataStoreService:GetOrderedDataStore(Config.Geral.NomeDataStore .. "_Rank_" .. categoria)
+		end)
+		if ok2 then
+			ordenados[categoria] = ordenado
+		end
+	end
+end
+
+local function chave(userId)
+	return "Jogador_" .. tostring(userId)
+end
+
+-- Retorna (dados, conseguiuCarregar). Se não conseguir, o jogo não salva por cima.
+function Dados.carregar(userId)
+	local padrao = Dados.padrao()
+	if Dados.desativado or not loja then
+		return padrao, false
+	end
+	for tentativa = 1, 3 do
+		local ok, resultado = pcall(function()
+			return loja:GetAsync(chave(userId))
+		end)
+		if ok then
+			if type(resultado) == "table" then
+				reconciliar(resultado, padrao)
+				return resultado, true
+			end
+			return padrao, true -- jogador novo
+		end
+		warn(string.format("[Dados] Erro ao carregar %s (tentativa %d): %s", tostring(userId), tentativa, tostring(resultado)))
+		if erroSemAcesso(resultado) then
+			desativar(resultado)
+			break
+		end
+		task.wait(1.5)
+	end
+	return padrao, false
+end
+
+function Dados.salvar(userId, dados)
+	if Dados.desativado or not loja then
+		return false
+	end
+	for tentativa = 1, 3 do
+		local ok, erro = pcall(function()
+			loja:UpdateAsync(chave(userId), function()
+				return dados
+			end)
+		end)
+		if ok then
+			return true
+		end
+		warn(string.format("[Dados] Erro ao salvar %s (tentativa %d): %s", tostring(userId), tentativa, tostring(erro)))
+		if erroSemAcesso(erro) then
+			desativar(erro)
+			return false
+		end
+		task.wait(1.5)
+	end
+	return false
+end
+
+-- valores = { Dinheiro = n, Roubos = n, Renascimentos = n }
+function Dados.atualizarRanking(userId, valores)
+	if Dados.desativado or userId <= 0 then
+		return
+	end
+	for categoria, valor in valores do
+		local ordenado = ordenados[categoria]
+		if ordenado and valor > 0 then
+			local inteiro = math.floor(math.min(valor, 9e15))
+			pcall(function()
+				ordenado:SetAsync(tostring(userId), inteiro)
+			end)
+		end
+	end
+end
+
+-- Retorna lista { {userId = n, valor = n}, ... } ou nil se indisponível
+function Dados.obterTop(categoria, quantidade)
+	if Dados.desativado then
+		return nil
+	end
+	local ordenado = ordenados[categoria]
+	if not ordenado then
+		return nil
+	end
+	local ok, pagina = pcall(function()
+		return ordenado:GetSortedAsync(false, quantidade):GetCurrentPage()
+	end)
+	if not ok then
+		warn("[Dados] Erro no ranking " .. categoria .. ": " .. tostring(pagina))
+		return nil
+	end
+	local lista = {}
+	for _, item in pagina do
+		table.insert(lista, { userId = tonumber(item.key) or 0, valor = item.value })
+	end
+	return lista
+end
+
+return Dados
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="5">
+      <Properties>
+        <string name="Name">JogoHerois</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[--[[
+	ROUBE UM HERÓI - Script principal do servidor
+
+	Onde colocar: ServerScriptService -> Script (nome: JogoHerois)
+	Precisa também de: ServerScriptService/Mapa, ServerScriptService/Dados
+	e ReplicatedStorage/ConfigHerois (ModuleScripts).
+
+	Cuida de toda a lógica do jogo:
+	  - heróis saindo do portal e andando pela passarela (com mutações)
+	  - compra, renda por segundo, coleta nos pedestais, venda
+	  - roubo (segurar E), carregar o herói até a sua base, Luva Heroica
+	  - tranca da base, melhorias, renascimento, recompensa diária
+	  - eventos, ciclo dia/noite, coroa do mais rico
+	  - salvamento (DataStore), ranking global e compras com Robux
+]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPack = game:GetService("StarterPack")
+local CollectionService = game:GetService("CollectionService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local HttpService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
+local Debris = game:GetService("Debris")
+
+local Config = require(ReplicatedStorage:WaitForChild("ConfigHerois"))
+local Mapa = require(script.Parent:WaitForChild("Mapa"))
+local Dados = require(script.Parent:WaitForChild("Dados"))
+
+local G = Config.Geral
+local formatar = Config.formatar
+
+local NOME_LUVA = "Luva Heroica"
+local PELE_PADRAO = Color3.fromRGB(255, 214, 180)
+
+local function ordemRaridade(id)
+	local raridade = Config.RaridadePorId[id] or Config.Raridades[#Config.Raridades]
+	return raridade.ordem
+end
+local ORDEM_ANUNCIO_SPAWN = ordemRaridade(G.AnunciarSpawnAPartirDe)
+local ORDEM_ANUNCIO_COMPRA = ordemRaridade(G.AnunciarCompraAPartirDe)
+local ORDEM_ANUNCIO_ROUBO = ordemRaridade(G.AnunciarRouboAPartirDe)
+local ORDEM_LENDARIO = ordemRaridade("Lendario")
+
+--------------------------------------------------------------------------
+-- COMUNICAÇÃO COM OS JOGADORES (RemoteEvents)
+--------------------------------------------------------------------------
+local antigos = ReplicatedStorage:FindFirstChild("RemotesHerois")
+if antigos then
+	antigos:Destroy()
+end
+local remotes = Instance.new("Folder")
+remotes.Name = "RemotesHerois"
+local function criarRemoto(classe, nome)
+	local remoto = Instance.new(classe)
+	remoto.Name = nome
+	remoto.Parent = remotes
+	return remoto
+end
+local Notificar = criarRemoto("RemoteEvent", "Notificar")
+local Anuncio = criarRemoto("RemoteEvent", "Anuncio")
+local Efeito = criarRemoto("RemoteEvent", "Efeito")
+local Empurrao = criarRemoto("RemoteEvent", "Empurrao")
+local Acao = criarRemoto("RemoteFunction", "Acao")
+local ObterRanking = criarRemoto("RemoteFunction", "ObterRanking")
+remotes.Parent = ReplicatedStorage
+
+--------------------------------------------------------------------------
+-- MAPA E ESTADO
+--------------------------------------------------------------------------
+Dados.iniciar(Config)
+local mapa = Mapa.construir(Config)
+local bases = mapa.bases
+
+local sessoes = {} -- [jogador] = sessão (dados salvos + base + controles)
+local herois = {} -- [modelo] = herói
+local carregando = {} -- [jogador] = herói que ele está roubando
+local eventoAtual = nil
+local tokenEvento = 0
+local rankingGlobal = { disponivel = false, Dinheiro = {}, Roubos = {}, Renascimentos = {} }
+
+--------------------------------------------------------------------------
+-- AJUDANTES
+--------------------------------------------------------------------------
+local function notificar(jogador, mensagem, tipo)
+	if jogador and jogador.Parent then
+		Notificar:FireClient(jogador, mensagem, tipo or "info")
+	end
+end
+
+local function anunciar(mensagem, cor)
+	Anuncio:FireAllClients(mensagem, cor or Color3.fromRGB(255, 200, 40))
+end
+
+local function efeito(jogador, tipo, ...)
+	if jogador and jogador.Parent then
+		Efeito:FireClient(jogador, tipo, ...)
+	end
+end
+
+local function multEvento(campo)
+	if eventoAtual and eventoAtual[campo] then
+		return eventoAtual[campo]
+	end
+	return 1
+end
+
+local function humanoidDe(jogador)
+	local personagem = jogador.Character
+	return personagem and personagem:FindFirstChildOfClass("Humanoid")
+end
+
+local function raizDe(jogador)
+	local personagem = jogador.Character
+	local raiz = personagem and personagem:FindFirstChild("HumanoidRootPart")
+	if raiz and raiz:IsA("BasePart") then
+		return raiz
+	end
+	return nil
+end
+
+local function dentroDaBase(base, posicao)
+	local local_ = base.cframe:PointToObjectSpace(posicao)
+	return math.abs(local_.X) <= Mapa.METADE_BASE and math.abs(local_.Z) <= Mapa.METADE_BASE
+end
+
+--------------------------------------------------------------------------
+-- DINHEIRO E ATRIBUTOS DO JOGADOR
+--------------------------------------------------------------------------
+local function nivel(jogador, id)
+	local sessao = sessoes[jogador]
+	return sessao and (sessao.dados.niveis[id] or 0) or 0
+end
+
+local function velocidadeJogador(jogador)
+	return Config.velocidadeDoNivel(nivel(jogador, "Velocidade"))
+end
+
+local function pedestaisJogador(jogador)
+	return Config.pedestaisDoNivel(nivel(jogador, "Pedestais"))
+end
+
+local function multiplicadorJogador(jogador)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return 1
+	end
+	local multiplicador = Config.multiplicadorRenascimento(sessao.dados.renascimentos)
+	if sessao.passeDobro then
+		multiplicador *= 2
+	end
+	return multiplicador
+end
+
+local function atualizarDinheiro(jogador)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	jogador:SetAttribute("Dinheiro", sessao.dados.dinheiro)
+	sessao.statDinheiro.Value = math.floor(math.min(sessao.dados.dinheiro, 9e18))
+end
+
+local function atualizarAtributos(jogador)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	local d = sessao.dados
+	atualizarDinheiro(jogador)
+	jogador:SetAttribute("Renascimentos", d.renascimentos)
+	jogador:SetAttribute("Multiplicador", multiplicadorJogador(jogador))
+	jogador:SetAttribute("Roubos", d.roubos)
+	for id, valor in d.niveis do
+		jogador:SetAttribute("Nivel" .. id, valor)
+	end
+	jogador:SetAttribute("UltimaDiaria", d.ultimaDiaria)
+	jogador:SetAttribute("SequenciaDiaria", d.sequenciaDiaria)
+	jogador:SetAttribute("TutorialFeito", d.tutorial)
+	jogador:SetAttribute("Musica", d.config.musica)
+	jogador:SetAttribute("Sons", d.config.sons)
+	jogador:SetAttribute("PasseDobro", sessao.passeDobro == true)
+	jogador:SetAttribute("BaseIndice", sessao.base and sessao.base.indice or 0)
+	local descobertos = {}
+	for id in d.descobertos do
+		table.insert(descobertos, id)
+	end
+	jogador:SetAttribute("Descobertos", HttpService:JSONEncode(descobertos))
+	sessao.statRoubos.Value = d.roubos
+	sessao.statRenascimentos.Value = d.renascimentos
+end
+
+local function ganhar(jogador, valor)
+	local sessao = sessoes[jogador]
+	if not sessao or valor <= 0 then
+		return
+	end
+	sessao.dados.dinheiro += valor
+	sessao.dados.totalGanho += valor
+	atualizarDinheiro(jogador)
+end
+
+local function gastar(jogador, valor)
+	local sessao = sessoes[jogador]
+	if not sessao or sessao.dados.dinheiro < valor then
+		return false
+	end
+	sessao.dados.dinheiro -= valor
+	atualizarDinheiro(jogador)
+	return true
+end
+
+local function descobrir(jogador, def)
+	local sessao = sessoes[jogador]
+	if sessao and not sessao.dados.descobertos[def.id] then
+		sessao.dados.descobertos[def.id] = true
+		atualizarAtributos(jogador)
+		notificar(jogador, "📖 Novo herói no Índice: " .. def.nome .. "!", "especial")
+	end
+end
+
+--------------------------------------------------------------------------
+-- MODELO 3D DOS HERÓIS
+--------------------------------------------------------------------------
+local function criarModeloHeroi(def, mutacao)
+	local raridade = Config.RaridadePorId[def.raridade]
+	local s = raridade.escala
+	local cores = def.cores
+	local corTraje, corCapa = cores.traje, cores.capa
+	local corEmblema = cores.emblema or cores.capa
+	local corPele = cores.pele or PELE_PADRAO
+	local corBotas = cores.botas or cores.capa
+	local materialTraje = Enum.Material.SmoothPlastic
+
+	if mutacao.id == "Ouro" then
+		corTraje, corCapa, materialTraje = mutacao.cor, Color3.fromRGB(255, 235, 150), Enum.Material.Foil
+	elseif mutacao.id == "Diamante" then
+		corTraje, corCapa, materialTraje = mutacao.cor, Color3.fromRGB(200, 245, 255), Enum.Material.Glass
+	elseif mutacao.id == "Cosmico" then
+		corTraje, corCapa, materialTraje = Color3.fromRGB(50, 0, 110), mutacao.cor, Enum.Material.Neon
+	end
+
+	local modelo = Instance.new("Model")
+	modelo.Name = def.nome
+	modelo:SetAttribute("HeroiId", def.id)
+	modelo:SetAttribute("Mutacao", mutacao.id)
+
+	local function nova(nome, forma, tamanho, cf, cor, material)
+		local p = Instance.new("Part")
+		p.Name = nome
+		p.Shape = forma
+		p.Size = tamanho
+		p.CFrame = cf
+		p.Color = cor
+		p.Material = material or Enum.Material.SmoothPlastic
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CanQuery = false
+		p.Massless = true
+		p.Anchored = false
+		p.Parent = modelo
+		return p
+	end
+
+	local BLOCO, BOLA, CILINDRO = Enum.PartType.Block, Enum.PartType.Ball, Enum.PartType.Cylinder
+	local NEON = Enum.Material.Neon
+
+	-- O tronco é a peça principal: todas as outras ficam soldadas nele
+	local raiz = nova("Tronco", BLOCO, Vector3.new(1.6 * s, 1.6 * s, 0.9 * s), CFrame.new(), corTraje, materialTraje)
+	raiz.Anchored = true
+	raiz:SetAttribute("Pintavel", true)
+
+	local function peca(nome, forma, tamanho, cf, cor, material, pintavel)
+		local p = nova(nome, forma, tamanho, cf, cor, material)
+		if pintavel then
+			p:SetAttribute("Pintavel", true)
+		end
+		local solda = Instance.new("WeldConstraint")
+		solda.Part0 = raiz
+		solda.Part1 = p
+		solda.Parent = p
+		return p
+	end
+
+	for _, lado in { -1, 1 } do
+		peca("Perna", BLOCO, Vector3.new(0.6 * s, 1.2 * s, 0.6 * s), CFrame.new(0.42 * s * lado, -1.4 * s, 0), corTraje, materialTraje, true)
+		peca("Bota", BLOCO, Vector3.new(0.68 * s, 0.45 * s, 0.78 * s), CFrame.new(0.42 * s * lado, -1.8 * s, -0.05 * s), corBotas)
+		peca("Braco", BLOCO, Vector3.new(0.45 * s, 1.4 * s, 0.45 * s),
+			CFrame.new(1.05 * s * lado, 0.05 * s, 0) * CFrame.Angles(0, 0, math.rad(8 * lado)), corTraje, materialTraje, true)
+		peca("Luva", BOLA, Vector3.one * 0.55 * s, CFrame.new(1.15 * s * lado, -0.7 * s, 0), corBotas)
+	end
+	peca("Cinto", BLOCO, Vector3.new(1.66 * s, 0.22 * s, 0.96 * s), CFrame.new(0, -0.62 * s, 0), Color3.fromRGB(35, 35, 40))
+	peca("Fivela", BLOCO, Vector3.new(0.3 * s, 0.26 * s, 0.1 * s), CFrame.new(0, -0.62 * s, -0.5 * s), Color3.fromRGB(255, 210, 60), NEON)
+	peca("Emblema", BLOCO, Vector3.new(0.55 * s, 0.55 * s, 0.1 * s),
+		CFrame.new(0, 0.22 * s, -0.47 * s) * CFrame.Angles(0, 0, math.rad(45)), corEmblema, NEON)
+	peca("Capa", BLOCO, Vector3.new(1.5 * s, 2.3 * s, 0.12 * s),
+		CFrame.new(0, -0.3 * s, 0.56 * s) * CFrame.Angles(math.rad(10), 0, 0), corCapa,
+		materialTraje == NEON and NEON or Enum.Material.SmoothPlastic)
+	peca("Gola", BLOCO, Vector3.new(1.65 * s, 0.2 * s, 0.95 * s), CFrame.new(0, 0.78 * s, 0), corCapa)
+
+	-- Cabeça e acessório
+	local yCabeca = 1.32 * s
+	peca("Cabeca", BOLA, Vector3.one * 1.1 * s, CFrame.new(0, yCabeca, 0), corPele)
+	local function olhos(cor, z, material)
+		for _, lado in { -1, 1 } do
+			peca("Olho", BOLA, Vector3.one * 0.2 * s, CFrame.new(0.2 * s * lado, yCabeca + 0.06 * s, z * s), cor, material)
+		end
+	end
+
+	if def.cabeca == "mascara" then
+		peca("Mascara", BLOCO, Vector3.new(1.14 * s, 0.28 * s, 1.14 * s), CFrame.new(0, yCabeca + 0.06 * s, 0), corCapa)
+		olhos(Color3.new(1, 1, 1), -0.6, NEON)
+	elseif def.cabeca == "capacete" then
+		peca("Capacete", BOLA, Vector3.one * 1.2 * s, CFrame.new(0, yCabeca + 0.05 * s, 0), corCapa, materialTraje)
+		peca("Visor", BLOCO, Vector3.new(0.85 * s, 0.25 * s, 0.2 * s), CFrame.new(0, yCabeca + 0.06 * s, -0.55 * s), corEmblema, NEON)
+	elseif def.cabeca == "coroa" then
+		olhos(Color3.new(0, 0, 0), -0.5)
+		peca("Coroa", CILINDRO, Vector3.new(0.35 * s, 0.85 * s, 0.85 * s),
+			CFrame.new(0, yCabeca + 0.6 * s, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(255, 200, 40), Enum.Material.Foil)
+		peca("Joia", BOLA, Vector3.one * 0.2 * s, CFrame.new(0, yCabeca + 0.6 * s, -0.42 * s), corEmblema, NEON)
+	else -- antena
+		olhos(Color3.new(0, 0, 0), -0.5)
+		for _, lado in { -1, 1 } do
+			peca("Haste", BLOCO, Vector3.new(0.08 * s, 0.6 * s, 0.08 * s), CFrame.new(0.22 * s * lado, yCabeca + 0.75 * s, 0), Color3.fromRGB(40, 40, 40))
+			peca("Ponta", BOLA, Vector3.one * 0.22 * s, CFrame.new(0.22 * s * lado, yCabeca + 1.08 * s, 0), corEmblema, NEON)
+		end
+	end
+
+	-- Efeitos das raridades altas e mutações
+	if raridade.ordem >= ORDEM_LENDARIO then
+		local luz = Instance.new("PointLight")
+		luz.Color = raridade.cor
+		luz.Range = 10
+		luz.Brightness = 1.5
+		luz.Parent = raiz
+	end
+	if def.raridade == "Divino" then
+		peca("Aureola", CILINDRO, Vector3.new(0.12 * s, 1.3 * s, 1.3 * s),
+			CFrame.new(0, yCabeca + 1.05 * s, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(255, 240, 150), NEON)
+	end
+	if def.raridade == "Secreto" or mutacao.id == "Cosmico" then
+		local particulas = Instance.new("ParticleEmitter")
+		particulas.Color = def.raridade == "Secreto"
+				and ColorSequence.new(Color3.fromRGB(0, 0, 0), Color3.fromRGB(0, 255, 200))
+			or ColorSequence.new(Color3.fromRGB(150, 70, 255), Color3.fromRGB(255, 120, 255))
+		particulas.LightEmission = 0.6
+		particulas.Rate = 14
+		particulas.Lifetime = NumberRange.new(0.8, 1.6)
+		particulas.Speed = NumberRange.new(1, 3)
+		particulas.SpreadAngle = Vector2.new(180, 180)
+		particulas.Size = NumberSequence.new(0.5 * s, 0)
+		particulas.Parent = raiz
+	end
+	if mutacao.id == "ArcoIris" then
+		CollectionService:AddTag(modelo, "HeroiArcoIris")
+	end
+
+	-- Placa em cima da cabeça
+	local placa = Instance.new("BillboardGui")
+	placa.Name = "Info"
+	placa.Size = UDim2.fromOffset(240, 96)
+	placa.StudsOffset = Vector3.new(0, 2.7 * s + 1.4, 0)
+	placa.MaxDistance = 70
+	placa.LightInfluence = 0
+	placa.Parent = raiz
+	local layout = Instance.new("UIListLayout")
+	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = placa
+
+	local function linha(ordem, texto, cor, fonte)
+		local rotulo = Instance.new("TextLabel")
+		rotulo.LayoutOrder = ordem
+		rotulo.Size = UDim2.new(1, 0, 0, 23)
+		rotulo.BackgroundTransparency = 1
+		rotulo.Text = texto
+		rotulo.TextColor3 = cor
+		rotulo.Font = fonte or Enum.Font.FredokaOne
+		rotulo.TextScaled = true
+		rotulo.TextStrokeTransparency = 0
+		rotulo.Parent = placa
+		return rotulo
+	end
+	if mutacao.id ~= "Normal" then
+		local rotulo = linha(1, "✦ " .. mutacao.nome .. " ✦", mutacao.cor)
+		if mutacao.id == "ArcoIris" then
+			rotulo.Name = "TextoArcoIris"
+		end
+	end
+	linha(2, def.nome, Color3.new(1, 1, 1))
+	linha(3, raridade.nome, raridade.cor)
+	linha(4, formatar(def.preco * mutacao.multiplicador) .. "  •  +" .. formatar(def.renda * mutacao.multiplicador) .. "/s",
+		Color3.fromRGB(110, 255, 130), Enum.Font.GothamBold)
+
+	return modelo, raiz
+end
+
+--------------------------------------------------------------------------
+-- HERÓIS: CRIAR, REMOVER, BOTÕES (ProximityPrompt)
+--------------------------------------------------------------------------
+local function valorHeroi(h)
+	return h.def.preco * h.mutacao.multiplicador
+end
+
+local function rendaHeroi(h)
+	return h.def.renda * h.mutacao.multiplicador
+end
+
+local function nomeCompleto(h)
+	if h.mutacao.id ~= "Normal" then
+		return h.def.nome .. " " .. h.mutacao.nome
+	end
+	return h.def.nome
+end
+
+local function novoHeroi(def, mutacaoId)
+	local mutacao = Config.MutacaoPorId[mutacaoId] or Config.MutacaoPorId.Normal
+	local modelo, raiz = criarModeloHeroi(def, mutacao)
+	modelo.Parent = mapa.pastaHerois
+	local raridade = Config.RaridadePorId[def.raridade]
+	local h = {
+		modelo = modelo,
+		raiz = raiz,
+		def = def,
+		mutacao = mutacao,
+		raridade = raridade,
+		altura = 2.03 * raridade.escala, -- distância do tronco até a sola da bota
+		estado = "novo", -- novo | andando | indo | base | carregado | removido
+		distancia = 0,
+	}
+	herois[modelo] = h
+	return h
+end
+
+local function removerHeroi(h)
+	h.estado = "removido"
+	herois[h.modelo] = nil
+	h.modelo:Destroy()
+end
+
+local function limparPrompts(h)
+	for _, filho in h.raiz:GetChildren() do
+		if filho:IsA("ProximityPrompt") then
+			filho:Destroy()
+		end
+	end
+end
+
+local function criarPrompt(h, nome, acao, objeto, tecla, segurar, aoAtivar)
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = nome
+	prompt.ActionText = acao
+	prompt.ObjectText = objeto
+	prompt.KeyboardKeyCode = tecla
+	prompt.HoldDuration = segurar
+	prompt.MaxActivationDistance = 10
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = h.raiz
+	prompt.Triggered:Connect(function(jogador)
+		aoAtivar(h, jogador)
+	end)
+	return prompt
+end
+
+--------------------------------------------------------------------------
+-- BASES: PEDESTAIS, COLETA E TRANCA
+--------------------------------------------------------------------------
+local function slotLivre(base, quantidade)
+	for i = 1, math.min(quantidade, #base.slots) do
+		local slot = base.slots[i]
+		if not slot.heroi then
+			return slot
+		end
+	end
+	return nil
+end
+
+local function atualizarPad(slot)
+	if slot.acumulado >= 1 then
+		slot.guiPad.Enabled = true
+		slot.textoPad.Text = "💰 " .. formatar(slot.acumulado)
+	else
+		slot.guiPad.Enabled = false
+	end
+end
+
+local function atualizarSlots(base)
+	local dono = base.dono
+	local liberados = dono and pedestaisJogador(dono) or #base.slots
+	for i, slot in base.slots do
+		local liberado = i <= liberados
+		slot.pedestal.Transparency = liberado and 0 or 0.65
+		slot.anel.Color = liberado and base.cor or Color3.fromRGB(90, 90, 100)
+		slot.pad.Transparency = liberado and 0 or 1
+		slot.guiCadeado.Enabled = dono ~= nil and not liberado
+	end
+end
+
+local function atualizarBarreira(base)
+	local trancada = os.clock() < base.trancadaAte
+	base.barreira.CanCollide = trancada
+	base.barreira.Transparency = trancada and 0.45 or 1
+end
+
+local function trancarBase(base, jogador)
+	local agora = os.clock()
+	if agora < base.recargaAte then
+		return
+	end
+	local duracao = Config.trancaDoNivel(nivel(jogador, "Tranca"))
+	base.trancadaAte = agora + duracao
+	base.recargaAte = base.trancadaAte + G.RecargaTranca
+	atualizarBarreira(base)
+
+	-- Quem estava dentro é jogado para fora
+	for _, outro in Players:GetPlayers() do
+		local raiz = raizDe(outro)
+		if outro ~= jogador and raiz and outro.Character and dentroDaBase(base, raiz.Position) then
+			outro.Character:PivotTo(base.saida)
+			notificar(outro, "🔒 A base foi trancada e você foi expulso!", "aviso")
+		end
+	end
+	notificar(jogador, "🔒 Base trancada por " .. duracao .. " segundos!", "sucesso")
+	efeito(jogador, "som", "compra")
+end
+
+-- Tira todos os heróis de uma base (quando o dono sai ou renasce)
+local function limparHeroisDaBase(base)
+	for _, slot in base.slots do
+		local h = slot.heroi
+		if h then
+			if h.estado == "carregado" then
+				if h.slot == slot then
+					-- alguém está roubando: o ladrão continua com ele
+					slot.heroi = nil
+					h.base = nil
+					h.slot = nil
+				end
+			else
+				slot.heroi = nil
+				removerHeroi(h)
+			end
+		end
+		slot.acumulado = 0
+		atualizarPad(slot)
+	end
+end
+
+--------------------------------------------------------------------------
+-- COLOCAR NA BASE, ROUBAR, DEVOLVER, ENTREGAR
+--------------------------------------------------------------------------
+local aoRoubar, aoVender -- definidas mais abaixo
+
+local function colocarNaBase(h, base, slot, animar)
+	limparPrompts(h)
+	slot.heroi = h
+	h.base = base
+	h.slot = slot
+	h.modelo:SetAttribute("DonoId", base.dono and base.dono.UserId or 0)
+	h.raiz.Anchored = true
+
+	local destino = slot.topo * CFrame.new(0, h.altura, 0)
+	local valorVenda = math.floor(valorHeroi(h) * G.PorcentagemVenda)
+
+	local function finalizar()
+		h.estado = "base"
+		h.raiz.CFrame = destino
+		criarPrompt(h, "PromptRoubar", "Roubar", nomeCompleto(h), Enum.KeyCode.E, G.TempoParaRoubar, aoRoubar)
+		criarPrompt(h, "PromptVender", "Vender por " .. formatar(valorVenda), nomeCompleto(h), Enum.KeyCode.F, 0.6, aoVender)
+	end
+
+	if animar then
+		h.estado = "indo"
+		local tween = TweenService:Create(h.raiz, TweenInfo.new(1.6, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { CFrame = destino })
+		tween.Completed:Connect(function()
+			if h.estado == "indo" and h.slot == slot then
+				finalizar()
+			end
+		end)
+		tween:Play()
+	else
+		finalizar()
+	end
+end
+
+local function marcarLadrao(jogador, ligar)
+	local personagem = jogador.Character
+	if not personagem then
+		return
+	end
+	local marca = personagem:FindFirstChild("MarcaLadrao")
+	if ligar and not marca then
+		local destaque = Instance.new("Highlight")
+		destaque.Name = "MarcaLadrao"
+		destaque.FillColor = Color3.fromRGB(255, 40, 40)
+		destaque.FillTransparency = 0.75
+		destaque.OutlineColor = Color3.fromRGB(255, 60, 60)
+		destaque.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+		destaque.Parent = personagem
+	elseif not ligar and marca then
+		marca:Destroy()
+	end
+end
+
+-- Solta o herói das costas do ladrão. Retorna o pedestal que estava reservado na base do ladrão.
+local function terminarCarregar(h)
+	local ladrao = h.ladrao
+	if h.conexaoMorte then
+		h.conexaoMorte:Disconnect()
+		h.conexaoMorte = nil
+	end
+	h.raiz.Anchored = true
+	local solda = h.raiz:FindFirstChild("SoldaRoubo")
+	if solda then
+		solda:Destroy()
+	end
+	if ladrao then
+		carregando[ladrao] = nil
+		marcarLadrao(ladrao, false)
+		ladrao:SetAttribute("Carregando", nil)
+		local humanoid = humanoidDe(ladrao)
+		if humanoid then
+			humanoid.WalkSpeed = velocidadeJogador(ladrao)
+		end
+	end
+	h.ladrao = nil
+	local slotDestino = h.slotDestino
+	h.slotDestino = nil
+	return slotDestino
+end
+
+-- O roubo falhou: o herói volta para o pedestal de onde saiu
+local function devolver(h, motivo)
+	if h.estado ~= "carregado" then
+		return
+	end
+	local ladrao = h.ladrao
+	local slotDestino = terminarCarregar(h)
+	if slotDestino and slotDestino.heroi == h then
+		slotDestino.heroi = nil
+	end
+	if not h.base or not h.base.dono or not h.slot then
+		removerHeroi(h) -- o dono saiu ou renasceu
+		return
+	end
+	colocarNaBase(h, h.base, h.slot, false)
+	if motivo and ladrao then
+		notificar(ladrao, motivo, "erro")
+	end
+	notificar(h.base.dono, "🛡️ Seu " .. nomeCompleto(h) .. " voltou para a base!", "sucesso")
+end
+
+-- O ladrão chegou na própria base: o herói agora é dele
+local function entregar(h)
+	local ladrao = h.ladrao
+	local donoAntigo = h.base and h.base.dono
+	local slotDestino = terminarCarregar(h)
+	if h.slot and h.slot.heroi == h then
+		h.slot.heroi = nil
+	end
+	colocarNaBase(h, slotDestino.base, slotDestino, false)
+
+	local sessao = sessoes[ladrao]
+	if sessao then
+		sessao.dados.roubos += 1
+		atualizarAtributos(ladrao)
+	end
+	descobrir(ladrao, h.def)
+	notificar(ladrao, "🦹 Você roubou " .. nomeCompleto(h) .. "!", "sucesso")
+	efeito(ladrao, "som", "compra")
+	if donoAntigo then
+		notificar(donoAntigo, "😱 " .. ladrao.DisplayName .. " roubou seu " .. nomeCompleto(h) .. "!", "erro")
+	end
+	if h.raridade.ordem >= ORDEM_ANUNCIO_ROUBO then
+		anunciar("🦹 " .. ladrao.DisplayName .. " roubou " .. nomeCompleto(h) .. " (" .. h.raridade.nome .. ")!", h.raridade.cor)
+	end
+end
+
+local function verificarCarregado(h)
+	local ladrao = h.ladrao
+	local raiz = ladrao and raizDe(ladrao)
+	if not raiz or not h.slotDestino then
+		devolver(h, "Você perdeu o herói!")
+		return
+	end
+	if dentroDaBase(h.slotDestino.base, raiz.Position) then
+		entregar(h)
+		return
+	end
+	if G.RecuperarEncostando then
+		local dono = h.base and h.base.dono
+		local raizDono = dono and raizDe(dono)
+		if raizDono and (raizDono.Position - raiz.Position).Magnitude < 6 then
+			devolver(h, dono.DisplayName .. " pegou o herói de volta!")
+		end
+	end
+end
+
+function aoRoubar(h, ladrao)
+	if h.estado ~= "base" then
+		return
+	end
+	local base = h.base
+	if not base or base.dono == ladrao then
+		return
+	end
+	local sessao = sessoes[ladrao]
+	if not sessao or not sessao.base then
+		notificar(ladrao, "Você precisa de uma base para roubar.", "erro")
+		return
+	end
+	if carregando[ladrao] then
+		notificar(ladrao, "Você já está carregando um herói!", "aviso")
+		return
+	end
+	if os.clock() < base.trancadaAte then
+		notificar(ladrao, "🔒 Esta base está trancada!", "erro")
+		return
+	end
+	local slotDestino = slotLivre(sessao.base, pedestaisJogador(ladrao))
+	if not slotDestino then
+		notificar(ladrao, "Sua base está cheia! Venda um herói ou compre mais pedestais.", "aviso")
+		return
+	end
+	local raiz = raizDe(ladrao)
+	local humanoid = humanoidDe(ladrao)
+	if not raiz or not humanoid or humanoid.Health <= 0 then
+		return
+	end
+
+	limparPrompts(h)
+	slotDestino.heroi = h -- reserva o pedestal na base do ladrão
+	h.slotDestino = slotDestino
+	h.estado = "carregado"
+	h.ladrao = ladrao
+	carregando[ladrao] = h
+
+	-- Gruda o herói em cima da cabeça do ladrão
+	h.raiz.CFrame = raiz.CFrame * CFrame.new(0, 3.2 + h.altura, 0)
+	local solda = Instance.new("WeldConstraint")
+	solda.Name = "SoldaRoubo"
+	solda.Part0 = raiz
+	solda.Part1 = h.raiz
+	solda.Parent = h.raiz
+	h.raiz.Anchored = false
+
+	humanoid.WalkSpeed = velocidadeJogador(ladrao) * G.MultiplicadorCarregando
+	h.conexaoMorte = humanoid.Died:Connect(function()
+		devolver(h, "💀 Você caiu e perdeu o herói!")
+	end)
+	marcarLadrao(ladrao, true)
+	ladrao:SetAttribute("Carregando", nomeCompleto(h))
+
+	notificar(ladrao, "🏃 Corra para a sua base!", "aviso")
+	if base.dono then
+		efeito(base.dono, "alarme", ladrao.DisplayName, nomeCompleto(h))
+	end
+end
+
+function aoVender(h, jogador)
+	if h.estado ~= "base" or not h.base or h.base.dono ~= jogador then
+		return
+	end
+	local valor = math.floor(valorHeroi(h) * G.PorcentagemVenda)
+	h.slot.heroi = nil
+	removerHeroi(h)
+	ganhar(jogador, valor)
+	notificar(jogador, "💵 Vendido por " .. formatar(valor) .. "!", "sucesso")
+	efeito(jogador, "som", "moeda")
+end
+
+local function aoComprar(h, jogador)
+	if h.estado ~= "andando" then
+		return
+	end
+	local sessao = sessoes[jogador]
+	if not sessao or not sessao.base then
+		notificar(jogador, "Você precisa de uma base para comprar.", "erro")
+		return
+	end
+	local preco = valorHeroi(h)
+	if sessao.dados.dinheiro < preco then
+		notificar(jogador, "💸 Dinheiro insuficiente! Custa " .. formatar(preco), "erro")
+		return
+	end
+	local slot = slotLivre(sessao.base, pedestaisJogador(jogador))
+	if not slot then
+		notificar(jogador, "Sua base está cheia! Venda um herói ou compre mais pedestais na Loja.", "aviso")
+		return
+	end
+	gastar(jogador, preco)
+	colocarNaBase(h, sessao.base, slot, true)
+	descobrir(jogador, h.def)
+	notificar(jogador, "✅ Você comprou " .. nomeCompleto(h) .. "!", "sucesso")
+	efeito(jogador, "som", "compra")
+	if h.raridade.ordem >= ORDEM_ANUNCIO_COMPRA then
+		anunciar("🤑 " .. jogador.DisplayName .. " comprou " .. nomeCompleto(h) .. " (" .. h.raridade.nome .. ")!", h.raridade.cor)
+	end
+end
+
+--------------------------------------------------------------------------
+-- PASSARELA
+--------------------------------------------------------------------------
+local function colocarNaPassarela(h)
+	h.estado = "andando"
+	h.distancia = 0
+	local posicao = mapa.inicio + Vector3.new(0, h.altura, 0)
+	h.raiz.CFrame = CFrame.lookAt(posicao, posicao + Vector3.xAxis)
+	criarPrompt(h, "PromptComprar", "Comprar por " .. formatar(valorHeroi(h)), nomeCompleto(h), Enum.KeyCode.E, 0, aoComprar)
+end
+
+local function sortearHeroi()
+	local multRaros = multEvento("multRaros")
+	local pesos = {}
+	local total = 0
+	for i, def in Config.Herois do
+		local raridade = Config.RaridadePorId[def.raridade]
+		local peso = raridade.chance / raridade.quantidade
+		if raridade.ordem >= ORDEM_LENDARIO then
+			peso *= multRaros
+		end
+		pesos[i] = peso
+		total += peso
+	end
+	local sorteio = math.random() * total
+	for i, def in Config.Herois do
+		sorteio -= pesos[i]
+		if sorteio <= 0 then
+			return def
+		end
+	end
+	return Config.Herois[1]
+end
+
+local function sortearMutacao()
+	local mult = multEvento("multMutacao")
+	local sorteio = math.random()
+	local acumulado = 0
+	for _, mutacao in Config.Mutacoes do
+		if mutacao.chance > 0 then
+			acumulado += mutacao.chance * mult
+			if sorteio < acumulado then
+				return mutacao.id
+			end
+		end
+	end
+	return "Normal"
+end
+
+--------------------------------------------------------------------------
+-- LUVA HEROICA (soco)
+--------------------------------------------------------------------------
+local function criarLuva()
+	local existente = StarterPack:FindFirstChild(NOME_LUVA)
+	if existente then
+		existente:Destroy()
+	end
+	local luva = Instance.new("Tool")
+	luva.Name = NOME_LUVA
+	luva.CanBeDropped = false
+	luva.ToolTip = "Clique para socar! Ladrões socados derrubam o herói."
+
+	local alca = Instance.new("Part")
+	alca.Name = "Handle"
+	alca.Shape = Enum.PartType.Ball
+	alca.Size = Vector3.new(1.3, 1.3, 1.3)
+	alca.Color = Color3.fromRGB(220, 30, 30)
+	alca.Material = Enum.Material.SmoothPlastic
+	alca.CanCollide = false
+	alca.Massless = true
+	alca.Parent = luva
+
+	local punho = Instance.new("Part")
+	punho.Name = "Punho"
+	punho.Size = Vector3.new(1, 0.4, 1)
+	punho.CFrame = alca.CFrame * CFrame.new(0, -0.7, 0)
+	punho.Color = Color3.fromRGB(255, 255, 255)
+	punho.CanCollide = false
+	punho.Massless = true
+	punho.Parent = luva
+	local solda = Instance.new("WeldConstraint")
+	solda.Part0 = alca
+	solda.Part1 = punho
+	solda.Parent = punho
+
+	local som = Instance.new("Sound")
+	som.Name = "SomSoco"
+	som.SoundId = Config.Sons.Soco
+	som.Volume = 0.8
+	som.Parent = alca
+
+	luva.Parent = StarterPack
+end
+criarLuva()
+
+local function socar(jogador, luva)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	local agora = os.clock()
+	if agora - sessao.ultimoSoco < G.RecargaSoco then
+		return
+	end
+	sessao.ultimoSoco = agora
+	local raiz = raizDe(jogador)
+	if not raiz then
+		return
+	end
+
+	-- Animação padrão de ataque do Roblox
+	local animacao = Instance.new("StringValue")
+	animacao.Name = "toolanim"
+	animacao.Value = "Slash"
+	animacao.Parent = luva
+	Debris:AddItem(animacao, 1)
+	local alca = luva:FindFirstChild("Handle")
+	local som = alca and alca:FindFirstChild("SomSoco")
+	if som and som:IsA("Sound") then
+		som:Play()
+	end
+
+	for _, outro in Players:GetPlayers() do
+		local raizOutro = raizDe(outro)
+		local humanoidOutro = humanoidDe(outro)
+		if outro ~= jogador and raizOutro and humanoidOutro and humanoidOutro.Health > 0 then
+			local delta = raizOutro.Position - raiz.Position
+			if delta.Magnitude <= G.AlcanceSoco then
+				local plano = Vector3.new(delta.X, 0, delta.Z)
+				local direcao = plano.Magnitude > 0.1 and plano.Unit or raiz.CFrame.LookVector
+				if raiz.CFrame.LookVector:Dot(direcao) > 0.2 then
+					Empurrao:FireClient(outro, direcao * G.ForcaSoco + Vector3.new(0, 35, 0))
+					local h = carregando[outro]
+					if h then
+						devolver(h, "🥊 " .. jogador.DisplayName .. " te deu um soco e você derrubou o herói!")
+						notificar(jogador, "🥊 Você fez " .. outro.DisplayName .. " derrubar o herói!", "sucesso")
+					end
+				end
+			end
+		end
+	end
+end
+
+local luvasConectadas = setmetatable({}, { __mode = "k" })
+local function conectarLuva(jogador, objeto)
+	if objeto:IsA("Tool") and objeto.Name == NOME_LUVA and not luvasConectadas[objeto] then
+		luvasConectadas[objeto] = true
+		objeto.Activated:Connect(function()
+			socar(jogador, objeto)
+		end)
+	end
+end
+
+--------------------------------------------------------------------------
+-- EVENTOS
+--------------------------------------------------------------------------
+local function terminarEvento()
+	if not eventoAtual then
+		return
+	end
+	anunciar("O evento " .. eventoAtual.nome .. " acabou!", Color3.fromRGB(200, 200, 210))
+	eventoAtual = nil
+	workspace:SetAttribute("EventoId", nil)
+	workspace:SetAttribute("EventoFim", nil)
+	TweenService:Create(mapa.correcaoCor, TweenInfo.new(3), { TintColor = Color3.new(1, 1, 1) }):Play()
+end
+
+local function iniciarEvento(evento)
+	tokenEvento += 1
+	local meuToken = tokenEvento
+	local duracao = G.DuracaoEventoMinutos * 60
+	eventoAtual = evento
+	workspace:SetAttribute("EventoId", evento.id)
+	workspace:SetAttribute("EventoFim", workspace:GetServerTimeNow() + duracao)
+	anunciar(evento.icone .. " " .. evento.nome .. "! " .. evento.descricao, evento.cor)
+	TweenService:Create(mapa.correcaoCor, TweenInfo.new(3), { TintColor = Color3.new(1, 1, 1):Lerp(evento.cor, 0.25) }):Play()
+	task.delay(duracao, function()
+		if tokenEvento == meuToken then
+			terminarEvento()
+		end
+	end)
+end
+
+--------------------------------------------------------------------------
+-- AÇÕES PEDIDAS PELA INTERFACE (Loja, Renascer, Diária...)
+--------------------------------------------------------------------------
+local function comprarMelhoria(jogador, id)
+	local melhoria = type(id) == "string" and Config.MelhoriaPorId[id]
+	if not melhoria then
+		return false, "Melhoria inválida"
+	end
+	local sessao = sessoes[jogador]
+	local atual = sessao.dados.niveis[id] or 0
+	if atual >= #melhoria.precos then
+		return false, "Nível máximo!"
+	end
+	local preco = melhoria.precos[atual + 1]
+	if not gastar(jogador, preco) then
+		return false, "Dinheiro insuficiente! Custa " .. formatar(preco)
+	end
+	sessao.dados.niveis[id] = atual + 1
+
+	if id == "Velocidade" then
+		local humanoid = humanoidDe(jogador)
+		if humanoid and not carregando[jogador] then
+			humanoid.WalkSpeed = velocidadeJogador(jogador)
+		end
+	elseif id == "Pedestais" and sessao.base then
+		atualizarSlots(sessao.base)
+	end
+	atualizarAtributos(jogador)
+	efeito(jogador, "som", "compra")
+	return true, melhoria.icone .. " " .. melhoria.nome .. " agora é nível " .. (atual + 1) .. "!"
+end
+
+local function renascer(jogador)
+	local sessao = sessoes[jogador]
+	local d = sessao.dados
+	local custo = Config.custoRenascimento(d.renascimentos)
+	if d.dinheiro < custo then
+		return false, "Você precisa de " .. formatar(custo) .. " para renascer."
+	end
+	local h = carregando[jogador]
+	if h then
+		devolver(h, nil)
+	end
+	if sessao.base then
+		limparHeroisDaBase(sessao.base)
+	end
+	d.renascimentos += 1
+	d.dinheiro = Config.dinheiroInicial(d.renascimentos)
+	atualizarAtributos(jogador)
+	efeito(jogador, "renascer")
+	anunciar("♻️ " .. jogador.DisplayName .. " RENASCEU! (" .. d.renascimentos .. "x)", Color3.fromRGB(170, 90, 255))
+	return true, "♻️ Você renasceu! Sua renda agora é x" .. multiplicadorJogador(jogador)
+end
+
+local function resgatarDiaria(jogador)
+	local d = sessoes[jogador].dados
+	local agora = os.time()
+	local intervalo = Config.Diaria.IntervaloHoras * 3600
+	if agora < d.ultimaDiaria + intervalo then
+		return false, "Volte em " .. Config.formatarTempo(d.ultimaDiaria + intervalo - agora)
+	end
+	if d.ultimaDiaria > 0 and agora - d.ultimaDiaria <= Config.Diaria.PerdeSequenciaHoras * 3600 then
+		d.sequenciaDiaria += 1
+	else
+		d.sequenciaDiaria = 1
+	end
+	local dia = (d.sequenciaDiaria - 1) % 7 + 1
+	local valor = Config.recompensaDiaria(dia, d.renascimentos)
+	d.ultimaDiaria = agora
+	ganhar(jogador, valor)
+	atualizarAtributos(jogador)
+	efeito(jogador, "som", "moeda")
+	return true, "🎁 Dia " .. dia .. ": você ganhou " .. formatar(valor) .. "!"
+end
+
+Acao.OnServerInvoke = function(jogador, acao, argumento)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return false, "Carregando seus dados..."
+	end
+	local agora = os.clock()
+	if agora - sessao.ultimaAcao < 0.25 then
+		return false, "Calma! 😅"
+	end
+	sessao.ultimaAcao = agora
+
+	if acao == "Melhoria" then
+		return comprarMelhoria(jogador, argumento)
+	elseif acao == "Renascer" then
+		return renascer(jogador)
+	elseif acao == "Diaria" then
+		return resgatarDiaria(jogador)
+	elseif acao == "Tutorial" then
+		sessao.dados.tutorial = true
+		atualizarAtributos(jogador)
+		return true, ""
+	elseif acao == "Config" and type(argumento) == "table" then
+		sessao.dados.config.musica = argumento.musica == true
+		sessao.dados.config.sons = argumento.sons == true
+		atualizarAtributos(jogador)
+		return true, ""
+	end
+	return false, "Ação desconhecida"
+end
+
+ObterRanking.OnServerInvoke = function()
+	return rankingGlobal
+end
+
+--------------------------------------------------------------------------
+-- SALVAMENTO
+--------------------------------------------------------------------------
+local function montarSave(jogador)
+	local sessao = sessoes[jogador]
+	local d = sessao.dados
+	local lista = {}
+	if sessao.base then
+		for i, slot in sessao.base.slots do
+			local h = slot.heroi
+			if h and h.base == sessao.base and h.slot == slot and h.estado ~= "removido" then
+				table.insert(lista, { slot = i, id = h.def.id, mut = h.mutacao.id })
+			end
+		end
+	end
+	d.herois = lista
+	d.ultimoLogin = os.time()
+	return d
+end
+
+local function salvarJogador(jogador)
+	local sessao = sessoes[jogador]
+	if sessao and sessao.podeSalvar then
+		Dados.salvar(jogador.UserId, montarSave(jogador))
+	end
+end
+
+--------------------------------------------------------------------------
+-- ENTRADA E SAÍDA DE JOGADORES
+--------------------------------------------------------------------------
+local function aoNascer(jogador, personagem)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	local humanoid = personagem:WaitForChild("Humanoid", 10)
+	local raiz = personagem:WaitForChild("HumanoidRootPart", 10)
+	if not humanoid or not raiz or not humanoid:IsA("Humanoid") then
+		return
+	end
+	humanoid.WalkSpeed = velocidadeJogador(jogador)
+
+	if sessao.base then
+		-- Deixa o dono atravessar a barreira da própria base
+		local grupo = sessao.base.grupoDono
+		for _, parte in personagem:GetDescendants() do
+			if parte:IsA("BasePart") then
+				parte.CollisionGroup = grupo
+			end
+		end
+		personagem.DescendantAdded:Connect(function(parte)
+			if parte:IsA("BasePart") then
+				parte.CollisionGroup = grupo
+			end
+		end)
+	end
+
+	personagem.ChildAdded:Connect(function(objeto)
+		conectarLuva(jogador, objeto)
+	end)
+	for _, objeto in personagem:GetChildren() do
+		conectarLuva(jogador, objeto)
+	end
+
+	if sessao.base then
+		task.wait(0.2)
+		if personagem.Parent then
+			personagem:PivotTo(sessao.base.spawn)
+		end
+	end
+end
+
+local function criarLeaderstats(jogador)
+	local pasta = Instance.new("Folder")
+	pasta.Name = "leaderstats"
+	local dinheiro = Instance.new("IntValue")
+	dinheiro.Name = "Dinheiro"
+	dinheiro.Parent = pasta
+	local roubos = Instance.new("IntValue")
+	roubos.Name = "Roubos"
+	roubos.Parent = pasta
+	local renascimentos = Instance.new("IntValue")
+	renascimentos.Name = "Renasc."
+	renascimentos.Parent = pasta
+	pasta.Parent = jogador
+	return dinheiro, roubos, renascimentos
+end
+
+local function aoEntrar(jogador)
+	local statDinheiro, statRoubos, statRenascimentos = criarLeaderstats(jogador)
+	local dados, carregou = Dados.carregar(jogador.UserId)
+	if not jogador.Parent then
+		return
+	end
+	if dados.ultimoLogin == 0 and dados.dinheiro == 0 then
+		dados.dinheiro = Config.dinheiroInicial(0)
+	end
+
+	local sessao = {
+		dados = dados,
+		podeSalvar = carregou,
+		statDinheiro = statDinheiro,
+		statRoubos = statRoubos,
+		statRenascimentos = statRenascimentos,
+		ultimaAcao = 0,
+		ultimoSoco = 0,
+		passeDobro = false,
+		base = nil,
+	}
+	sessoes[jogador] = sessao
+
+	if Config.Robux.PasseDinheiroDobrado ~= 0 then
+		local ok, tem = pcall(function()
+			return MarketplaceService:UserOwnsGamePassAsync(jogador.UserId, Config.Robux.PasseDinheiroDobrado)
+		end)
+		sessao.passeDobro = ok and tem == true
+	end
+
+	for _, base in bases do
+		if not base.dono then
+			base.dono = jogador
+			sessao.base = base
+			break
+		end
+	end
+
+	local offline = nil
+	if sessao.base then
+		local base = sessao.base
+		atualizarSlots(base)
+		local liberados = pedestaisJogador(jogador)
+		for _, salvo in dados.herois do
+			local def = Config.HeroiPorId[salvo.id]
+			local slot = base.slots[salvo.slot]
+			if def and slot and salvo.slot <= liberados and not slot.heroi then
+				colocarNaBase(novoHeroi(def, salvo.mut or "Normal"), base, slot, false)
+			end
+		end
+
+		-- Renda enquanto o jogador estava fora
+		if dados.ultimoLogin > 0 then
+			local segundos = math.clamp(os.time() - dados.ultimoLogin, 0, G.HorasOfflineMaximo * 3600)
+			if segundos >= 60 then
+				local mult = multiplicadorJogador(jogador) * G.PorcentagemOffline
+				local total = 0
+				for _, slot in base.slots do
+					local h = slot.heroi
+					if h and h.estado == "base" then
+						local valor = rendaHeroi(h) * mult * segundos
+						slot.acumulado += valor
+						total += valor
+						atualizarPad(slot)
+					end
+				end
+				if total >= 1 then
+					offline = { total, segundos }
+				end
+			end
+		end
+	end
+	dados.ultimoLogin = os.time()
+	atualizarAtributos(jogador)
+
+	jogador.CharacterAdded:Connect(function(personagem)
+		aoNascer(jogador, personagem)
+	end)
+	if jogador.Character then
+		task.spawn(aoNascer, jogador, jogador.Character)
+	end
+
+	-- Avisos depois que a interface do jogador carregar
+	task.delay(4, function()
+		if not jogador.Parent then
+			return
+		end
+		if not sessao.base then
+			notificar(jogador, "😢 Servidor cheio: todas as bases estão ocupadas.", "erro")
+		end
+		if not carregou then
+			local motivo = Dados.desativado and "publique o jogo e ative o acesso às APIs" or "erro ao carregar seus dados"
+			notificar(jogador, "⚠️ Seu progresso NÃO será salvo (" .. motivo .. ")", "aviso")
+		end
+		if offline then
+			efeito(jogador, "offline", offline[1], offline[2])
+		end
+	end)
+end
+
+local function aoSair(jogador)
+	local h = carregando[jogador]
+	if h then
+		devolver(h, nil)
+	end
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	local base = sessao.base
+	if base then
+		-- Coleta automaticamente o que ficou nos pedestais
+		for _, slot in base.slots do
+			if slot.acumulado >= 1 then
+				ganhar(jogador, math.floor(slot.acumulado))
+			end
+		end
+	end
+	local dadosFinais = sessao.podeSalvar and montarSave(jogador) or nil
+	if base then
+		limparHeroisDaBase(base)
+		base.dono = nil
+		base.trancadaAte = 0
+		base.recargaAte = 0
+		atualizarBarreira(base)
+		atualizarSlots(base)
+	end
+	sessoes[jogador] = nil
+	if dadosFinais then
+		Dados.salvar(jogador.UserId, dadosFinais)
+		Dados.atualizarRanking(jogador.UserId, {
+			Dinheiro = dadosFinais.totalGanho,
+			Roubos = dadosFinais.roubos,
+			Renascimentos = dadosFinais.renascimentos,
+		})
+	end
+end
+
+--------------------------------------------------------------------------
+-- COMANDOS DE TESTE (no chat: !dinheiro 1000000 | !evento | !heroi MestreMultiverso Cosmico)
+--------------------------------------------------------------------------
+local function processarComando(jogador, mensagem)
+	if not G.ComandosDeTeste or not (RunService:IsStudio() or jogador.UserId == game.CreatorId) then
+		return
+	end
+	local partes = string.split(mensagem, " ")
+	local comando = string.lower(partes[1] or "")
+	if comando == "!dinheiro" then
+		local valor = tonumber(partes[2]) or 1000000
+		ganhar(jogador, valor)
+		notificar(jogador, "💰 +" .. formatar(valor), "sucesso")
+	elseif comando == "!evento" then
+		local evento = Config.EventoPorId[partes[2] or ""] or Config.Eventos[math.random(#Config.Eventos)]
+		iniciarEvento(evento)
+	elseif comando == "!heroi" then
+		local def = Config.HeroiPorId[partes[2] or ""]
+		if not def then
+			notificar(jogador, "Use: !heroi IdDoHeroi [Mutacao]  (ex: !heroi FenixRubra Ouro)", "aviso")
+			return
+		end
+		local mutacao = Config.MutacaoPorId[partes[3] or ""] and partes[3] or "Normal"
+		colocarNaPassarela(novoHeroi(def, mutacao))
+		notificar(jogador, "🌀 " .. def.nome .. " saiu do portal!", "sucesso")
+	end
+end
+
+Players.PlayerAdded:Connect(function(jogador)
+	jogador.Chatted:Connect(function(mensagem)
+		processarComando(jogador, mensagem)
+	end)
+	aoEntrar(jogador)
+end)
+for _, jogador in Players:GetPlayers() do
+	jogador.Chatted:Connect(function(mensagem)
+		processarComando(jogador, mensagem)
+	end)
+	task.spawn(aoEntrar, jogador)
+end
+Players.PlayerRemoving:Connect(aoSair)
+
+game:BindToClose(function()
+	if Dados.desativado then
+		return
+	end
+	local pendentes = 0
+	for jogador, sessao in sessoes do
+		if sessao.podeSalvar then
+			pendentes += 1
+			task.spawn(function()
+				salvarJogador(jogador)
+				pendentes -= 1
+			end)
+		end
+	end
+	local inicio = os.clock()
+	while pendentes > 0 and os.clock() - inicio < 25 do
+		task.wait(0.5)
+	end
+end)
+
+--------------------------------------------------------------------------
+-- ROBUX
+--------------------------------------------------------------------------
+if Config.Robux.PasseDinheiroDobrado ~= 0 then
+	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(jogador, passeId, comprou)
+		local sessao = sessoes[jogador]
+		if comprou and passeId == Config.Robux.PasseDinheiroDobrado and sessao then
+			sessao.passeDobro = true
+			atualizarAtributos(jogador)
+			notificar(jogador, "💎 Dinheiro em Dobro ativado! Obrigado!", "especial")
+		end
+	end)
+end
+
+local temProdutos = false
+for _, produto in Config.Robux.Produtos do
+	if produto.id ~= 0 then
+		temProdutos = true
+	end
+end
+if temProdutos then
+	MarketplaceService.ProcessReceipt = function(recibo)
+		local jogador = Players:GetPlayerByUserId(recibo.PlayerId)
+		local sessao = jogador and sessoes[jogador]
+		if not sessao then
+			return Enum.ProductPurchaseDecision.NotProcessedYet
+		end
+		for _, produto in Config.Robux.Produtos do
+			if produto.id ~= 0 and produto.id == recibo.ProductId then
+				local valor = Config.valorProduto(produto, sessao.dados.renascimentos)
+				ganhar(jogador, valor)
+				notificar(jogador, produto.icone .. " " .. produto.nome .. ": +" .. formatar(valor) .. "!", "especial")
+				task.spawn(salvarJogador, jogador)
+				return Enum.ProductPurchaseDecision.PurchaseGranted
+			end
+		end
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+end
+
+--------------------------------------------------------------------------
+-- LIGAR BOTÕES DAS BASES
+--------------------------------------------------------------------------
+for _, base in bases do
+	base.dono = nil
+	base.trancadaAte = 0
+	base.recargaAte = 0
+
+	base.botao.Touched:Connect(function(parteTocada)
+		local jogador = Players:GetPlayerFromCharacter(parteTocada.Parent)
+		if jogador and jogador == base.dono then
+			trancarBase(base, jogador)
+		end
+	end)
+
+	for _, slot in base.slots do
+		slot.pad.Touched:Connect(function(parteTocada)
+			local dono = base.dono
+			if not dono or slot.acumulado < 1 then
+				return
+			end
+			if Players:GetPlayerFromCharacter(parteTocada.Parent) ~= dono then
+				return
+			end
+			local valor = math.floor(slot.acumulado)
+			slot.acumulado -= valor
+			ganhar(dono, valor)
+			atualizarPad(slot)
+			efeito(dono, "coleta", valor, slot.pad.Position)
+		end)
+	end
+	atualizarSlots(base)
+	atualizarBarreira(base)
+end
+
+--------------------------------------------------------------------------
+-- RANKING
+--------------------------------------------------------------------------
+local nomesCache = {}
+local function nomeDoUsuario(userId)
+	if nomesCache[userId] then
+		return nomesCache[userId]
+	end
+	local jogador = Players:GetPlayerByUserId(userId)
+	local nome
+	if jogador then
+		nome = jogador.DisplayName
+	else
+		local ok, resultado = pcall(function()
+			return Players:GetNameFromUserIdAsync(userId)
+		end)
+		nome = ok and resultado or ("Jogador " .. userId)
+	end
+	nomesCache[userId] = nome
+	return nome
+end
+
+local function valorRanking(categoria, d)
+	if categoria == "Dinheiro" then
+		return d.totalGanho
+	elseif categoria == "Roubos" then
+		return d.roubos
+	end
+	return d.renascimentos
+end
+
+local function atualizarRanking()
+	for jogador, sessao in sessoes do
+		if sessao.podeSalvar then
+			Dados.atualizarRanking(jogador.UserId, {
+				Dinheiro = sessao.dados.totalGanho,
+				Roubos = sessao.dados.roubos,
+				Renascimentos = sessao.dados.renascimentos,
+			})
+		end
+	end
+
+	local algumGlobal = false
+	for _, categoria in Mapa.CATEGORIAS_RANKING do
+		local lista = Dados.obterTop(categoria.id, 10)
+		local resultado = {}
+		if lista then
+			algumGlobal = true
+			for i, item in lista do
+				resultado[i] = { nome = nomeDoUsuario(item.userId), valor = item.valor }
+			end
+		else
+			-- Sem DataStore (Studio): mostra o ranking do servidor
+			for jogador, sessao in sessoes do
+				table.insert(resultado, { nome = jogador.DisplayName, valor = valorRanking(categoria.id, sessao.dados) })
+			end
+			table.sort(resultado, function(a, b)
+				return a.valor > b.valor
+			end)
+		end
+		rankingGlobal[categoria.id] = resultado
+
+		local quadro = mapa.quadros[categoria.id]
+		for i, linha in quadro.linhas do
+			local item = resultado[i]
+			linha.nome.Text = item and item.nome or "—"
+			if item then
+				linha.valor.Text = categoria.id == "Dinheiro" and formatar(item.valor) or Config.formatarNumero(item.valor)
+			else
+				linha.valor.Text = ""
+			end
+		end
+		quadro.rodape.Text = lista and ("🌎 Ranking global • atualiza a cada " .. math.floor(G.IntervaloRanking / 60) .. " min")
+			or "Ranking do servidor (o global aparece quando o jogo for publicado)"
+	end
+	rankingGlobal.disponivel = algumGlobal
+end
+
+--------------------------------------------------------------------------
+-- LOOPS DO JOGO
+--------------------------------------------------------------------------
+
+-- Todo frame: move os heróis da passarela e confere os roubos
+RunService.Heartbeat:Connect(function(dt)
+	for _, h in herois do
+		if h.estado == "andando" then
+			h.distancia += G.VelocidadePassarela * dt
+			if h.distancia >= mapa.comprimento then
+				removerHeroi(h)
+			else
+				local pulo = math.abs(math.sin(h.distancia * 0.9)) * 0.5
+				local posicao = mapa.inicio + Vector3.new(h.distancia, h.altura + pulo, 0)
+				h.raiz.CFrame = CFrame.lookAt(posicao, posicao + Vector3.xAxis)
+			end
+		elseif h.estado == "carregado" then
+			verificarCarregado(h)
+		end
+	end
+end)
+
+-- Todo segundo: renda, placas, botões de tranca
+task.spawn(function()
+	while true do
+		task.wait(1)
+		local agora = os.clock()
+		local multRenda = multEvento("multRenda")
+		for _, base in bases do
+			local dono = base.dono
+			local sessao = dono and sessoes[dono]
+			if sessao then
+				local mult = multiplicadorJogador(dono) * multRenda
+				local coletorAutomatico = (sessao.dados.niveis.Coletor or 0) > 0
+				local rendaTotal = 0
+				local direto = 0
+				for _, slot in base.slots do
+					local h = slot.heroi
+					if h and h.estado == "base" and h.base == base and h.slot == slot then
+						local renda = rendaHeroi(h) * mult
+						rendaTotal += renda
+						slot.acumulado += renda
+					end
+					if coletorAutomatico and slot.acumulado > 0 then
+						direto += slot.acumulado
+						slot.acumulado = 0
+					end
+					atualizarPad(slot)
+				end
+				if direto > 0 then
+					ganhar(dono, direto)
+				end
+				dono:SetAttribute("RendaPorSegundo", rendaTotal)
+				base.textoPlaca.Text = "BASE DE " .. string.upper(dono.DisplayName)
+				base.textoRenda.Text = "+" .. formatar(rendaTotal) .. "/s"
+			else
+				base.textoPlaca.Text = "BASE LIVRE"
+				base.textoRenda.Text = ""
+			end
+
+			atualizarBarreira(base)
+			if agora < base.trancadaAte then
+				base.textoBotao.Text = "🔒 TRANCADA " .. math.ceil(base.trancadaAte - agora) .. "s"
+				base.textoBotao.TextColor3 = Color3.fromRGB(255, 80, 80)
+			elseif agora < base.recargaAte then
+				base.textoBotao.Text = "⏳ RECARGA " .. math.ceil(base.recargaAte - agora) .. "s"
+				base.textoBotao.TextColor3 = Color3.fromRGB(255, 210, 60)
+			else
+				base.textoBotao.Text = "🔒 TRANCAR BASE"
+				base.textoBotao.TextColor3 = Color3.fromRGB(110, 255, 130)
+			end
+		end
+	end
+end)
+
+-- Heróis saindo do portal
+task.spawn(function()
+	while true do
+		local h = novoHeroi(sortearHeroi(), sortearMutacao())
+		colocarNaPassarela(h)
+		if h.raridade.ordem >= ORDEM_ANUNCIO_SPAWN or h.mutacao.multiplicador >= 5 then
+			anunciar("🌀 Um herói " .. string.upper(h.raridade.nome) .. " saiu do portal: " .. nomeCompleto(h) .. "!", h.raridade.cor)
+		end
+		task.wait(G.IntervaloSpawn / multEvento("multSpawn"))
+	end
+end)
+
+-- Eventos automáticos
+task.spawn(function()
+	while true do
+		task.wait(G.IntervaloEventoMinutos * 60)
+		if not eventoAtual then
+			iniciarEvento(Config.Eventos[math.random(#Config.Eventos)])
+		end
+	end
+end)
+
+-- Ciclo de dia e noite (a noite passa mais rápido)
+if G.CicloDiaNoite then
+	task.spawn(function()
+		local passo = 24 / (G.DuracaoDiaMinutos * 60) * 0.5
+		while true do
+			task.wait(0.5)
+			local hora = Lighting.ClockTime
+			local noite = hora >= 19 or hora < 5.5
+			Lighting.ClockTime = (hora + passo * (noite and 2 or 1)) % 24
+		end
+	end)
+end
+
+-- Coroa para o jogador mais rico do servidor
+task.spawn(function()
+	while true do
+		task.wait(3)
+		local maisRico, maior = nil, -1
+		for jogador, sessao in sessoes do
+			if sessao.dados.dinheiro > maior then
+				maior = sessao.dados.dinheiro
+				maisRico = jogador
+			end
+		end
+		local variosJogadores = #Players:GetPlayers() > 1
+		for jogador in sessoes do
+			local cabeca = jogador.Character and jogador.Character:FindFirstChild("Head")
+			if cabeca then
+				local coroa = cabeca:FindFirstChild("CoroaRei")
+				if jogador == maisRico and variosJogadores then
+					if not coroa then
+						local gui = Instance.new("BillboardGui")
+						gui.Name = "CoroaRei"
+						gui.Size = UDim2.fromOffset(60, 60)
+						gui.StudsOffset = Vector3.new(0, 2.8, 0)
+						gui.MaxDistance = 120
+						local rotulo = Instance.new("TextLabel")
+						rotulo.BackgroundTransparency = 1
+						rotulo.Size = UDim2.fromScale(1, 1)
+						rotulo.Text = "👑"
+						rotulo.TextScaled = true
+						rotulo.Parent = gui
+						gui.Parent = cabeca
+					end
+				elseif coroa then
+					coroa:Destroy()
+				end
+			end
+		end
+	end
+end)
+
+-- Salvamento automático
+task.spawn(function()
+	while true do
+		task.wait(G.IntervaloAutoSave)
+		for jogador in sessoes do
+			task.spawn(salvarJogador, jogador)
+		end
+	end
+end)
+
+-- Ranking (global com DataStore, ou do servidor no Studio)
+task.spawn(function()
+	task.wait(5)
+	while true do
+		atualizarRanking()
+		task.wait(Dados.desativado and 10 or G.IntervaloRanking)
+	end
+end)
+
+print("[Roube um Herói] Servidor pronto! Salvamento: " .. (Dados.desativado and ("DESATIVADO - " .. Dados.motivo) or "ativo"))
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="ModuleScript" referent="6">
+      <Properties>
+        <string name="Name">Mapa</string>
+        <string name="Source"><![CDATA[--[[
+	ROUBE UM HERÓI - Construtor do mapa
+
+	Onde colocar: ServerScriptService -> ModuleScript (nome: Mapa)
+
+	Monta todo o cenário por código: chão, praça, ruas, cidade com prédios
+	neon, árvores, postes, passarela com portais, letreiro, quadros de
+	ranking e as 8 bases dos jogadores. Também configura a iluminação.
+]]
+
+local Lighting = game:GetService("Lighting")
+local PhysicsService = game:GetService("PhysicsService")
+
+local Mapa = {}
+
+local CHAO = 0.1 -- altura do topo da praça
+local ALTURA_PISO = 0.5 -- piso das bases e passarela ficam 0.5 acima da praça
+local TAMANHO_BASE = 48
+Mapa.METADE_BASE = TAMANHO_BASE / 2
+
+local CORES_BASES = {
+	Color3.fromRGB(70, 130, 255),
+	Color3.fromRGB(255, 80, 80),
+	Color3.fromRGB(70, 200, 100),
+	Color3.fromRGB(255, 190, 50),
+	Color3.fromRGB(170, 90, 255),
+	Color3.fromRGB(40, 200, 210),
+	Color3.fromRGB(255, 120, 200),
+	Color3.fromRGB(255, 140, 40),
+}
+
+local CORES_NEON = {
+	Color3.fromRGB(0, 220, 255),
+	Color3.fromRGB(255, 60, 200),
+	Color3.fromRGB(255, 210, 60),
+	Color3.fromRGB(120, 255, 140),
+	Color3.fromRGB(180, 120, 255),
+}
+
+--------------------------------------------------------------------------
+-- AJUDANTES
+--------------------------------------------------------------------------
+local function parte(propriedades)
+	local p = Instance.new("Part")
+	p.Anchored = true
+	p.TopSurface = Enum.SurfaceType.Smooth
+	p.BottomSurface = Enum.SurfaceType.Smooth
+	for nome, valor in propriedades do
+		if nome ~= "Parent" then
+			(p :: any)[nome] = valor
+		end
+	end
+	p.Parent = propriedades.Parent
+	return p
+end
+
+local function enfeite(propriedades)
+	-- peças só de decoração: não fazem sombra nem atrapalham cliques
+	propriedades.CastShadow = false
+	propriedades.CanQuery = false
+	propriedades.CanTouch = false
+	return parte(propriedades)
+end
+
+local function pastaNova(nome, pai)
+	local f = Instance.new("Folder")
+	f.Name = nome
+	f.Parent = pai
+	return f
+end
+
+local function texto(pai, propriedades)
+	local t = Instance.new("TextLabel")
+	t.BackgroundTransparency = 1
+	t.Font = Enum.Font.FredokaOne
+	t.TextScaled = true
+	t.TextColor3 = Color3.new(1, 1, 1)
+	t.TextStrokeTransparency = 0
+	t.Size = UDim2.fromScale(1, 1)
+	for nome, valor in propriedades do
+		(t :: any)[nome] = valor
+	end
+	t.Parent = pai
+	return t
+end
+
+local function superficie(alvo, face, pixelsPorStud)
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = face
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = pixelsPorStud
+	gui.LightInfluence = 0
+	gui.Parent = alvo
+	return gui
+end
+
+local function billboard(alvo, largura, altura, deslocamento, distancia)
+	local gui = Instance.new("BillboardGui")
+	gui.Size = UDim2.fromOffset(largura, altura)
+	gui.StudsOffset = deslocamento
+	gui.MaxDistance = distancia
+	gui.LightInfluence = 0
+	gui.Parent = alvo
+	return gui
+end
+
+local function cilindroEmPe(propriedades, cf)
+	-- o eixo do cilindro no Roblox é o X; giramos para ficar em pé
+	propriedades.Shape = Enum.PartType.Cylinder
+	propriedades.CFrame = cf * CFrame.Angles(0, 0, math.rad(90))
+	return parte(propriedades)
+end
+
+--------------------------------------------------------------------------
+-- ILUMINAÇÃO
+--------------------------------------------------------------------------
+local function configurarIluminacao(horaInicial)
+	for _, objeto in Lighting:GetChildren() do
+		if objeto:IsA("PostEffect") or objeto:IsA("Atmosphere") or objeto:IsA("Sky") then
+			objeto:Destroy()
+		end
+	end
+
+	Lighting.ClockTime = horaInicial
+	Lighting.Brightness = 2.2
+	Lighting.Ambient = Color3.fromRGB(70, 70, 95)
+	Lighting.OutdoorAmbient = Color3.fromRGB(125, 115, 145)
+	Lighting.EnvironmentDiffuseScale = 0.6
+	Lighting.EnvironmentSpecularScale = 0.6
+	Lighting.GlobalShadows = true
+
+	local ceu = Instance.new("Sky")
+	ceu.StarCount = 3000
+	ceu.Parent = Lighting
+
+	local atmosfera = Instance.new("Atmosphere")
+	atmosfera.Density = 0.3
+	atmosfera.Offset = 0.25
+	atmosfera.Color = Color3.fromRGB(200, 170, 150)
+	atmosfera.Decay = Color3.fromRGB(110, 100, 140)
+	atmosfera.Glare = 0.4
+	atmosfera.Haze = 1.4
+	atmosfera.Parent = Lighting
+
+	local brilho = Instance.new("BloomEffect")
+	brilho.Intensity = 0.7
+	brilho.Size = 28
+	brilho.Threshold = 1.2
+	brilho.Parent = Lighting
+
+	local raios = Instance.new("SunRaysEffect")
+	raios.Intensity = 0.06
+	raios.Spread = 0.7
+	raios.Parent = Lighting
+
+	local correcao = Instance.new("ColorCorrectionEffect")
+	correcao.Saturation = 0.15
+	correcao.Contrast = 0.08
+	correcao.Parent = Lighting
+
+	local terreno = workspace:FindFirstChildOfClass("Terrain")
+	if terreno then
+		local nuvens = terreno:FindFirstChildOfClass("Clouds") or Instance.new("Clouds")
+		nuvens.Cover = 0.55
+		nuvens.Density = 0.6
+		nuvens.Parent = terreno
+	end
+
+	return correcao
+end
+
+--------------------------------------------------------------------------
+-- CHÃO, PRAÇA E RUAS
+--------------------------------------------------------------------------
+local function construirChao(pasta)
+	parte({
+		Name = "Grama",
+		Size = Vector3.new(1400, 2, 1400),
+		CFrame = CFrame.new(0, CHAO - 1.3, 0),
+		Color = Color3.fromRGB(70, 140, 60),
+		Material = Enum.Material.Grass,
+		Parent = pasta,
+	})
+	parte({
+		Name = "Praca",
+		Size = Vector3.new(440, 1, 220),
+		CFrame = CFrame.new(0, CHAO - 0.5, 0),
+		Color = Color3.fromRGB(120, 120, 130),
+		Material = Enum.Material.Pavement,
+		Parent = pasta,
+	})
+
+	-- Rua em volta da praça
+	local asfalto = Color3.fromRGB(45, 45, 50)
+	local ruas = {
+		{ Vector3.new(540, 0.4, 26), Vector3.new(0, 0, 138) },
+		{ Vector3.new(540, 0.4, 26), Vector3.new(0, 0, -138) },
+		{ Vector3.new(26, 0.4, 250), Vector3.new(257, 0, 0) },
+		{ Vector3.new(26, 0.4, 250), Vector3.new(-257, 0, 0) },
+	}
+	for _, rua in ruas do
+		enfeite({
+			Name = "Rua",
+			Size = rua[1],
+			CFrame = CFrame.new(rua[2] + Vector3.new(0, CHAO - 0.35, 0)),
+			Color = asfalto,
+			Material = Enum.Material.Asphalt,
+			Parent = pasta,
+		})
+	end
+	-- Faixas amarelas tracejadas
+	for x = -250, 250, 20 do
+		for _, z in { 138, -138 } do
+			enfeite({
+				Name = "Faixa",
+				Size = Vector3.new(8, 0.1, 0.8),
+				CFrame = CFrame.new(x, CHAO - 0.12, z),
+				Color = Color3.fromRGB(255, 210, 60),
+				Material = Enum.Material.SmoothPlastic,
+				Parent = pasta,
+			})
+		end
+	end
+end
+
+--------------------------------------------------------------------------
+-- PASSARELA E PORTAIS
+--------------------------------------------------------------------------
+local function construirPortal(pasta, x, cor, nome)
+	local modelo = Instance.new("Model")
+	modelo.Name = nome
+	modelo.Parent = pasta
+	local base = CHAO + ALTURA_PISO
+
+	local topo = enfeite({ Name = "Topo", Size = Vector3.new(2.5, 2.5, 21), CFrame = CFrame.new(x, base + 17.25, 0),
+		Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+	for _, z in { -9.5, 9.5 } do
+		parte({ Name = "Coluna", Size = Vector3.new(2.5, 18, 2.5), CFrame = CFrame.new(x, base + 9, z),
+			Color = Color3.fromRGB(35, 35, 45), Material = Enum.Material.Metal, Parent = modelo })
+		enfeite({ Name = "Faixa", Size = Vector3.new(2.7, 18, 0.6), CFrame = CFrame.new(x, base + 9, z),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+	end
+
+	local disco = enfeite({
+		Name = "Energia",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(0.4, 16, 16),
+		CFrame = CFrame.new(x, base + 8, 0),
+		Color = cor,
+		Material = Enum.Material.Neon,
+		Transparency = 0.35,
+		CanCollide = false,
+		Parent = modelo,
+	})
+	local particulas = Instance.new("ParticleEmitter")
+	particulas.Color = ColorSequence.new(cor)
+	particulas.LightEmission = 1
+	particulas.Rate = 25
+	particulas.Lifetime = NumberRange.new(1, 2)
+	particulas.Speed = NumberRange.new(2, 5)
+	particulas.SpreadAngle = Vector2.new(180, 180)
+	particulas.Size = NumberSequence.new(0.6, 0)
+	particulas.Parent = disco
+
+	local luz = Instance.new("PointLight")
+	luz.Color = cor
+	luz.Range = 30
+	luz.Brightness = 3
+	luz.Parent = disco
+
+	local placa = billboard(topo, 320, 60, Vector3.new(0, 4, 0), 220)
+	texto(placa, { Text = "🌀 PORTAL DOS HERÓIS", TextColor3 = cor })
+end
+
+local function construirPassarela(pasta, comprimento)
+	local metade = comprimento / 2
+	parte({
+		Name = "Passarela",
+		Size = Vector3.new(comprimento + 6, ALTURA_PISO, 14),
+		CFrame = CFrame.new(0, CHAO + ALTURA_PISO / 2, 0),
+		Color = Color3.fromRGB(180, 25, 45),
+		Material = Enum.Material.Fabric,
+		Parent = pasta,
+	})
+	for _, z in { -7.4, 7.4 } do
+		enfeite({
+			Name = "BordaDourada",
+			Size = Vector3.new(comprimento + 6, ALTURA_PISO + 0.15, 0.8),
+			CFrame = CFrame.new(0, CHAO + (ALTURA_PISO + 0.15) / 2, z),
+			Color = Color3.fromRGB(255, 200, 40),
+			Material = Enum.Material.Neon,
+			Parent = pasta,
+		})
+	end
+
+	construirPortal(pasta, -metade - 1, Color3.fromRGB(0, 220, 255), "PortalEntrada")
+	construirPortal(pasta, metade + 1, Color3.fromRGB(190, 80, 255), "PortalSaida")
+
+	return Vector3.new(-metade, CHAO + ALTURA_PISO, 0)
+end
+
+local function construirPostes(pasta, comprimento)
+	local metade = comprimento / 2
+	for x = -metade, metade, 30 do
+		for _, z in { -20, 20 } do
+			enfeite({ Name = "Poste", Size = Vector3.new(0.6, 12, 0.6), CFrame = CFrame.new(x, CHAO + 6, z),
+				Color = Color3.fromRGB(40, 40, 50), Material = Enum.Material.Metal, Parent = pasta })
+			local lampada = enfeite({ Name = "Lampada", Shape = Enum.PartType.Ball, Size = Vector3.new(1.8, 1.8, 1.8),
+				CFrame = CFrame.new(x, CHAO + 12.4, z), Color = Color3.fromRGB(255, 230, 180),
+				Material = Enum.Material.Neon, Parent = pasta })
+			local luz = Instance.new("PointLight")
+			luz.Color = Color3.fromRGB(255, 220, 170)
+			luz.Range = 24
+			luz.Brightness = 1.3
+			luz.Parent = lampada
+		end
+	end
+end
+
+--------------------------------------------------------------------------
+-- CIDADE DE FUNDO, ÁRVORES E LETREIRO
+--------------------------------------------------------------------------
+local function construirCidade(pasta)
+	local aleatorio = Random.new(2024)
+	local coresPredio = {
+		Color3.fromRGB(35, 40, 60),
+		Color3.fromRGB(50, 55, 75),
+		Color3.fromRGB(30, 30, 40),
+		Color3.fromRGB(60, 50, 80),
+		Color3.fromRGB(40, 60, 80),
+	}
+	local quantidade = 70
+	for i = 1, quantidade do
+		local angulo = (i / quantidade) * math.pi * 2 + aleatorio:NextNumber(-0.03, 0.03)
+		local raio = aleatorio:NextNumber(330, 470)
+		local largura = aleatorio:NextNumber(30, 55)
+		local profundidade = aleatorio:NextNumber(30, 55)
+		local altura = aleatorio:NextNumber(60, 240)
+		local centro = Vector3.new(math.cos(angulo) * raio, CHAO + altura / 2 - 0.3, math.sin(angulo) * raio)
+		local cf = CFrame.lookAt(centro, Vector3.new(0, centro.Y, 0))
+		local corNeon = CORES_NEON[aleatorio:NextInteger(1, #CORES_NEON)]
+
+		local predio = Instance.new("Model")
+		predio.Name = "Predio"
+		predio.Parent = pasta
+		enfeite({ Name = "Corpo", Size = Vector3.new(largura, altura, profundidade), CFrame = cf,
+			Color = coresPredio[aleatorio:NextInteger(1, #coresPredio)], Material = Enum.Material.SmoothPlastic,
+			Reflectance = 0.05, Parent = predio })
+
+		-- Quinas neon
+		for _, canto in { Vector3.new(1, 0, 1), Vector3.new(-1, 0, 1), Vector3.new(1, 0, -1), Vector3.new(-1, 0, -1) } do
+			enfeite({ Name = "Quina", Size = Vector3.new(0.7, altura, 0.7),
+				CFrame = cf * CFrame.new(canto.X * largura / 2, 0, canto.Z * profundidade / 2),
+				Color = corNeon, Material = Enum.Material.Neon, Parent = predio })
+		end
+
+		-- Faixas de janelas acesas na frente
+		for y = -altura / 2 + 10, altura / 2 - 6, 16 do
+			enfeite({ Name = "Janelas", Size = Vector3.new(largura * 0.8, 2, 0.3),
+				CFrame = cf * CFrame.new(0, y, -profundidade / 2 - 0.1),
+				Color = Color3.fromRGB(255, 230, 160), Material = Enum.Material.Neon, Transparency = 0.25,
+				Parent = predio })
+		end
+
+		-- Antena com luz vermelha
+		if aleatorio:NextNumber() < 0.5 then
+			enfeite({ Name = "Antena", Size = Vector3.new(0.6, 14, 0.6), CFrame = cf * CFrame.new(0, altura / 2 + 7, 0),
+				Color = Color3.fromRGB(60, 60, 70), Material = Enum.Material.Metal, Parent = predio })
+			enfeite({ Name = "LuzAntena", Shape = Enum.PartType.Ball, Size = Vector3.new(2, 2, 2),
+				CFrame = cf * CFrame.new(0, altura / 2 + 14.5, 0), Color = Color3.fromRGB(255, 40, 40),
+				Material = Enum.Material.Neon, Parent = predio })
+		end
+	end
+end
+
+local function construirArvores(pasta)
+	local aleatorio = Random.new(77)
+	for i = 1, 60 do
+		local angulo = (i / 60) * math.pi * 2 + aleatorio:NextNumber(-0.04, 0.04)
+		local raio = aleatorio:NextNumber(285, 315)
+		local x, z = math.cos(angulo) * raio, math.sin(angulo) * raio
+		local altura = aleatorio:NextNumber(7, 11)
+		enfeite({ Name = "Tronco", Size = Vector3.new(1.4, altura, 1.4), CFrame = CFrame.new(x, CHAO + altura / 2 - 0.3, z),
+			Color = Color3.fromRGB(100, 70, 45), Material = Enum.Material.Wood, Parent = pasta })
+		local tamanho = aleatorio:NextNumber(8, 12)
+		enfeite({ Name = "Copa", Shape = Enum.PartType.Ball, Size = Vector3.new(tamanho, tamanho, tamanho),
+			CFrame = CFrame.new(x, CHAO + altura + tamanho * 0.25, z),
+			Color = Color3.fromRGB(50, aleatorio:NextInteger(120, 160), 60), Material = Enum.Material.Grass, Parent = pasta })
+	end
+end
+
+local function construirLetreiro(pasta)
+	local placa = parte({
+		Name = "Letreiro",
+		Size = Vector3.new(100, 18, 2),
+		CFrame = CFrame.new(0, CHAO + 50, 0),
+		Color = Color3.fromRGB(20, 20, 30),
+		Material = Enum.Material.SmoothPlastic,
+		CastShadow = false,
+		Parent = pasta,
+	})
+	for _, info in {
+		{ Vector3.new(102, 1, 2.4), Vector3.new(0, 9.5, 0) },
+		{ Vector3.new(102, 1, 2.4), Vector3.new(0, -9.5, 0) },
+		{ Vector3.new(1, 20, 2.4), Vector3.new(50.5, 0, 0) },
+		{ Vector3.new(1, 20, 2.4), Vector3.new(-50.5, 0, 0) },
+	} do
+		enfeite({ Name = "Moldura", Size = info[1], CFrame = placa.CFrame + info[2],
+			Color = Color3.fromRGB(255, 200, 40), Material = Enum.Material.Neon, Parent = pasta })
+	end
+
+	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
+		local gui = superficie(placa, face, 20)
+		local titulo = texto(gui, {
+			Text = "ROUBE UM HERÓI",
+			Size = UDim2.fromScale(0.94, 0.66),
+			Position = UDim2.fromScale(0.03, 0.04),
+			TextStrokeTransparency = 1,
+		})
+		local gradiente = Instance.new("UIGradient")
+		gradiente.Color = ColorSequence.new(Color3.fromRGB(255, 240, 120), Color3.fromRGB(255, 120, 30))
+		gradiente.Rotation = 90
+		gradiente.Parent = titulo
+		local contorno = Instance.new("UIStroke")
+		contorno.Thickness = 8
+		contorno.Color = Color3.fromRGB(90, 20, 0)
+		contorno.Parent = titulo
+		texto(gui, {
+			Text = "🦸 Compre • Colete • Roube 🦹",
+			Size = UDim2.fromScale(0.9, 0.24),
+			Position = UDim2.fromScale(0.05, 0.72),
+			TextColor3 = Color3.fromRGB(255, 255, 255),
+		})
+	end
+end
+
+--------------------------------------------------------------------------
+-- QUADROS DE RANKING
+--------------------------------------------------------------------------
+local CATEGORIAS_RANKING = {
+	{ id = "Dinheiro", titulo = "🏆 MAIS RICOS", subtitulo = "Total de dinheiro ganho", cor = Color3.fromRGB(255, 190, 40), z = -50 },
+	{ id = "Roubos", titulo = "🦹 MAIORES LADRÕES", subtitulo = "Heróis roubados", cor = Color3.fromRGB(255, 70, 70), z = 0 },
+	{ id = "Renascimentos", titulo = "♻️ RENASCIMENTOS", subtitulo = "Vezes que renasceu", cor = Color3.fromRGB(170, 90, 255), z = 50 },
+}
+Mapa.CATEGORIAS_RANKING = CATEGORIAS_RANKING
+
+local function construirQuadro(pasta, categoria)
+	local posicao = Vector3.new(205, CHAO + 23, categoria.z)
+	local cf = CFrame.lookAt(posicao, Vector3.new(0, posicao.Y, categoria.z))
+	local quadro = parte({
+		Name = "Ranking" .. categoria.id,
+		Size = Vector3.new(30, 40, 1),
+		CFrame = cf,
+		Color = Color3.fromRGB(20, 22, 32),
+		Material = Enum.Material.SmoothPlastic,
+		Parent = pasta,
+	})
+	parte({ Name = "Suporte", Size = Vector3.new(32, 3, 4), CFrame = cf * CFrame.new(0, -21.5, 0),
+		Color = Color3.fromRGB(40, 40, 50), Material = Enum.Material.Metal, Parent = pasta })
+	enfeite({ Name = "Moldura", Size = Vector3.new(31, 41, 0.6), CFrame = cf * CFrame.new(0, 0, 0.5),
+		Color = categoria.cor, Material = Enum.Material.Neon, Parent = pasta })
+
+	local gui = superficie(quadro, Enum.NormalId.Front, 20)
+	local cabecalho = Instance.new("Frame")
+	cabecalho.Size = UDim2.fromScale(1, 0.12)
+	cabecalho.BackgroundColor3 = categoria.cor
+	cabecalho.BorderSizePixel = 0
+	cabecalho.Parent = gui
+	texto(cabecalho, { Text = categoria.titulo, Size = UDim2.fromScale(0.94, 0.8), Position = UDim2.fromScale(0.03, 0.1) })
+	texto(gui, {
+		Text = categoria.subtitulo,
+		Font = Enum.Font.GothamBold,
+		TextColor3 = Color3.fromRGB(200, 200, 210),
+		Size = UDim2.fromScale(0.9, 0.04),
+		Position = UDim2.fromScale(0.05, 0.135),
+	})
+
+	local lista = Instance.new("Frame")
+	lista.BackgroundTransparency = 1
+	lista.Size = UDim2.fromScale(0.94, 0.75)
+	lista.Position = UDim2.fromScale(0.03, 0.19)
+	lista.Parent = gui
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0.008, 0)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = lista
+
+	local medalhas = { Color3.fromRGB(255, 200, 40), Color3.fromRGB(200, 200, 215), Color3.fromRGB(205, 130, 70) }
+	local linhas = {}
+	for i = 1, 10 do
+		local linha = Instance.new("Frame")
+		linha.LayoutOrder = i
+		linha.Size = UDim2.fromScale(1, 0.092)
+		linha.BackgroundColor3 = i % 2 == 0 and Color3.fromRGB(34, 37, 52) or Color3.fromRGB(42, 46, 64)
+		linha.BorderSizePixel = 0
+		linha.Parent = lista
+		local canto = Instance.new("UICorner")
+		canto.CornerRadius = UDim.new(0.2, 0)
+		canto.Parent = linha
+		local posicaoTexto = texto(linha, { Text = "#" .. i, TextColor3 = medalhas[i] or Color3.fromRGB(255, 255, 255),
+			Size = UDim2.fromScale(0.14, 0.8), Position = UDim2.fromScale(0.02, 0.1) })
+		local nome = texto(linha, { Text = "—", Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.fromScale(0.5, 0.7), Position = UDim2.fromScale(0.18, 0.15) })
+		local valor = texto(linha, { Text = "", TextColor3 = categoria.cor, TextXAlignment = Enum.TextXAlignment.Right,
+			Size = UDim2.fromScale(0.3, 0.7), Position = UDim2.fromScale(0.68, 0.15) })
+		linhas[i] = { posicao = posicaoTexto, nome = nome, valor = valor }
+	end
+
+	local rodape = texto(gui, {
+		Text = "Carregando ranking...",
+		Font = Enum.Font.GothamBold,
+		TextColor3 = Color3.fromRGB(170, 170, 185),
+		Size = UDim2.fromScale(0.9, 0.035),
+		Position = UDim2.fromScale(0.05, 0.955),
+	})
+
+	return { linhas = linhas, rodape = rodape }
+end
+
+--------------------------------------------------------------------------
+-- BASES
+--------------------------------------------------------------------------
+local function construirBase(pasta, indice, centro, cor)
+	-- A frente da base (eixo -Z local) aponta para a passarela (z = 0).
+	-- Bases do lado negativo giram 180 graus para olhar para +Z.
+	local cf = CFrame.new(centro)
+	if centro.Z < 0 then
+		cf *= CFrame.Angles(0, math.pi, 0)
+	end
+	local P = ALTURA_PISO
+	local corParede = Color3.fromRGB(45, 48, 62)
+	local metade = TAMANHO_BASE / 2
+
+	local modelo = Instance.new("Model")
+	modelo.Name = "Base" .. indice
+	modelo.Parent = pasta
+
+	parte({ Name = "Piso", Size = Vector3.new(TAMANHO_BASE, 1, TAMANHO_BASE), CFrame = cf * CFrame.new(0, P - 0.5, 0),
+		Color = cor:Lerp(Color3.fromRGB(40, 40, 50), 0.55), Material = Enum.Material.SmoothPlastic, Parent = modelo })
+
+	-- Bordas neon do piso
+	for _, info in {
+		{ Vector3.new(TAMANHO_BASE, 0.15, 0.8), Vector3.new(0, 0, metade - 0.4) },
+		{ Vector3.new(TAMANHO_BASE, 0.15, 0.8), Vector3.new(0, 0, -metade + 0.4) },
+		{ Vector3.new(0.8, 0.15, TAMANHO_BASE), Vector3.new(metade - 0.4, 0, 0) },
+		{ Vector3.new(0.8, 0.15, TAMANHO_BASE), Vector3.new(-metade + 0.4, 0, 0) },
+	} do
+		enfeite({ Name = "BordaPiso", Size = info[1], CFrame = cf * CFrame.new(info[2] + Vector3.new(0, P + 0.03, 0)),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+	end
+
+	-- Paredes
+	local paredes = {
+		{ "ParedeFundo", Vector3.new(TAMANHO_BASE, 16, 1), Vector3.new(0, P + 8, metade - 0.5) },
+		{ "ParedeEsquerda", Vector3.new(1, 16, TAMANHO_BASE), Vector3.new(-metade + 0.5, P + 8, 0) },
+		{ "ParedeDireita", Vector3.new(1, 16, TAMANHO_BASE), Vector3.new(metade - 0.5, P + 8, 0) },
+	}
+	for _, info in paredes do
+		parte({ Name = info[1], Size = info[2], CFrame = cf * CFrame.new(info[3]), Color = corParede,
+			Material = Enum.Material.SmoothPlastic, Parent = modelo })
+	end
+	for _, info in {
+		{ Vector3.new(TAMANHO_BASE + 0.6, 0.8, 1.6), Vector3.new(0, P + 16.4, metade - 0.5) },
+		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(-metade + 0.5, P + 16.4, 0) },
+		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(metade - 0.5, P + 16.4, 0) },
+	} do
+		enfeite({ Name = "Friso", Size = info[1], CFrame = cf * CFrame.new(info[2]), Color = cor,
+			Material = Enum.Material.Neon, Parent = modelo })
+	end
+
+	-- Pilares da entrada
+	for _, x in { -metade + 0.5, metade - 0.5 } do
+		parte({ Name = "Pilar", Size = Vector3.new(2.4, 18, 2.4), CFrame = cf * CFrame.new(x, P + 9, -metade + 0.5),
+			Color = corParede, Material = Enum.Material.SmoothPlastic, Parent = modelo })
+		enfeite({ Name = "TopoPilar", Size = Vector3.new(3, 1, 3), CFrame = cf * CFrame.new(x, P + 18.5, -metade + 0.5),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+	end
+
+	-- Barreira laser (só aparece quando a base está trancada)
+	local barreira = parte({
+		Name = "Barreira",
+		Size = Vector3.new(TAMANHO_BASE - 1.5, 16, 0.4),
+		CFrame = cf * CFrame.new(0, P + 8, -metade + 0.4),
+		Color = Color3.fromRGB(255, 40, 40),
+		Material = Enum.Material.Neon,
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CastShadow = false,
+		Parent = modelo,
+	})
+
+	-- Grupos de colisão: a barreira bloqueia todo mundo, menos o dono da base
+	local grupoBarreira = "Barreira" .. indice
+	local grupoDono = "Dono" .. indice
+	for _, grupo in { grupoBarreira, grupoDono } do
+		if not PhysicsService:IsCollisionGroupRegistered(grupo) then
+			PhysicsService:RegisterCollisionGroup(grupo)
+		end
+	end
+	PhysicsService:CollisionGroupSetCollidable(grupoBarreira, grupoDono, false)
+	barreira.CollisionGroup = grupoBarreira
+
+	-- Placa com o nome do dono
+	local placa = parte({ Name = "Placa", Size = Vector3.new(30, 6, 0.6), CFrame = cf * CFrame.new(0, P + 20, metade - 0.5),
+		Color = Color3.fromRGB(20, 22, 30), Material = Enum.Material.SmoothPlastic, Parent = modelo })
+	local guiPlaca = superficie(placa, Enum.NormalId.Front, 25)
+	local textoPlaca = texto(guiPlaca, { Text = "BASE LIVRE", Size = UDim2.fromScale(0.95, 0.6), Position = UDim2.fromScale(0.025, 0.05) })
+	local textoRenda = texto(guiPlaca, { Text = "", TextColor3 = Color3.fromRGB(80, 255, 120),
+		Size = UDim2.fromScale(0.9, 0.32), Position = UDim2.fromScale(0.05, 0.65) })
+
+	-- Botão de trancar
+	local botao = cilindroEmPe({ Name = "BotaoTrancar", Size = Vector3.new(0.5, 6, 6), Color = Color3.fromRGB(60, 220, 90),
+		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(-17, P + 0.25, -17))
+	local guiBotao = billboard(botao, 200, 50, Vector3.new(0, 3.5, 0), 70)
+	local textoBotao = texto(guiBotao, { Text = "🔒 TRANCAR BASE" })
+
+	-- Ponto de entrega (para a seta de "leve até sua base")
+	local alvo = parte({ Name = "AlvoEntrega", Size = Vector3.new(1, 1, 1), CFrame = cf * CFrame.new(0, P + 3, 0),
+		Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false, Parent = modelo })
+	local anexo = Instance.new("Attachment")
+	anexo.Name = "Alvo"
+	anexo.Parent = alvo
+
+	local base = {
+		indice = indice,
+		cor = cor,
+		cframe = cf,
+		modelo = modelo,
+		barreira = barreira,
+		botao = botao,
+		textoPlaca = textoPlaca,
+		textoRenda = textoRenda,
+		textoBotao = textoBotao,
+		grupoDono = grupoDono,
+		spawn = cf * CFrame.new(0, P + 3.2, -16),
+		saida = cf * CFrame.new(0, P + 3.2, -metade - 8),
+		slots = {},
+	}
+
+	-- 12 pedestais (3 fileiras de 4). Os primeiros são os mais perto da entrada.
+	for _, z in { -4, 7, 18 } do
+		for _, x in { -18, -6, 6, 18 } do
+			local pedestal = cilindroEmPe({ Name = "Pedestal", Size = Vector3.new(1.2, 7, 7), Color = Color3.fromRGB(235, 235, 240),
+				Material = Enum.Material.Marble, Parent = modelo }, cf * CFrame.new(x, P + 0.6, z))
+			local anel = cilindroEmPe({ Name = "Anel", Size = Vector3.new(0.25, 7.8, 7.8), Color = cor,
+				Material = Enum.Material.Neon, CastShadow = false, Parent = modelo }, cf * CFrame.new(x, P + 0.125, z))
+			local pad = parte({ Name = "Coletar", Size = Vector3.new(5, 0.3, 2.4), CFrame = cf * CFrame.new(x, P + 0.15, z - 5.6),
+				Color = Color3.fromRGB(60, 220, 100), Material = Enum.Material.Neon, Parent = modelo })
+
+			local guiPad = billboard(pad, 160, 40, Vector3.new(0, 2.2, 0), 50)
+			guiPad.Enabled = false
+			local textoPad = texto(guiPad, { Text = "💰 $0", TextColor3 = Color3.fromRGB(120, 255, 140) })
+
+			local guiCadeado = billboard(pedestal, 170, 60, Vector3.new(0, 3, 0), 60)
+			guiCadeado.Enabled = false
+			texto(guiCadeado, { Text = "🔒\nCompre na Loja", Font = Enum.Font.GothamBold })
+
+			table.insert(base.slots, {
+				indice = #base.slots + 1,
+				base = base,
+				topo = cf * CFrame.new(x, P + 1.2, z),
+				pedestal = pedestal,
+				anel = anel,
+				pad = pad,
+				guiPad = guiPad,
+				textoPad = textoPad,
+				guiCadeado = guiCadeado,
+				acumulado = 0,
+				heroi = nil,
+			})
+		end
+	end
+
+	return base
+end
+
+--------------------------------------------------------------------------
+-- MONTAGEM
+--------------------------------------------------------------------------
+function Mapa.construir(Config)
+	local G = Config.Geral
+
+	if G.RemoverBaseplate then
+		for _, nome in { "Baseplate", "SpawnLocation" } do
+			local objeto = workspace:FindFirstChild(nome)
+			if objeto then
+				objeto:Destroy()
+			end
+		end
+	end
+	local antigo = workspace:FindFirstChild("MapaHerois")
+	if antigo then
+		antigo:Destroy()
+	end
+
+	local pasta = pastaNova("MapaHerois", workspace)
+	local cenario = pastaNova("Cenario", pasta)
+	local pastaBases = pastaNova("Bases", pasta)
+	local pastaHerois = pastaNova("Herois", pasta)
+	local pastaRanking = pastaNova("Ranking", pasta)
+
+	local correcaoCor = configurarIluminacao(G.HoraInicial)
+	construirChao(cenario)
+	local inicio = construirPassarela(cenario, G.ComprimentoPassarela)
+	construirPostes(cenario, G.ComprimentoPassarela)
+	construirLetreiro(cenario)
+	construirArvores(cenario)
+	construirCidade(cenario)
+
+	local quadros = {}
+	for _, categoria in CATEGORIAS_RANKING do
+		quadros[categoria.id] = construirQuadro(pastaRanking, categoria)
+	end
+
+	-- Lugar onde nasce quem ficou sem base (servidor cheio)
+	local spawnLobby = Instance.new("SpawnLocation")
+	spawnLobby.Name = "SpawnLobby"
+	spawnLobby.Anchored = true
+	spawnLobby.Neutral = true
+	spawnLobby.Duration = 0
+	spawnLobby.Size = Vector3.new(10, 1, 10)
+	spawnLobby.CFrame = CFrame.new(182, CHAO + 0.5, 0)
+	spawnLobby.Color = Color3.fromRGB(255, 200, 40)
+	spawnLobby.Material = Enum.Material.Neon
+	spawnLobby.TopSurface = Enum.SurfaceType.Smooth
+	spawnLobby.Parent = pasta
+
+	local bases = {}
+	for _, z in { -58, 58 } do
+		for _, x in { -105, -35, 35, 105 } do
+			local indice = #bases + 1
+			table.insert(bases, construirBase(pastaBases, indice, Vector3.new(x, CHAO, z), CORES_BASES[indice]))
+		end
+	end
+
+	return {
+		pasta = pasta,
+		pastaHerois = pastaHerois,
+		bases = bases,
+		inicio = inicio,
+		comprimento = G.ComprimentoPassarela,
+		quadros = quadros,
+		correcaoCor = correcaoCor,
+	}
+end
+
+return Mapa
+]]></string>
+      </Properties>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="7">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="StarterPlayerScripts" referent="8">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+      </Properties>
+      <Item class="LocalScript" referent="9">
+        <Properties>
+          <string name="Name">InterfaceHerois</string>
+          <string name="Source"><![CDATA[--[[
+	ROUBE UM HERÓI - Interface do jogador
+
+	Onde colocar: StarterPlayer -> StarterPlayerScripts -> LocalScript (nome: InterfaceHerois)
+
+	Cria toda a interface: dinheiro, menus (Loja, Índice, Ranking, Renascer,
+	Diário, Configurações), tutorial, notificações, anúncios, alarme de roubo,
+	seta até a base, música, sons e efeitos visuais.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local CollectionService = game:GetService("CollectionService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local HttpService = game:GetService("HttpService")
+local Debris = game:GetService("Debris")
+
+local jogador = Players.LocalPlayer
+local playerGui = jogador:WaitForChild("PlayerGui")
+local Config = require(ReplicatedStorage:WaitForChild("ConfigHerois"))
+local remotes = ReplicatedStorage:WaitForChild("RemotesHerois")
+local Notificar = remotes:WaitForChild("Notificar")
+local Anuncio = remotes:WaitForChild("Anuncio")
+local Efeito = remotes:WaitForChild("Efeito")
+local Empurrao = remotes:WaitForChild("Empurrao")
+local Acao = remotes:WaitForChild("Acao")
+local ObterRanking = remotes:WaitForChild("ObterRanking")
+
+local formatar = Config.formatar
+
+--------------------------------------------------------------------------
+-- ESTILO
+--------------------------------------------------------------------------
+local COR = {
+	fundo = Color3.fromRGB(26, 28, 42),
+	fundo2 = Color3.fromRGB(40, 44, 64),
+	fundo3 = Color3.fromRGB(52, 57, 82),
+	texto = Color3.fromRGB(255, 255, 255),
+	cinza = Color3.fromRGB(170, 175, 195),
+	desligado = Color3.fromRGB(95, 100, 120),
+	amarelo = Color3.fromRGB(255, 196, 0),
+	laranja = Color3.fromRGB(255, 130, 30),
+	verde = Color3.fromRGB(60, 210, 100),
+	vermelho = Color3.fromRGB(235, 70, 70),
+	azul = Color3.fromRGB(70, 150, 255),
+	roxo = Color3.fromRGB(150, 90, 255),
+	rosa = Color3.fromRGB(255, 100, 180),
+	ciano = Color3.fromRGB(40, 200, 220),
+}
+local FONTE_TITULO = Enum.Font.FredokaOne
+local FONTE = Enum.Font.GothamBold
+local FONTE_TEXTO = Enum.Font.GothamMedium
+local MEDALHAS = { Color3.fromRGB(255, 200, 40), Color3.fromRGB(205, 205, 220), Color3.fromRGB(215, 135, 70) }
+
+local function criar(classe, propriedades, filhos)
+	local objeto = Instance.new(classe)
+	local pai = nil
+	for nome, valor in propriedades or {} do
+		if nome == "Parent" then
+			pai = valor
+		else
+			(objeto :: any)[nome] = valor
+		end
+	end
+	for _, filho in filhos or {} do
+		filho.Parent = objeto
+	end
+	if pai then
+		objeto.Parent = pai
+	end
+	return objeto
+end
+
+local function canto(raio)
+	return criar("UICorner", { CornerRadius = UDim.new(0, raio or 12) })
+end
+
+local function borda(cor, espessura, transparencia)
+	return criar("UIStroke", {
+		Color = cor,
+		Thickness = espessura or 2,
+		Transparency = transparencia or 0,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+	})
+end
+
+local function contornoTexto(espessura)
+	return criar("UIStroke", { Color = Color3.new(0, 0, 0), Thickness = espessura or 2, Transparency = 0.15 })
+end
+
+local function gradiente(cor1, cor2, rotacao)
+	return criar("UIGradient", { Color = ColorSequence.new(cor1, cor2), Rotation = rotacao or 90 })
+end
+
+local function sombreado()
+	return gradiente(Color3.new(1, 1, 1), Color3.fromRGB(175, 175, 190), 90)
+end
+
+local function limiteTexto(maximo)
+	return criar("UITextSizeConstraint", { MaxTextSize = maximo })
+end
+
+local function rotulo(propriedades, filhos)
+	local base = {
+		BackgroundTransparency = 1,
+		Font = FONTE,
+		TextColor3 = COR.texto,
+		TextScaled = true,
+		Size = UDim2.fromScale(1, 1),
+	}
+	for nome, valor in propriedades do
+		base[nome] = valor
+	end
+	return criar("TextLabel", base, filhos)
+end
+
+--------------------------------------------------------------------------
+-- SONS E MÚSICA
+--------------------------------------------------------------------------
+local configLocal = { musica = true, sons = true }
+local sons = {}
+local function criarSom(nome, id, volume, velocidade)
+	if id and id ~= "" then
+		sons[nome] = criar("Sound", { Name = "Som" .. nome, SoundId = id, Volume = volume, PlaybackSpeed = velocidade or 1, Parent = SoundService })
+	end
+end
+criarSom("clique", Config.Sons.Clique, 0.35, 1.2)
+criarSom("notificacao", Config.Sons.Notificacao, 0.4)
+criarSom("moeda", Config.Sons.Moeda, 0.45, 1.6)
+criarSom("compra", Config.Sons.Compra, 0.55, 1.25)
+criarSom("alarme", Config.Sons.Alarme, 0.7, 0.55)
+criarSom("erro", Config.Sons.Erro, 0.4, 0.6)
+
+local function tocar(nome)
+	local som = sons[nome]
+	if som and configLocal.sons then
+		SoundService:PlayLocalSound(som)
+	end
+end
+
+local musica = nil
+if Config.Sons.Musica ~= "" then
+	musica = criar("Sound", { Name = "MusicaDeFundo", SoundId = Config.Sons.Musica, Looped = true, Volume = Config.Sons.VolumeMusica, Parent = SoundService })
+end
+local function aplicarMusica()
+	if not musica then
+		return
+	end
+	if configLocal.musica then
+		if not musica.IsPlaying then
+			musica:Play()
+		end
+	else
+		musica:Stop()
+	end
+end
+
+local function atributo(nome, padrao)
+	local valor = jogador:GetAttribute(nome)
+	if valor == nil then
+		return padrao
+	end
+	return valor
+end
+
+local function invocar(acao, argumento)
+	local ok, sucesso, mensagem = pcall(function()
+		return Acao:InvokeServer(acao, argumento)
+	end)
+	if not ok then
+		return false, "Erro de conexão. Tente de novo!"
+	end
+	return sucesso, mensagem
+end
+
+--------------------------------------------------------------------------
+-- TELA PRINCIPAL
+--------------------------------------------------------------------------
+local gui = criar("ScreenGui", {
+	Name = "InterfaceHerois",
+	ResetOnSpawn = false,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	Parent = playerGui,
+})
+
+-- Clarão vermelho do alarme (fica atrás de tudo e não bloqueia cliques)
+local telaAlarme = criar("Frame", {
+	Name = "Alarme",
+	Size = UDim2.fromScale(1, 1),
+	BackgroundColor3 = COR.vermelho,
+	BackgroundTransparency = 1,
+	BorderSizePixel = 0,
+	Parent = gui,
+})
+
+--------------------------------------------------------------------------
+-- NOTIFICAÇÕES (canto direito) E ANÚNCIOS (centro)
+--------------------------------------------------------------------------
+local CORES_TIPO = { sucesso = COR.verde, erro = COR.vermelho, aviso = COR.amarelo, info = COR.azul, especial = COR.roxo }
+local areaNotificacoes = criar("Frame", {
+	Name = "Notificacoes",
+	AnchorPoint = Vector2.new(1, 1),
+	Position = UDim2.new(1, -12, 0.8, 0),
+	Size = UDim2.fromOffset(340, 330),
+	BackgroundTransparency = 1,
+	ZIndex = 30,
+	Parent = gui,
+}, {
+	criar("UIListLayout", {
+		Padding = UDim.new(0, 6),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		VerticalAlignment = Enum.VerticalAlignment.Bottom,
+		HorizontalAlignment = Enum.HorizontalAlignment.Right,
+	}),
+})
+local contadorNotificacao = 0
+
+local function notificar(mensagem, tipo)
+	if not mensagem or mensagem == "" then
+		return
+	end
+	contadorNotificacao += 1
+	local cor = CORES_TIPO[tipo] or COR.azul
+	local caixa = criar("Frame", {
+		LayoutOrder = contadorNotificacao,
+		Size = UDim2.fromOffset(340, 48),
+		BackgroundColor3 = COR.fundo,
+		BackgroundTransparency = 0.05,
+		Parent = areaNotificacoes,
+	}, { canto(12) })
+	local contorno = borda(cor, 2)
+	contorno.Parent = caixa
+	criar("Frame", { Size = UDim2.new(0, 6, 1, -14), Position = UDim2.fromOffset(7, 7), BackgroundColor3 = cor, BorderSizePixel = 0, Parent = caixa }, { canto(3) })
+	local texto = rotulo({
+		Text = mensagem,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextWrapped = true,
+		Size = UDim2.new(1, -28, 1, -10),
+		Position = UDim2.fromOffset(20, 5),
+		Parent = caixa,
+	}, { limiteTexto(17) })
+	local escala = criar("UIScale", { Scale = 0.6, Parent = caixa })
+	TweenService:Create(escala, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	tocar(tipo == "erro" and "erro" or "notificacao")
+
+	local caixas = {}
+	for _, filho in areaNotificacoes:GetChildren() do
+		if filho:IsA("Frame") then
+			table.insert(caixas, filho)
+		end
+	end
+	table.sort(caixas, function(a, b)
+		return a.LayoutOrder < b.LayoutOrder
+	end)
+	for i = 1, #caixas - 5 do
+		caixas[i]:Destroy()
+	end
+
+	task.delay(4, function()
+		if not caixa.Parent then
+			return
+		end
+		local info = TweenInfo.new(0.35)
+		TweenService:Create(caixa, info, { BackgroundTransparency = 1 }):Play()
+		TweenService:Create(texto, info, { TextTransparency = 1 }):Play()
+		TweenService:Create(contorno, info, { Transparency = 1 }):Play()
+		task.wait(0.35)
+		caixa:Destroy()
+	end)
+end
+
+local faixaAnuncio = criar("Frame", {
+	Name = "Anuncio",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.26),
+	Size = UDim2.new(0.62, 0, 0, 62),
+	BackgroundColor3 = COR.fundo,
+	BackgroundTransparency = 0.08,
+	Visible = false,
+	ZIndex = 25,
+	Parent = gui,
+}, { canto(16), criar("UISizeConstraint", { MaxSize = Vector2.new(780, 62) }) })
+local bordaAnuncio = borda(COR.amarelo, 3)
+bordaAnuncio.Parent = faixaAnuncio
+local textoAnuncio = rotulo({
+	Font = FONTE_TITULO,
+	Size = UDim2.new(1, -24, 1, -14),
+	Position = UDim2.fromOffset(12, 7),
+	Parent = faixaAnuncio,
+}, { contornoTexto(2) })
+local escalaAnuncio = criar("UIScale", { Parent = faixaAnuncio })
+local idAnuncio = 0
+
+local function anunciar(mensagem, cor, duracao)
+	idAnuncio += 1
+	local meuId = idAnuncio
+	cor = cor or COR.amarelo
+	textoAnuncio.Text = mensagem
+	textoAnuncio.TextColor3 = cor
+	bordaAnuncio.Color = cor
+	faixaAnuncio.Visible = true
+	escalaAnuncio.Scale = 0.4
+	TweenService:Create(escalaAnuncio, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	tocar("notificacao")
+	task.delay(duracao or 4.5, function()
+		if idAnuncio == meuId then
+			faixaAnuncio.Visible = false
+		end
+	end)
+end
+
+--------------------------------------------------------------------------
+-- BOTÕES
+--------------------------------------------------------------------------
+local function animarBotao(botao)
+	local escala = criar("UIScale", { Parent = botao })
+	local function para(valor, tempo)
+		TweenService:Create(escala, TweenInfo.new(tempo), { Scale = valor }):Play()
+	end
+	botao.MouseEnter:Connect(function()
+		para(1.06, 0.12)
+	end)
+	botao.MouseLeave:Connect(function()
+		para(1, 0.12)
+	end)
+	botao.MouseButton1Down:Connect(function()
+		para(0.93, 0.06)
+	end)
+	botao.MouseButton1Up:Connect(function()
+		para(1.06, 0.08)
+	end)
+end
+
+local function botao(propriedades, aoClicar)
+	local cor = propriedades.Cor or COR.azul
+	local base = {
+		AutoButtonColor = false,
+		BackgroundColor3 = cor,
+		Font = FONTE_TITULO,
+		TextColor3 = COR.texto,
+		TextScaled = true,
+		Text = "",
+		Size = UDim2.fromOffset(120, 44),
+	}
+	for nome, valor in propriedades do
+		if nome ~= "Cor" then
+			base[nome] = valor
+		end
+	end
+	local b = criar("TextButton", base, {
+		canto(12),
+		sombreado(),
+		contornoTexto(2),
+		criar("UIPadding", {
+			PaddingTop = UDim.new(0, 6),
+			PaddingBottom = UDim.new(0, 6),
+			PaddingLeft = UDim.new(0, 8),
+			PaddingRight = UDim.new(0, 8),
+		}),
+	})
+	animarBotao(b)
+	if aoClicar then
+		b.Activated:Connect(function()
+			tocar("clique")
+			aoClicar()
+		end)
+	end
+	return b
+end
+
+--------------------------------------------------------------------------
+-- PAINÉIS (janelas)
+--------------------------------------------------------------------------
+local paineis = {}
+local painelAberto = nil
+
+local fundoEscuro = criar("TextButton", {
+	Name = "FundoEscuro",
+	Text = "",
+	AutoButtonColor = false,
+	Size = UDim2.fromScale(1, 1),
+	BackgroundColor3 = Color3.new(0, 0, 0),
+	BackgroundTransparency = 1,
+	Visible = false,
+	ZIndex = 8,
+	Parent = gui,
+})
+
+local function fecharPainel()
+	local nome = painelAberto
+	if not nome then
+		return
+	end
+	local painel = paineis[nome]
+	painelAberto = nil
+	fundoEscuro.Visible = false
+	TweenService:Create(painel.escala, TweenInfo.new(0.12), { Scale = 0.8 }):Play()
+	task.delay(0.12, function()
+		if painelAberto ~= nome then
+			painel.quadro.Visible = false
+		end
+	end)
+	if painel.aoFechar then
+		painel.aoFechar()
+	end
+end
+
+local function abrirPainel(nome)
+	if painelAberto == nome then
+		fecharPainel()
+		return
+	end
+	if painelAberto then
+		local anterior = paineis[painelAberto]
+		anterior.quadro.Visible = false
+		if anterior.aoFechar then
+			anterior.aoFechar()
+		end
+	end
+	local painel = paineis[nome]
+	painelAberto = nome
+	if painel.aoAbrir then
+		painel.aoAbrir()
+	end
+	fundoEscuro.Visible = true
+	fundoEscuro.BackgroundTransparency = 1
+	TweenService:Create(fundoEscuro, TweenInfo.new(0.2), { BackgroundTransparency = 0.55 }):Play()
+	painel.quadro.Visible = true
+	painel.escala.Scale = 0.75
+	TweenService:Create(painel.escala, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+end
+
+fundoEscuro.Activated:Connect(fecharPainel)
+
+local function criarPainel(nome, titulo, cor)
+	local quadro = criar("Frame", {
+		Name = "Painel" .. nome,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.53),
+		Size = UDim2.fromScale(0.62, 0.7),
+		BackgroundColor3 = COR.fundo,
+		Visible = false,
+		ZIndex = 10,
+		Parent = gui,
+	}, {
+		canto(20),
+		borda(cor, 3),
+		criar("UISizeConstraint", { MinSize = Vector2.new(330, 280), MaxSize = Vector2.new(720, 520) }),
+	})
+	local escala = criar("UIScale", { Parent = quadro })
+
+	local faixa = criar("Frame", { Name = "Titulo", Size = UDim2.new(1, 0, 0, 56), BackgroundColor3 = cor, Parent = quadro }, {
+		canto(20),
+		gradiente(Color3.new(1, 1, 1), Color3.fromRGB(160, 160, 170), 90),
+	})
+	criar("Frame", {
+		Size = UDim2.new(1, 0, 0, 20),
+		Position = UDim2.new(0, 0, 1, -20),
+		BackgroundColor3 = cor,
+		BorderSizePixel = 0,
+		Parent = faixa,
+	}, { gradiente(Color3.fromRGB(198, 198, 205), Color3.fromRGB(160, 160, 170), 90) })
+	rotulo({
+		Text = titulo,
+		Font = FONTE_TITULO,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Size = UDim2.new(1, -80, 0, 38),
+		Position = UDim2.fromOffset(18, 9),
+		ZIndex = 2,
+		Parent = faixa,
+	}, { contornoTexto(2.5) })
+	botao({
+		Text = "✕",
+		Cor = COR.vermelho,
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -10, 0.5, 0),
+		Size = UDim2.fromOffset(42, 42),
+		ZIndex = 2,
+		Parent = faixa,
+	}, fecharPainel)
+
+	local corpo = criar("Frame", {
+		Name = "Corpo",
+		Position = UDim2.fromOffset(16, 68),
+		Size = UDim2.new(1, -32, 1, -82),
+		BackgroundTransparency = 1,
+		Parent = quadro,
+	})
+	local painel = { nome = nome, quadro = quadro, escala = escala, corpo = corpo }
+	paineis[nome] = painel
+	return painel
+end
+
+local function listaRolavel(pai, propriedades)
+	local base = {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ScrollBarThickness = 6,
+		ScrollBarImageColor3 = COR.cinza,
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		CanvasSize = UDim2.new(),
+		Parent = pai,
+	}
+	for nome, valor in propriedades or {} do
+		base[nome] = valor
+	end
+	return criar("ScrollingFrame", base, { criar("UIPadding", { PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 2), PaddingBottom = UDim.new(0, 4) }) })
+end
+
+local function barraProgresso(pai, posicao, tamanho, cor)
+	local fundo = criar("Frame", { Position = posicao, Size = tamanho, BackgroundColor3 = COR.fundo3, Parent = pai }, { canto(8) })
+	local preenchimento = criar("Frame", { Size = UDim2.fromScale(0, 1), BackgroundColor3 = cor, Parent = fundo }, { canto(8), sombreado() })
+	local texto = rotulo({ Text = "", Size = UDim2.new(1, -10, 1, -4), Position = UDim2.fromOffset(5, 2), ZIndex = 2, Parent = fundo }, { contornoTexto(1.5) })
+	return function(fracao, rotuloTexto)
+		fracao = math.clamp(fracao, 0, 1)
+		TweenService:Create(preenchimento, TweenInfo.new(0.25), { Size = UDim2.fromScale(fracao, 1) }):Play()
+		texto.Text = rotuloTexto or ""
+	end
+end
+
+--------------------------------------------------------------------------
+-- HUD: DINHEIRO, RENDA E EVENTO
+--------------------------------------------------------------------------
+local hud = criar("Frame", {
+	Name = "Dinheiro",
+	AnchorPoint = Vector2.new(0.5, 0),
+	Position = UDim2.new(0.5, 0, 0, 6),
+	Size = UDim2.fromOffset(300, 72),
+	BackgroundColor3 = COR.fundo,
+	BackgroundTransparency = 0.08,
+	Parent = gui,
+}, { canto(18), borda(COR.amarelo, 2.5, 0.1) })
+local escalaHud = criar("UIScale", { Parent = hud })
+local textoDinheiro = rotulo({
+	Text = "$0",
+	Font = FONTE_TITULO,
+	TextColor3 = COR.verde,
+	Size = UDim2.new(1, -24, 0, 44),
+	Position = UDim2.fromOffset(12, 4),
+	Parent = hud,
+}, { contornoTexto(2.5) })
+local textoRenda = rotulo({
+	Text = "+$0/s",
+	TextColor3 = COR.amarelo,
+	Size = UDim2.new(1, -24, 0, 18),
+	Position = UDim2.fromOffset(12, 49),
+	Parent = hud,
+}, { contornoTexto(1.5) })
+
+local barraEvento = criar("Frame", {
+	Name = "Evento",
+	AnchorPoint = Vector2.new(0.5, 0),
+	Position = UDim2.new(0.5, 0, 0, 84),
+	Size = UDim2.fromOffset(380, 34),
+	BackgroundColor3 = COR.amarelo,
+	Visible = false,
+	Parent = gui,
+}, { canto(12), sombreado() })
+local textoEvento = rotulo({
+	Font = FONTE_TITULO,
+	Size = UDim2.new(1, -16, 1, -8),
+	Position = UDim2.fromOffset(8, 4),
+	Parent = barraEvento,
+}, { contornoTexto(2) })
+
+local valorExibido = 0
+local alvoDinheiro = 0
+
+local function formatarMultiplicador(valor)
+	return "x" .. (string.format("%.1f", valor):gsub("%.0$", ""))
+end
+
+local function atualizarRenda()
+	local renda = atributo("RendaPorSegundo", 0)
+	local mult = atributo("Multiplicador", 1)
+	local texto = "+" .. formatar(renda) .. "/s"
+	if mult > 1 then
+		texto ..= "  •  " .. formatarMultiplicador(mult)
+	end
+	textoRenda.Text = texto
+end
+
+--------------------------------------------------------------------------
+-- MENU LATERAL
+--------------------------------------------------------------------------
+local menu = criar("Frame", {
+	Name = "Menu",
+	AnchorPoint = Vector2.new(0, 0.5),
+	Position = UDim2.new(0, 10, 0.5, 0),
+	Size = UDim2.fromOffset(152, 236),
+	BackgroundTransparency = 1,
+	Parent = gui,
+}, {
+	criar("UIGridLayout", { CellSize = UDim2.fromOffset(72, 72), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder }),
+})
+local escalaMenu = criar("UIScale", { Parent = menu })
+local alertasMenu = {}
+
+local function botaoMenu(ordem, nome, icone, texto, cor)
+	local b = criar("TextButton", {
+		Name = nome,
+		LayoutOrder = ordem,
+		AutoButtonColor = false,
+		Text = "",
+		BackgroundColor3 = cor,
+		Parent = menu,
+	}, { canto(16), borda(Color3.new(1, 1, 1), 2, 0.55), sombreado() })
+	rotulo({ Text = icone, Size = UDim2.new(1, -16, 0.56, 0), Position = UDim2.new(0, 8, 0.06, 0), Parent = b })
+	rotulo({ Text = texto, Font = FONTE_TITULO, Size = UDim2.new(1, -6, 0.26, 0), Position = UDim2.new(0, 3, 0.68, 0), Parent = b }, { contornoTexto(1.5) })
+	local alerta = criar("Frame", {
+		Name = "Alerta",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(1, -8, 0, 8),
+		Size = UDim2.fromOffset(20, 20),
+		BackgroundColor3 = COR.vermelho,
+		Visible = false,
+		ZIndex = 3,
+		Parent = b,
+	}, { canto(10), borda(Color3.new(1, 1, 1), 2) })
+	rotulo({ Text = "!", Font = FONTE_TITULO, ZIndex = 4, Parent = alerta })
+	alertasMenu[nome] = alerta
+	animarBotao(b)
+	b.Activated:Connect(function()
+		tocar("clique")
+		abrirPainel(nome)
+	end)
+	return b
+end
+
+botaoMenu(1, "Loja", "🛒", "Loja", COR.verde)
+botaoMenu(2, "Indice", "📖", "Índice", COR.azul)
+botaoMenu(3, "Ranking", "🏆", "Ranking", COR.amarelo)
+botaoMenu(4, "Renascer", "♻️", "Renascer", COR.roxo)
+botaoMenu(5, "Diario", "🎁", "Diário", COR.rosa)
+botaoMenu(6, "Config", "⚙️", "Opções", COR.desligado)
+
+-- Ajusta o tamanho em telas pequenas (celular)
+local function ajustarEscala()
+	local camera = workspace.CurrentCamera
+	local altura = camera and camera.ViewportSize.Y or 720
+	local escala = math.clamp(altura / 720, 0.7, 1)
+	escalaMenu.Scale = escala
+	escalaHud.Scale = escala
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: LOJA
+--------------------------------------------------------------------------
+local atualizarLoja
+do
+	local painel = criarPainel("Loja", "🛒 LOJA DE MELHORIAS", COR.verde)
+	local lista = listaRolavel(painel.corpo)
+	criar("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = lista })
+
+	local cartoes = {}
+	for i, melhoria in Config.Melhorias do
+		local cartao = criar("Frame", { LayoutOrder = i, Size = UDim2.new(1, 0, 0, 80), BackgroundColor3 = COR.fundo2, Parent = lista }, {
+			canto(14),
+			borda(Color3.new(1, 1, 1), 1.5, 0.85),
+		})
+		rotulo({ Text = melhoria.icone, Size = UDim2.fromOffset(56, 56), Position = UDim2.fromOffset(10, 12), Parent = cartao })
+		local nome = rotulo({
+			Text = melhoria.nome,
+			Font = FONTE_TITULO,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -230, 0, 28),
+			Position = UDim2.fromOffset(76, 10),
+			Parent = cartao,
+		}, { limiteTexto(26) })
+		local descricao = rotulo({
+			Text = "",
+			Font = FONTE_TEXTO,
+			TextColor3 = COR.cinza,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -230, 0, 32),
+			Position = UDim2.fromOffset(76, 40),
+			TextWrapped = true,
+			Parent = cartao,
+		}, { limiteTexto(16) })
+		local comprar = botao({
+			Text = "$0",
+			Cor = COR.verde,
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -12, 0.5, 0),
+			Size = UDim2.fromOffset(140, 50),
+			Parent = cartao,
+		}, function()
+			local ok, mensagem = invocar("Melhoria", melhoria.id)
+			notificar(mensagem, ok and "sucesso" or "erro")
+		end)
+		cartoes[melhoria.id] = { nome = nome, descricao = descricao, botao = comprar, melhoria = melhoria }
+	end
+
+	-- Ofertas com Robux (só aparecem se os IDs estiverem configurados)
+	local ofertas = {}
+	local temRobux = Config.Robux.PasseDinheiroDobrado ~= 0
+	for _, produto in Config.Robux.Produtos do
+		if produto.id ~= 0 then
+			temRobux = true
+		end
+	end
+	if temRobux then
+		rotulo({
+			LayoutOrder = 100,
+			Text = "💎 OFERTAS ESPECIAIS",
+			Font = FONTE_TITULO,
+			TextColor3 = COR.ciano,
+			Size = UDim2.new(1, 0, 0, 30),
+			Parent = lista,
+		}, { contornoTexto(2) })
+		local function cartaoRobux(ordem, icone, titulo, aoComprar)
+			local cartao = criar("Frame", { LayoutOrder = ordem, Size = UDim2.new(1, 0, 0, 64), BackgroundColor3 = COR.fundo2, Parent = lista }, {
+				canto(14),
+				borda(COR.ciano, 1.5, 0.4),
+			})
+			rotulo({ Text = icone, Size = UDim2.fromOffset(44, 44), Position = UDim2.fromOffset(10, 10), Parent = cartao })
+			local texto = rotulo({
+				Text = titulo,
+				Font = FONTE_TITULO,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				Size = UDim2.new(1, -220, 0, 30),
+				Position = UDim2.fromOffset(64, 17),
+				Parent = cartao,
+			}, { limiteTexto(22) })
+			local b = botao({
+				Text = "R$ Comprar",
+				Cor = COR.ciano,
+				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -12, 0.5, 0),
+				Size = UDim2.fromOffset(140, 44),
+				Parent = cartao,
+			}, aoComprar)
+			return texto, b, cartao
+		end
+		if Config.Robux.PasseDinheiroDobrado ~= 0 then
+			local _, _, cartao = cartaoRobux(101, "💸", "Dinheiro em Dobro (para sempre)", function()
+				MarketplaceService:PromptGamePassPurchase(jogador, Config.Robux.PasseDinheiroDobrado)
+			end)
+			ofertas.passe = cartao
+		end
+		for i, produto in Config.Robux.Produtos do
+			if produto.id ~= 0 then
+				local texto = cartaoRobux(101 + i, produto.icone, produto.nome, function()
+					MarketplaceService:PromptProductPurchase(jogador, produto.id)
+				end)
+				table.insert(ofertas, { texto = texto, produto = produto })
+			end
+		end
+	end
+
+	function atualizarLoja()
+		local dinheiro = atributo("Dinheiro", 0)
+		for id, cartao in cartoes do
+			local nivel = atributo("Nivel" .. id, 0)
+			local precos = cartao.melhoria.precos
+			local maximo = #precos
+			if nivel >= maximo then
+				cartao.descricao.Text = "Nível " .. nivel .. "/" .. maximo .. " • " .. Config.descricaoMelhoria(id, nivel)
+				cartao.botao.Text = "MÁXIMO"
+				cartao.botao.BackgroundColor3 = COR.amarelo
+			else
+				cartao.descricao.Text = "Nível " .. nivel .. "/" .. maximo .. " • " .. Config.descricaoMelhoria(id, nivel)
+					.. " → " .. Config.descricaoMelhoria(id, nivel + 1)
+				local preco = precos[nivel + 1]
+				cartao.botao.Text = formatar(preco)
+				cartao.botao.BackgroundColor3 = dinheiro >= preco and COR.verde or COR.desligado
+			end
+		end
+		if ofertas.passe then
+			ofertas.passe.Visible = not atributo("PasseDobro", false)
+		end
+		local renascimentos = atributo("Renascimentos", 0)
+		for _, oferta in ofertas do
+			if type(oferta) == "table" and oferta.produto then
+				oferta.texto.Text = oferta.produto.nome .. "  +" .. formatar(Config.valorProduto(oferta.produto, renascimentos))
+			end
+		end
+	end
+	painel.aoAbrir = atualizarLoja
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: ÍNDICE DE HERÓIS
+--------------------------------------------------------------------------
+local atualizarIndice
+do
+	local painel = criarPainel("Indice", "📖 ÍNDICE DE HERÓIS", COR.azul)
+	local textoProgresso = rotulo({
+		Text = "",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Size = UDim2.new(1, 0, 0, 22),
+		Parent = painel.corpo,
+	}, { limiteTexto(20) })
+	local progresso = barraProgresso(painel.corpo, UDim2.fromOffset(0, 26), UDim2.new(1, 0, 0, 16), COR.azul)
+	local grade = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 50), Size = UDim2.new(1, 0, 1, -50) })
+	criar("UIGridLayout", {
+		CellSize = UDim2.fromOffset(118, 132),
+		CellPadding = UDim2.fromOffset(8, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = grade,
+	})
+
+	local cartoes = {}
+	for _, def in Config.Herois do
+		local raridade = Config.RaridadePorId[def.raridade]
+		local cartao = criar("Frame", { LayoutOrder = def.ordem, BackgroundColor3 = COR.fundo2, Parent = grade }, { canto(14) })
+		local contorno = borda(raridade.cor, 2, 0.2)
+		contorno.Parent = cartao
+		local icone = rotulo({ Text = "❓", Size = UDim2.new(1, -20, 0, 50), Position = UDim2.fromOffset(10, 8), Parent = cartao })
+		local nome = rotulo({ Text = "???", Font = FONTE_TITULO, Size = UDim2.new(1, -10, 0, 22), Position = UDim2.fromOffset(5, 60), Parent = cartao }, { contornoTexto(1.5) })
+		rotulo({ Text = raridade.nome, TextColor3 = raridade.cor, Size = UDim2.new(1, -10, 0, 16), Position = UDim2.fromOffset(5, 84), Parent = cartao }, { contornoTexto(1.2) })
+		local renda = rotulo({ Text = "", TextColor3 = COR.verde, Size = UDim2.new(1, -10, 0, 16), Position = UDim2.fromOffset(5, 104), Parent = cartao })
+		cartoes[def.id] = { cartao = cartao, icone = icone, nome = nome, renda = renda, contorno = contorno, def = def }
+	end
+
+	function atualizarIndice()
+		local descobertos = {}
+		local ok, lista = pcall(function()
+			return HttpService:JSONDecode(atributo("Descobertos", "[]"))
+		end)
+		if ok and type(lista) == "table" then
+			for _, id in lista do
+				descobertos[id] = true
+			end
+		end
+		local quantidade = 0
+		for id, cartao in cartoes do
+			if descobertos[id] then
+				quantidade += 1
+				cartao.icone.Text = cartao.def.icone
+				cartao.nome.Text = cartao.def.nome
+				cartao.renda.Text = "+" .. formatar(cartao.def.renda) .. "/s"
+				cartao.cartao.BackgroundColor3 = COR.fundo2
+				cartao.contorno.Transparency = 0
+			else
+				cartao.icone.Text = "❓"
+				cartao.nome.Text = "???"
+				cartao.renda.Text = formatar(cartao.def.preco)
+				cartao.cartao.BackgroundColor3 = Color3.fromRGB(30, 32, 46)
+				cartao.contorno.Transparency = 0.6
+			end
+		end
+		local total = #Config.Herois
+		textoProgresso.Text = "Descobertos: " .. quantidade .. " de " .. total .. "  •  Compre ou roube heróis para descobrir!"
+		progresso(quantidade / total, math.floor(quantidade / total * 100) .. "%")
+	end
+	painel.aoAbrir = atualizarIndice
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: RANKING
+--------------------------------------------------------------------------
+local atualizarRankingPainel
+do
+	local painel = criarPainel("Ranking", "🏆 RANKING", COR.amarelo)
+	local abas = criar("Frame", { Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, Parent = painel.corpo }, {
+		criar("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }),
+	})
+	local aviso = rotulo({
+		Text = "",
+		Font = FONTE_TEXTO,
+		TextColor3 = COR.cinza,
+		Size = UDim2.new(1, 0, 0, 18),
+		Position = UDim2.fromOffset(0, 46),
+		Parent = painel.corpo,
+	}, { limiteTexto(15) })
+	local lista = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 68), Size = UDim2.new(1, 0, 1, -68) })
+	criar("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder, Parent = lista })
+
+	local ABAS = {
+		{ id = "Servidor", texto = "Servidor" },
+		{ id = "Dinheiro", texto = "🌎 Ricos" },
+		{ id = "Roubos", texto = "🌎 Ladrões" },
+		{ id = "Renascimentos", texto = "🌎 Renasc." },
+	}
+	local abaAtual = "Servidor"
+	local botoesAba = {}
+
+	local function preencher(itens, formatarValor)
+		for _, filho in lista:GetChildren() do
+			if filho:IsA("Frame") then
+				filho:Destroy()
+			end
+		end
+		if #itens == 0 then
+			local vazio = criar("Frame", { Size = UDim2.new(1, 0, 0, 40), BackgroundTransparency = 1, Parent = lista })
+			rotulo({ Text = "Ninguém aqui ainda... seja o primeiro!", TextColor3 = COR.cinza, Parent = vazio }, { limiteTexto(18) })
+			return
+		end
+		for i, item in itens do
+			local linha = criar("Frame", {
+				LayoutOrder = i,
+				Size = UDim2.new(1, 0, 0, 42),
+				BackgroundColor3 = i % 2 == 0 and COR.fundo2 or COR.fundo3,
+				Parent = lista,
+			}, { canto(10) })
+			if item.voce then
+				borda(COR.verde, 2).Parent = linha
+			end
+			rotulo({ Text = "#" .. i, Font = FONTE_TITULO, TextColor3 = MEDALHAS[i] or COR.texto, Size = UDim2.new(0, 50, 1, -10), Position = UDim2.fromOffset(6, 5), Parent = linha }, { contornoTexto(1.5) })
+			rotulo({ Text = item.nome, TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.new(0.55, -60, 1, -14), Position = UDim2.fromOffset(62, 7), Parent = linha })
+			rotulo({ Text = formatarValor(item.valor), Font = FONTE_TITULO, TextColor3 = COR.amarelo, TextXAlignment = Enum.TextXAlignment.Right,
+				Size = UDim2.new(0.45, -12, 1, -12), Position = UDim2.new(0.55, 0, 0, 6), Parent = linha }, { contornoTexto(1.5) })
+		end
+	end
+
+	function atualizarRankingPainel(automatico)
+		if automatico and abaAtual ~= "Servidor" then
+			return -- o ranking global só atualiza quando o jogador pede
+		end
+		for id, b in botoesAba do
+			b.BackgroundColor3 = id == abaAtual and COR.amarelo or COR.desligado
+		end
+		if abaAtual == "Servidor" then
+			aviso.Text = "Mais ricos deste servidor agora"
+			local itens = {}
+			for _, outro in Players:GetPlayers() do
+				table.insert(itens, { nome = outro.DisplayName, valor = outro:GetAttribute("Dinheiro") or 0, voce = outro == jogador })
+			end
+			table.sort(itens, function(a, b)
+				return a.valor > b.valor
+			end)
+			preencher(itens, formatar)
+		else
+			aviso.Text = "Carregando..."
+			local categoria = abaAtual
+			task.spawn(function()
+				local ok, dados = pcall(function()
+					return ObterRanking:InvokeServer()
+				end)
+				if abaAtual ~= categoria then
+					return
+				end
+				if not ok or type(dados) ~= "table" then
+					aviso.Text = "Não foi possível carregar o ranking."
+					preencher({}, tostring)
+					return
+				end
+				aviso.Text = dados.disponivel and "🌎 Top 10 do mundo inteiro"
+					or "Mostrando este servidor (o ranking global aparece quando o jogo for publicado)"
+				local itens = {}
+				for _, item in dados[categoria] or {} do
+					table.insert(itens, { nome = item.nome, valor = item.valor, voce = item.nome == jogador.DisplayName })
+				end
+				preencher(itens, categoria == "Dinheiro" and formatar or Config.formatarNumero)
+			end)
+		end
+	end
+
+	for i, aba in ABAS do
+		botoesAba[aba.id] = botao({
+			LayoutOrder = i,
+			Text = aba.texto,
+			Cor = COR.desligado,
+			Size = UDim2.new(0.25, -5, 1, 0),
+			Parent = abas,
+		}, function()
+			abaAtual = aba.id
+			atualizarRankingPainel()
+		end)
+	end
+	painel.aoAbrir = function()
+		atualizarRankingPainel()
+	end
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: RENASCER
+--------------------------------------------------------------------------
+local atualizarRenascer
+do
+	local painel = criarPainel("Renascer", "♻️ RENASCER", COR.roxo)
+	local corpo = painel.corpo
+	local titulo = rotulo({ Text = "", Font = FONTE_TITULO, Size = UDim2.new(1, 0, 0, 34), Parent = corpo }, { contornoTexto(2) })
+	local multiplicadores = rotulo({
+		Text = "",
+		Font = FONTE_TITULO,
+		TextColor3 = COR.verde,
+		Size = UDim2.new(1, 0, 0, 30),
+		Position = UDim2.fromOffset(0, 38),
+		Parent = corpo,
+	}, { contornoTexto(2) })
+	local progresso = barraProgresso(corpo, UDim2.fromOffset(0, 78), UDim2.new(1, 0, 0, 30), COR.roxo)
+	rotulo({
+		Text = "❌ Você PERDE: seu dinheiro e seus heróis\n✅ Você MANTÉM: melhorias da Loja e o Índice\n⭐ Bônus: +50% de renda PARA SEMPRE!",
+		Font = FONTE_TEXTO,
+		TextColor3 = COR.cinza,
+		TextWrapped = true,
+		Size = UDim2.new(1, 0, 0, 72),
+		Position = UDim2.fromOffset(0, 118),
+		Parent = corpo,
+	}, { limiteTexto(18) })
+
+	local confirmando = false
+	local botaoRenascer
+	botaoRenascer = botao({
+		Text = "RENASCER",
+		Cor = COR.roxo,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -4),
+		Size = UDim2.new(0.7, 0, 0, 56),
+		Parent = corpo,
+	}, function()
+		if not confirmando then
+			confirmando = true
+			botaoRenascer.Text = "TEM CERTEZA? CLIQUE DE NOVO"
+			task.delay(3, function()
+				confirmando = false
+				atualizarRenascer()
+			end)
+			return
+		end
+		confirmando = false
+		local ok, mensagem = invocar("Renascer")
+		notificar(mensagem, ok and "especial" or "erro")
+		if ok then
+			fecharPainel()
+		end
+		atualizarRenascer()
+	end)
+
+	function atualizarRenascer()
+		local renascimentos = atributo("Renascimentos", 0)
+		local dinheiro = atributo("Dinheiro", 0)
+		local custo = Config.custoRenascimento(renascimentos)
+		titulo.Text = "Renascimentos: " .. renascimentos
+		multiplicadores.Text = "Renda " .. formatarMultiplicador(Config.multiplicadorRenascimento(renascimentos))
+			.. "  ➜  " .. formatarMultiplicador(Config.multiplicadorRenascimento(renascimentos + 1))
+		progresso(dinheiro / custo, formatar(dinheiro) .. " / " .. formatar(custo))
+		if not confirmando then
+			botaoRenascer.Text = "RENASCER (" .. formatar(custo) .. ")"
+		end
+		botaoRenascer.BackgroundColor3 = dinheiro >= custo and COR.roxo or COR.desligado
+		alertasMenu.Renascer.Visible = dinheiro >= custo
+	end
+	painel.aoAbrir = atualizarRenascer
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: RECOMPENSA DIÁRIA
+--------------------------------------------------------------------------
+local atualizarDiario
+do
+	local painel = criarPainel("Diario", "🎁 RECOMPENSA DIÁRIA", COR.rosa)
+	local corpo = painel.corpo
+	local linhaDias = criar("Frame", { Size = UDim2.new(1, 0, 0, 120), BackgroundTransparency = 1, Parent = corpo }, {
+		criar("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal,
+			Padding = UDim.new(0, 6),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		}),
+	})
+	local dias = {}
+	for dia = 1, 7 do
+		local cartao = criar("Frame", { LayoutOrder = dia, Size = UDim2.new(1 / 7, -6, 1, 0), BackgroundColor3 = COR.fundo2, Parent = linhaDias }, { canto(12) })
+		local contorno = borda(COR.rosa, 2, 0.7)
+		contorno.Parent = cartao
+		rotulo({ Text = "Dia " .. dia, Font = FONTE_TITULO, Size = UDim2.new(1, -8, 0, 22), Position = UDim2.fromOffset(4, 6), Parent = cartao }, { contornoTexto(1.5) })
+		local icone = rotulo({ Text = dia == 7 and "👑" or "💰", Size = UDim2.new(1, -16, 0, 40), Position = UDim2.fromOffset(8, 32), Parent = cartao })
+		local valor = rotulo({ Text = "", TextColor3 = COR.verde, Size = UDim2.new(1, -8, 0, 20), Position = UDim2.fromOffset(4, 82), Parent = cartao }, { contornoTexto(1.2) })
+		dias[dia] = { cartao = cartao, contorno = contorno, icone = icone, valor = valor }
+	end
+	rotulo({
+		Text = "Entre todos os dias para aumentar a sequência. O Dia 7 vale o DOBRO! Ficar mais de 2 dias sem entrar reinicia a sequência.",
+		Font = FONTE_TEXTO,
+		TextColor3 = COR.cinza,
+		TextWrapped = true,
+		Size = UDim2.new(1, 0, 0, 48),
+		Position = UDim2.fromOffset(0, 130),
+		Parent = corpo,
+	}, { limiteTexto(16) })
+
+	local botaoResgatar = botao({
+		Text = "RESGATAR",
+		Cor = COR.verde,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -4),
+		Size = UDim2.new(0.7, 0, 0, 56),
+		Parent = corpo,
+	}, function()
+		local ok, mensagem = invocar("Diaria")
+		notificar(mensagem, ok and "sucesso" or "aviso")
+		atualizarDiario()
+	end)
+
+	function atualizarDiario()
+		local agora = workspace:GetServerTimeNow()
+		local ultima = atributo("UltimaDiaria", 0)
+		local sequencia = atributo("SequenciaDiaria", 0)
+		local renascimentos = atributo("Renascimentos", 0)
+		local proxima = ultima + Config.Diaria.IntervaloHoras * 3600
+		local disponivel = agora >= proxima
+		local continua = ultima > 0 and (agora - ultima) <= Config.Diaria.PerdeSequenciaHoras * 3600
+		local diaAtual
+		if disponivel then
+			diaAtual = continua and (sequencia % 7) + 1 or 1
+		else
+			diaAtual = (math.max(sequencia, 1) - 1) % 7 + 1
+		end
+		for dia, item in dias do
+			item.valor.Text = formatar(Config.recompensaDiaria(dia, renascimentos))
+			local pego = dia < diaAtual or (not disponivel and dia == diaAtual)
+			item.icone.Text = pego and "✅" or (dia == 7 and "👑" or "💰")
+			item.contorno.Transparency = dia == diaAtual and 0 or 0.75
+			item.contorno.Color = dia == diaAtual and COR.amarelo or COR.rosa
+			item.cartao.BackgroundColor3 = dia == diaAtual and COR.fundo3 or COR.fundo2
+		end
+		if disponivel then
+			botaoResgatar.Text = "RESGATAR DIA " .. diaAtual
+			botaoResgatar.BackgroundColor3 = COR.verde
+		else
+			botaoResgatar.Text = "Volte em " .. Config.formatarTempo(proxima - agora)
+			botaoResgatar.BackgroundColor3 = COR.desligado
+		end
+		alertasMenu.Diario.Visible = disponivel and jogador:GetAttribute("UltimaDiaria") ~= nil
+	end
+	painel.aoAbrir = atualizarDiario
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: CONFIGURAÇÕES
+--------------------------------------------------------------------------
+local atualizarConfig
+local mostrarTutorial
+do
+	local painel = criarPainel("Config", "⚙️ OPÇÕES", COR.desligado)
+	local corpo = painel.corpo
+	criar("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = corpo })
+
+	local interruptores = {}
+	local function linhaInterruptor(ordem, chave, texto)
+		local linha = criar("Frame", { LayoutOrder = ordem, Size = UDim2.new(1, 0, 0, 54), BackgroundColor3 = COR.fundo2, Parent = corpo }, { canto(12) })
+		rotulo({
+			Text = texto,
+			Font = FONTE_TITULO,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -150, 0, 30),
+			Position = UDim2.fromOffset(14, 12),
+			Parent = linha,
+		}, { limiteTexto(24) })
+		interruptores[chave] = botao({
+			Text = "",
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -10, 0.5, 0),
+			Size = UDim2.fromOffset(120, 40),
+			Parent = linha,
+		}, function()
+			configLocal[chave] = not configLocal[chave]
+			aplicarMusica()
+			atualizarConfig()
+			invocar("Config", configLocal)
+		end)
+	end
+	linhaInterruptor(1, "musica", "🎵 Música de fundo")
+	linhaInterruptor(2, "sons", "🔊 Efeitos sonoros")
+
+	botao({
+		LayoutOrder = 3,
+		Text = "📘 Ver tutorial de novo",
+		Cor = COR.azul,
+		Size = UDim2.new(1, 0, 0, 48),
+		Parent = corpo,
+	}, function()
+		mostrarTutorial()
+	end)
+
+	rotulo({
+		LayoutOrder = 4,
+		Text = "Controles: E = comprar/roubar (segure) • F = vender • 1 = Luva Heroica (clique para socar)",
+		Font = FONTE_TEXTO,
+		TextColor3 = COR.cinza,
+		TextWrapped = true,
+		Size = UDim2.new(1, 0, 0, 44),
+		Parent = corpo,
+	}, { limiteTexto(16) })
+
+	function atualizarConfig()
+		for chave, b in interruptores do
+			local ligado = configLocal[chave]
+			b.Text = ligado and "LIGADO" or "DESLIGADO"
+			b.BackgroundColor3 = ligado and COR.verde or COR.vermelho
+		end
+	end
+	painel.aoAbrir = atualizarConfig
+end
+
+--------------------------------------------------------------------------
+-- PAINÉIS ESPECIAIS: TUTORIAL E BEM-VINDO DE VOLTA
+--------------------------------------------------------------------------
+do
+	local painel = criarPainel("Tutorial", "📘 COMO JOGAR", COR.azul)
+	local corpo = painel.corpo
+	local PAGINAS = {
+		{ "🦸", "Bem-vindo ao ROUBE UM HERÓI!", "Heróis saem do portal e andam pela passarela vermelha. Chegue perto de um e aperte E para comprar. Ele vai sozinho para a sua base." },
+		{ "💰", "Ganhe dinheiro", "Cada herói gera dinheiro por segundo. O dinheiro fica guardado no botão verde na frente do pedestal: pise nele para coletar!" },
+		{ "🦹", "Roube heróis!", "Entre na base de outro jogador e SEGURE E perto de um herói. Corra de volta para a sua base carregando ele. Você fica mais lento!" },
+		{ "🥊", "Defenda sua base", "Use a Luva Heroica (tecla 1) e clique para socar: o ladrão derruba o herói. Pise no botão verde da entrada para trancar sua base." },
+		{ "🚀", "Fique cada vez mais forte", "Compre melhorias na Loja, complete o Índice, resgate o prêmio diário e Renasça para multiplicar sua renda. Bom jogo, herói!" },
+	}
+	local pagina = 1
+	local icone = rotulo({ Text = "", Size = UDim2.new(1, 0, 0, 70), Parent = corpo })
+	local titulo = rotulo({ Text = "", Font = FONTE_TITULO, TextColor3 = COR.amarelo, Size = UDim2.new(1, 0, 0, 34), Position = UDim2.fromOffset(0, 74), Parent = corpo }, { contornoTexto(2) })
+	local texto = rotulo({
+		Text = "",
+		Font = FONTE_TEXTO,
+		TextWrapped = true,
+		Size = UDim2.new(1, 0, 1, -190),
+		Position = UDim2.fromOffset(0, 114),
+		Parent = corpo,
+	}, { limiteTexto(20) })
+	local indicador = rotulo({ Text = "", TextColor3 = COR.cinza, Size = UDim2.new(1, 0, 0, 18), Position = UDim2.new(0, 0, 1, -76), Parent = corpo })
+
+	local botaoProximo
+	local function mostrarPagina()
+		local dados = PAGINAS[pagina]
+		icone.Text = dados[1]
+		titulo.Text = dados[2]
+		texto.Text = dados[3]
+		indicador.Text = pagina .. " / " .. #PAGINAS
+		botaoProximo.Text = pagina == #PAGINAS and "COMEÇAR! 🚀" or "PRÓXIMO ➜"
+	end
+	botao({
+		Text = "Pular",
+		Cor = COR.desligado,
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 0, 1, -4),
+		Size = UDim2.new(0.3, 0, 0, 50),
+		Parent = corpo,
+	}, fecharPainel)
+	botaoProximo = botao({
+		Text = "",
+		Cor = COR.verde,
+		AnchorPoint = Vector2.new(1, 1),
+		Position = UDim2.new(1, 0, 1, -4),
+		Size = UDim2.new(0.6, 0, 0, 50),
+		Parent = corpo,
+	}, function()
+		if pagina < #PAGINAS then
+			pagina += 1
+			mostrarPagina()
+		else
+			fecharPainel()
+		end
+	end)
+
+	painel.aoAbrir = function()
+		pagina = 1
+		mostrarPagina()
+	end
+	painel.aoFechar = function()
+		if not atributo("TutorialFeito", false) then
+			invocar("Tutorial")
+		end
+	end
+	mostrarTutorial = function()
+		if painelAberto ~= "Tutorial" then
+			abrirPainel("Tutorial")
+		end
+	end
+end
+
+local mostrarBemVindo
+do
+	local painel = criarPainel("BemVindo", "👋 BEM-VINDO DE VOLTA!", COR.verde)
+	local corpo = painel.corpo
+	rotulo({ Text = "💰", Size = UDim2.new(1, 0, 0, 80), Parent = corpo })
+	local texto = rotulo({
+		Text = "",
+		Font = FONTE_TITULO,
+		TextWrapped = true,
+		Size = UDim2.new(1, 0, 1, -170),
+		Position = UDim2.fromOffset(0, 90),
+		Parent = corpo,
+	}, { limiteTexto(26), contornoTexto(2) })
+	botao({
+		Text = "OBA! 🎉",
+		Cor = COR.verde,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -4),
+		Size = UDim2.new(0.6, 0, 0, 54),
+		Parent = corpo,
+	}, fecharPainel)
+	mostrarBemVindo = function(valor, segundos)
+		texto.Text = "Enquanto você esteve fora (" .. Config.formatarTempo(segundos) .. "), seus heróis geraram "
+			.. formatar(valor) .. "!\nColete nos botões verdes dos pedestais."
+		abrirPainel("BemVindo")
+	end
+end
+
+--------------------------------------------------------------------------
+-- AVISO DE "LEVE ATÉ A SUA BASE" + SETA
+--------------------------------------------------------------------------
+local avisoCarregando = rotulo({
+	Text = "",
+	Font = FONTE_TITULO,
+	TextColor3 = COR.amarelo,
+	AnchorPoint = Vector2.new(0.5, 1),
+	Position = UDim2.new(0.5, 0, 1, -120),
+	Size = UDim2.new(0.7, 0, 0, 44),
+	Visible = false,
+	Parent = gui,
+}, { contornoTexto(3), criar("UISizeConstraint", { MaxSize = Vector2.new(760, 44) }) })
+local feixe, anexoSeta = nil, nil
+
+local function atualizarCarregando()
+	if feixe then
+		feixe:Destroy()
+		feixe = nil
+	end
+	if anexoSeta then
+		anexoSeta:Destroy()
+		anexoSeta = nil
+	end
+	local nomeHeroi = jogador:GetAttribute("Carregando")
+	avisoCarregando.Visible = nomeHeroi ~= nil
+	if not nomeHeroi then
+		return
+	end
+	avisoCarregando.Text = "🏃 LEVE " .. string.upper(tostring(nomeHeroi)) .. " ATÉ A SUA BASE!"
+
+	local mapa = workspace:FindFirstChild("MapaHerois")
+	local pastaBases = mapa and mapa:FindFirstChild("Bases")
+	local base = pastaBases and pastaBases:FindFirstChild("Base" .. tostring(atributo("BaseIndice", 0)))
+	local alvoEntrega = base and base:FindFirstChild("AlvoEntrega")
+	local alvo = alvoEntrega and alvoEntrega:FindFirstChild("Alvo")
+	local raiz = jogador.Character and jogador.Character:FindFirstChild("HumanoidRootPart")
+	if alvo and raiz then
+		anexoSeta = criar("Attachment", { Name = "AnexoSeta", Parent = raiz })
+		feixe = criar("Beam", {
+			Name = "SetaBase",
+			Attachment0 = anexoSeta,
+			Attachment1 = alvo,
+			Color = ColorSequence.new(COR.amarelo, COR.verde),
+			Transparency = NumberSequence.new(0.15),
+			LightEmission = 1,
+			FaceCamera = true,
+			Width0 = 0.9,
+			Width1 = 0.9,
+			Segments = 20,
+			Parent = raiz,
+		})
+	end
+end
+
+--------------------------------------------------------------------------
+-- EFEITOS
+--------------------------------------------------------------------------
+local function textoFlutuante(texto, posicao, cor)
+	local ancora = criar("Part", {
+		Name = "TextoFlutuante",
+		Anchored = true,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		Transparency = 1,
+		Size = Vector3.one * 0.2,
+		CFrame = CFrame.new(posicao + Vector3.new(0, 2, 0)),
+		Parent = workspace,
+	})
+	local placa = criar("BillboardGui", { Size = UDim2.fromOffset(220, 54), AlwaysOnTop = true, LightInfluence = 0, Adornee = ancora, Parent = ancora })
+	local contorno = contornoTexto(2.5)
+	local rotuloTexto = rotulo({ Text = texto, Font = FONTE_TITULO, TextColor3 = cor, Parent = placa }, { contorno })
+	local info = TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	TweenService:Create(placa, info, { StudsOffset = Vector3.new(0, 4, 0) }):Play()
+	TweenService:Create(rotuloTexto, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { TextTransparency = 1 }):Play()
+	TweenService:Create(contorno, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Transparency = 1 }):Play()
+	Debris:AddItem(ancora, 1.3)
+end
+
+local function confete()
+	for _ = 1, 70 do
+		local tamanho = math.random(8, 15)
+		local pedaco = criar("Frame", {
+			Size = UDim2.fromOffset(tamanho, tamanho),
+			Position = UDim2.new(math.random(), 0, -0.05, 0),
+			BackgroundColor3 = Color3.fromHSV(math.random(), 0.8, 1),
+			BorderSizePixel = 0,
+			Rotation = math.random(0, 360),
+			ZIndex = 40,
+			Parent = gui,
+		})
+		local destino = UDim2.new(pedaco.Position.X.Scale + (math.random() - 0.5) * 0.25, 0, 1.1, 0)
+		TweenService:Create(pedaco, TweenInfo.new(math.random(18, 32) / 10, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Position = destino,
+			Rotation = pedaco.Rotation + math.random(-360, 360),
+		}):Play()
+		Debris:AddItem(pedaco, 3.4)
+	end
+end
+
+local function piscarAlarme(ladrao, heroi)
+	anunciar("🚨 " .. tostring(ladrao) .. " está roubando seu " .. tostring(heroi) .. "! Soque ele com a Luva!", COR.vermelho, 5)
+	task.spawn(function()
+		for _ = 1, 3 do
+			tocar("alarme")
+			telaAlarme.BackgroundTransparency = 0.6
+			TweenService:Create(telaAlarme, TweenInfo.new(0.45), { BackgroundTransparency = 1 }):Play()
+			task.wait(0.55)
+		end
+	end)
+end
+
+local function tremerCamera(duracao, forca)
+	local humanoid = jogador.Character and jogador.Character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return
+	end
+	local inicio = os.clock()
+	local conexao
+	conexao = RunService.RenderStepped:Connect(function()
+		if os.clock() - inicio > duracao or not humanoid.Parent then
+			humanoid.CameraOffset = Vector3.zero
+			conexao:Disconnect()
+			return
+		end
+		humanoid.CameraOffset = Vector3.new(math.random() - 0.5, math.random() - 0.5, 0) * forca
+	end)
+end
+
+-- Heróis com mutação Arco-íris mudam de cor sem parar
+local arcoIris = {}
+local function registrarArcoIris(modelo)
+	task.defer(function()
+		local partes = {}
+		for _, objeto in modelo:GetDescendants() do
+			if objeto:IsA("BasePart") and objeto:GetAttribute("Pintavel") then
+				table.insert(partes, objeto)
+			end
+		end
+		arcoIris[modelo] = { partes = partes, texto = modelo:FindFirstChild("TextoArcoIris", true) }
+	end)
+end
+CollectionService:GetInstanceAddedSignal("HeroiArcoIris"):Connect(registrarArcoIris)
+CollectionService:GetInstanceRemovedSignal("HeroiArcoIris"):Connect(function(modelo)
+	arcoIris[modelo] = nil
+end)
+for _, modelo in CollectionService:GetTagged("HeroiArcoIris") do
+	registrarArcoIris(modelo)
+end
+
+--------------------------------------------------------------------------
+-- BOTÕES "ROUBAR" E "VENDER": cada jogador só vê o que faz sentido
+--------------------------------------------------------------------------
+local function filtrarPrompt(prompt)
+	local modelo = prompt:FindFirstAncestorOfClass("Model")
+	if not modelo then
+		return
+	end
+	local souDono = modelo:GetAttribute("DonoId") == jogador.UserId
+	if prompt.Name == "PromptRoubar" then
+		prompt.Enabled = not souDono
+	elseif prompt.Name == "PromptVender" then
+		prompt.Enabled = souDono
+	end
+end
+
+local function observarObjeto(objeto)
+	if objeto:IsA("ProximityPrompt") and (objeto.Name == "PromptRoubar" or objeto.Name == "PromptVender") then
+		filtrarPrompt(objeto)
+		local modelo = objeto:FindFirstAncestorOfClass("Model")
+		if modelo then
+			modelo:GetAttributeChangedSignal("DonoId"):Connect(function()
+				if objeto.Parent then
+					filtrarPrompt(objeto)
+				end
+			end)
+		end
+	end
+end
+workspace.DescendantAdded:Connect(observarObjeto)
+for _, objeto in workspace:GetDescendants() do
+	observarObjeto(objeto)
+end
+
+--------------------------------------------------------------------------
+-- MENSAGENS DO SERVIDOR
+--------------------------------------------------------------------------
+Notificar.OnClientEvent:Connect(notificar)
+
+Anuncio.OnClientEvent:Connect(function(mensagem, cor)
+	anunciar(mensagem, cor)
+end)
+
+Efeito.OnClientEvent:Connect(function(tipo, a, b)
+	if tipo == "coleta" then
+		tocar("moeda")
+		textoFlutuante("+" .. formatar(a), b, COR.verde)
+	elseif tipo == "som" then
+		tocar(a)
+	elseif tipo == "alarme" then
+		piscarAlarme(a, b)
+	elseif tipo == "renascer" then
+		confete()
+		tocar("compra")
+	elseif tipo == "offline" then
+		mostrarBemVindo(a, b)
+	end
+end)
+
+Empurrao.OnClientEvent:Connect(function(velocidade)
+	local personagem = jogador.Character
+	local raiz = personagem and personagem:FindFirstChild("HumanoidRootPart")
+	local humanoid = personagem and personagem:FindFirstChildOfClass("Humanoid")
+	if not raiz or not raiz:IsA("BasePart") or not humanoid then
+		return
+	end
+	humanoid.PlatformStand = true
+	raiz.AssemblyLinearVelocity = velocidade
+	tremerCamera(0.35, 0.8)
+	task.delay(0.8, function()
+		if humanoid.Parent then
+			humanoid.PlatformStand = false
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)
+end)
+
+--------------------------------------------------------------------------
+-- ATUALIZAÇÕES QUANDO OS DADOS DO JOGADOR MUDAM
+--------------------------------------------------------------------------
+jogador.AttributeChanged:Connect(function(nome)
+	if nome == "Dinheiro" then
+		local novo = atributo("Dinheiro", 0)
+		if novo > alvoDinheiro then
+			escalaHud.Scale = escalaMenu.Scale * 1.07
+			TweenService:Create(escalaHud, TweenInfo.new(0.2), { Scale = escalaMenu.Scale }):Play()
+		end
+		alvoDinheiro = novo
+		if painelAberto == "Loja" then
+			atualizarLoja()
+		end
+		atualizarRenascer()
+	elseif nome == "RendaPorSegundo" or nome == "Multiplicador" then
+		atualizarRenda()
+	elseif string.sub(nome, 1, 5) == "Nivel" or nome == "PasseDobro" then
+		atualizarLoja()
+	elseif nome == "Renascimentos" then
+		atualizarRenascer()
+		atualizarLoja()
+		atualizarDiario()
+	elseif nome == "Descobertos" then
+		atualizarIndice()
+	elseif nome == "UltimaDiaria" or nome == "SequenciaDiaria" then
+		atualizarDiario()
+	elseif nome == "Carregando" then
+		atualizarCarregando()
+	elseif nome == "Musica" or nome == "Sons" then
+		configLocal.musica = atributo("Musica", true)
+		configLocal.sons = atributo("Sons", true)
+		aplicarMusica()
+		atualizarConfig()
+	end
+end)
+
+jogador.CharacterAdded:Connect(function()
+	task.wait(0.5)
+	atualizarCarregando()
+end)
+
+-- Todo frame: contador de dinheiro animado e cores do arco-íris
+RunService.RenderStepped:Connect(function(dt)
+	if valorExibido ~= alvoDinheiro then
+		valorExibido += (alvoDinheiro - valorExibido) * math.min(1, dt * 10)
+		if math.abs(alvoDinheiro - valorExibido) < 1 then
+			valorExibido = alvoDinheiro
+		end
+		textoDinheiro.Text = formatar(valorExibido)
+	end
+
+	local tom = (os.clock() * 0.3) % 1
+	for _, info in arcoIris do
+		for i, parte in info.partes do
+			parte.Color = Color3.fromHSV((tom + i * 0.04) % 1, 0.75, 1)
+		end
+		if info.texto and info.texto:IsA("TextLabel") then
+			info.texto.TextColor3 = Color3.fromHSV(tom, 0.6, 1)
+		end
+	end
+
+	if avisoCarregando.Visible then
+		avisoCarregando.TextTransparency = 0.25 + math.sin(os.clock() * 8) * 0.25
+	end
+end)
+
+-- Todo segundo: barra de evento, contagem da diária, ranking do servidor
+task.spawn(function()
+	while true do
+		local idEvento = workspace:GetAttribute("EventoId")
+		local fim = workspace:GetAttribute("EventoFim")
+		local evento = idEvento and Config.EventoPorId[idEvento]
+		if evento and fim then
+			barraEvento.Visible = true
+			barraEvento.BackgroundColor3 = evento.cor
+			textoEvento.Text = evento.icone .. " " .. evento.nome .. "  •  " .. Config.formatarTempo(fim - workspace:GetServerTimeNow())
+		else
+			barraEvento.Visible = false
+		end
+		atualizarDiario()
+		if painelAberto == "Ranking" then
+			atualizarRankingPainel(true)
+		end
+		task.wait(1)
+	end
+end)
+
+--------------------------------------------------------------------------
+-- TELA DE ABERTURA E PRIMEIRA ATUALIZAÇÃO
+--------------------------------------------------------------------------
+do
+	local abertura = criar("ScreenGui", {
+		Name = "Abertura",
+		IgnoreGuiInset = true,
+		DisplayOrder = 20,
+		ResetOnSpawn = false,
+		Parent = playerGui,
+	})
+	local fundo = criar("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, Parent = abertura }, {
+		gradiente(Color3.fromRGB(70, 30, 130), Color3.fromRGB(10, 10, 25), 90),
+	})
+	local titulo = rotulo({
+		Text = "ROUBE UM HERÓI",
+		Font = FONTE_TITULO,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.45),
+		Size = UDim2.fromScale(0.8, 0.18),
+		Parent = fundo,
+	}, {
+		gradiente(Color3.fromRGB(255, 240, 120), Color3.fromRGB(255, 120, 30), 90),
+		criar("UIStroke", { Thickness = 5, Color = Color3.fromRGB(80, 20, 0) }),
+	})
+	local subtitulo = rotulo({
+		Text = "🦸 Carregando a cidade dos heróis... 🦹",
+		Font = FONTE,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.6),
+		Size = UDim2.fromScale(0.6, 0.05),
+		Parent = fundo,
+	})
+	local escalaTitulo = criar("UIScale", { Scale = 0.6, Parent = titulo })
+	TweenService:Create(escalaTitulo, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	task.delay(2.3, function()
+		local info = TweenInfo.new(0.6)
+		TweenService:Create(fundo, info, { BackgroundTransparency = 1 }):Play()
+		TweenService:Create(titulo, info, { TextTransparency = 1 }):Play()
+		TweenService:Create(subtitulo, info, { TextTransparency = 1 }):Play()
+		for _, objeto in titulo:GetChildren() do
+			if objeto:IsA("UIStroke") then
+				TweenService:Create(objeto, info, { Transparency = 1 }):Play()
+			end
+		end
+		task.wait(0.7)
+		abertura:Destroy()
+	end)
+end
+
+ajustarEscala()
+if workspace.CurrentCamera then
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(ajustarEscala)
+end
+
+alvoDinheiro = atributo("Dinheiro", 0)
+valorExibido = alvoDinheiro
+textoDinheiro.Text = formatar(valorExibido)
+configLocal.musica = atributo("Musica", true)
+configLocal.sons = atributo("Sons", true)
+aplicarMusica()
+atualizarRenda()
+atualizarLoja()
+atualizarIndice()
+atualizarRenascer()
+atualizarDiario()
+atualizarConfig()
+atualizarCarregando()
+
+-- Mostra o tutorial para quem está jogando pela primeira vez
+task.spawn(function()
+	local inicio = os.clock()
+	while jogador:GetAttribute("TutorialFeito") == nil and os.clock() - inicio < 20 do
+		task.wait(0.5)
+	end
+	task.wait(3)
+	if jogador:GetAttribute("TutorialFeito") == false and painelAberto == nil then
+		mostrarTutorial()
+	end
+end)
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+</roblox>

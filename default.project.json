@@ -1,0 +1,34 @@
+{
+  "name": "RoubeUmHeroi",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "ConfigHerois": {
+        "$path": "src/ReplicatedStorage/ConfigHerois.lua"
+      }
+    },
+    "ServerScriptService": {
+      "JogoHerois": {
+        "$path": "src/ServerScriptService/JogoHerois.server.lua"
+      },
+      "Mapa": {
+        "$path": "src/ServerScriptService/Mapa.lua"
+      },
+      "Dados": {
+        "$path": "src/ServerScriptService/Dados.lua"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "InterfaceHerois": {
+          "$path": "src/StarterPlayerScripts/InterfaceHerois.client.lua"
+        }
+      }
+    },
+    "Lighting": {
+      "$properties": {
+        "Technology": "Future"
+      }
+    }
+  }
+}

@@ -1,53 +1,79 @@
-# Roube um Personagem 🕵️
+# 🦸 Roube um Herói
 
-Jogo para Roblox no estilo "roube um personagem". Personagens engraçados passam por uma passarela, você compra os que conseguir, eles ficam na sua base gerando dinheiro, e você pode **roubar** os personagens da base dos outros jogadores.
+Jogo completo para Roblox no estilo "roube um personagem", com o tema **heróis**.
 
-O script **monta o mapa sozinho**: a passarela, 6 bases com paredes, os pedestais, as placas e os botões de trancar. Você só precisa colar 2 scripts.
+Heróis saem de um portal e andam por uma passarela. Você compra os que conseguir, eles ficam na sua base gerando dinheiro, e você pode **roubar os heróis da base dos outros jogadores**, ou se defender com a **Luva Heroica**.
 
-## Arquivos
+## O que o jogo tem
 
-| Arquivo | Onde colocar no Roblox Studio | Tipo |
-|---|---|---|
-| `src/ServerScriptService/JogoRoubo.server.lua` | `ServerScriptService` | **Script** |
-| `src/StarterPlayerScripts/RouboCliente.client.lua` | `StarterPlayer` → `StarterPlayerScripts` | **LocalScript** |
+| | |
+|---|---|
+| 🏙️ **Cenário completo** | Cidade com 70 prédios neon, praça, ruas, árvores, postes, letreiro gigante, portais com partículas, ciclo de dia e noite, iluminação com brilho e atmosfera |
+| 🦸 **24 heróis originais** | 8 raridades (Comum → SECRETO). Cada herói tem capa, emblema e acessório (máscara, capacete, coroa ou antena). Os raros brilham, o Divino tem auréola e o Secreto tem aura |
+| ✨ **Mutações** | Ouro (x2), Diamante (x3), Arco-íris (x5, muda de cor), Cósmico (x10, com partículas) |
+| 💰 **Economia** | Renda por segundo, dinheiro acumulado nos pedestais (pise no botão verde para coletar), venda, renda offline |
+| 🦹 **Roubo** | Segure E para roubar, carregue o herói (você fica mais lento e marcado em vermelho) e uma seta mostra o caminho até a sua base |
+| 🥊 **Defesa** | Luva Heroica: o soco empurra e faz o ladrão derrubar o herói. Tranca com barreira laser que expulsa quem está dentro |
+| 🛒 **Loja** | Botas Turbo (velocidade), Mais Pedestais (6 → 12), Tranca Reforçada, Coletor Automático |
+| ♻️ **Renascimento** | Recomeça com +50% de renda para sempre |
+| 🎁 **Prêmio diário** | Sequência de 7 dias, e o dia 7 vale o dobro |
+| 📖 **Índice** | Coleção de todos os heróis descobertos |
+| 🏆 **Ranking** | 3 quadros gigantes no mapa (mais ricos, maiores ladrões, renascimentos), ranking global salvo e aba do servidor. O mais rico do servidor ganha uma coroa 👑 |
+| ⚡ **Eventos** | A cada 7 minutos: Hora Dourada, Invasão Lendária, Chuva de Heróis ou Renda em Dobro |
+| 💾 **Salvamento** | Dinheiro, heróis, melhorias, Índice e estatísticas ficam salvos (DataStore) |
+| 🎨 **Interface profissional** | Tela de abertura, contador de dinheiro animado, menus com animação, notificações, anúncios, alarme quando te roubam, tutorial para iniciantes, confete, funciona no celular |
+| 💎 **Robux (opcional)** | Game Pass de dinheiro em dobro e pacotes de moedas |
 
 ---
 
-## Passo a passo para montar
+## Como montar (jeito fácil: abrir o arquivo pronto)
 
-### 1. Crie o lugar
-1. Abra o **Roblox Studio**.
-2. Clique em **Novo** → **Baseplate**.
+1. Baixe o arquivo **`RoubeUmHeroi.rbxlx`** deste repositório. No GitHub, clique no arquivo e depois no botão de download.
+2. Dê dois cliques no arquivo, ou no Roblox Studio vá em **Arquivo → Abrir do arquivo**.
+3. Aperte **▶ Jogar**. O mapa inteiro é construído automaticamente quando o jogo começa.
 
-### 2. Script do servidor
-1. No **Explorador** (à direita), passe o mouse em **ServerScriptService** e clique no **+**.
-2. Escolha **Script**.
-3. Renomeie para `JogoRoubo` (clique com o botão direito → Renomear, ou F2).
-4. Apague o `print("Hello world!")`.
-5. Copie **todo** o conteúdo de `src/ServerScriptService/JogoRoubo.server.lua` e cole no script.
+> No modo de edição o mundo fica vazio. Isso é normal: a cidade aparece quando você aperta **Jogar**.
 
-### 3. Script do jogador
-1. No Explorador, clique na setinha ao lado de **StarterPlayer** para abrir.
-2. Passe o mouse em **StarterPlayerScripts** → **+** → **LocalScript** (atenção: é *Local*Script).
-3. Renomeie para `RouboCliente`.
-4. Apague o conteúdo e cole o de `src/StarterPlayerScripts/RouboCliente.client.lua`.
+## Como montar (copiando os scripts)
 
-### 4. Teste sozinho
-1. Aperte **▶ Jogar** (F5).
-2. Você vai aparecer dentro da sua base. Ande até a passarela vermelha.
-3. Chegue perto de um personagem e aperte **E** para comprar. Você começa com $100.
-4. O personagem vai sozinho para a sua base e começa a render dinheiro por segundo.
+Se preferir colar os scripts num lugar que você já tem, crie estes 5 scripts **com estes nomes exatos**:
 
-### 5. Teste o roubo (com 2 jogadores)
-1. Vá na aba **Teste**.
-2. No campo de clientes, escolha **2 jogadores** e clique em **Iniciar**. Abrem 3 janelas: o servidor e 2 jogadores.
-3. Com o jogador 1, compre um personagem.
-4. Com o jogador 2, entre na base do jogador 1, chegue perto do personagem e **segure E** para roubar.
-5. Leve o personagem de volta para a sua base. Se o dono encostar em você no caminho, o personagem volta para ele!
-6. Para parar o teste, clique em **Limpar** na aba Teste.
+| Onde criar no Explorador | Tipo | Nome | Arquivo |
+|---|---|---|---|
+| `ReplicatedStorage` | **ModuleScript** | `ConfigHerois` | `src/ReplicatedStorage/ConfigHerois.lua` |
+| `ServerScriptService` | **ModuleScript** | `Mapa` | `src/ServerScriptService/Mapa.lua` |
+| `ServerScriptService` | **ModuleScript** | `Dados` | `src/ServerScriptService/Dados.lua` |
+| `ServerScriptService` | **Script** | `JogoHerois` | `src/ServerScriptService/JogoHerois.server.lua` |
+| `StarterPlayer` → `StarterPlayerScripts` | **LocalScript** | `InterfaceHerois` | `src/StarterPlayerScripts/InterfaceHerois.client.lua` |
 
-### 6. Publique
-**Arquivo → Publicar no Roblox**. Depois, em **Configurações do jogo → Permissões**, deixe o jogo **Público**.
+Para cada um:
+1. Passe o mouse no lugar indicado, clique no **+** e escolha o tipo certo.
+2. Renomeie com F2 usando o nome da tabela. O nome precisa ser exatamente igual.
+3. Apague o conteúdo padrão e cole o conteúdo do arquivo.
+
+Se você tinha os scripts da versão antiga (`JogoRoubo` e `RouboCliente`), **apague-os**.
+
+### Recomendado
+- **Iluminação "Future"** (fica muito mais bonito): selecione **Lighting** no Explorador e, em Propriedades, mude **Technology** para **Future**. O arquivo pronto já vem assim.
+- **Máximo de 8 jogadores** (são 8 bases): **Início → Configurações do jogo → Lugares → Máximo de jogadores = 8**.
+
+## Salvar o progresso e o ranking global
+
+O salvamento usa DataStore, que só funciona em jogos **publicados**:
+
+1. **Arquivo → Publicar no Roblox**.
+2. **Início → Configurações do jogo → Segurança** → ative **"Permitir acesso do Studio aos serviços de API"**.
+
+Sem isso o jogo funciona normalmente, só não salva. Um aviso aparece na tela e os quadros mostram o ranking do servidor.
+
+## Testando
+
+- **Sozinho:** aperte **▶ Jogar**.
+- **Roubo entre jogadores:** aba **Teste** → escolha **2 jogadores** → **Iniciar**.
+- **Comandos de teste** (no chat, só no Studio ou para o dono do jogo):
+  - `!dinheiro 1000000` → ganha dinheiro
+  - `!evento` → começa um evento aleatório. Também dá para escolher: `!evento HoraDourada`
+  - `!heroi MestreMultiverso Cosmico` → solta um herói específico no portal
 
 ---
 
@@ -55,63 +81,59 @@ O script **monta o mapa sozinho**: a passarela, 6 bases com paredes, os pedestai
 
 | Ação | Como fazer |
 |---|---|
-| Comprar | Perto de um personagem na passarela, aperte **E** |
-| Roubar | Na base de outro jogador, **segure E** perto de um personagem |
-| Entregar o roubo | Entre na **sua** base carregando o personagem |
-| Recuperar | Encoste no ladrão antes que ele chegue na base dele |
-| Vender | Na sua base, aperte **F** perto do personagem (devolve 50%) |
-| Trancar a base | Pise no **botão verde** da sua base: uma barreira laser bloqueia os outros por 60s |
+| Comprar | Perto de um herói na passarela, aperte **E** |
+| Coletar dinheiro | Pise no **botão verde** em frente ao pedestal |
+| Roubar | Na base de outro jogador, **segure E** perto de um herói e corra para a sua base |
+| Socar | Equipe a **Luva Heroica** (tecla **1**) e clique. Quem leva soco derruba o herói que está roubando |
+| Vender | Na sua base, aperte **F** perto do herói (devolve 50%) |
+| Trancar a base | Pise no **botão verde redondo** da entrada da sua base |
 
-Regras:
-- Cada base tem **8 pedestais**. Com a base cheia, você precisa vender um personagem para comprar ou roubar outro.
-- Quem carrega um personagem roubado fica **mais lento**.
-- Se o ladrão morrer, o personagem volta para o dono.
-- Base trancada não pode ser roubada.
+## Heróis
 
-## Personagens
-
-| Personagem | Raridade | Preço | Renda |
+| Raridade | Heróis | Preço | Renda |
 |---|---|---|---|
-| Batatinha Saltitante | Comum | $25 | $1/s |
-| Chinelo Voador | Comum | $40 | $2/s |
-| Pato de Gravata | Raro | $150 | $6/s |
-| Melancia Ninja | Raro | $250 | $10/s |
-| Sapo Astronauta | Épico | $1.000 | $35/s |
-| Pizza Dançarina | Épico | $1.500 | $50/s |
-| Tubarão de Tênis | Lendário | $5.000 | $150/s |
-| Capivara Rei | Lendário | $8.000 | $250/s |
-| Dragão de Pijama | Mítico | $25.000 | $700/s |
-| Bigodudo Supremo | SECRETO | $100.000 | $2.500/s |
-
-Quanto mais rara, mais difícil de aparecer, maior o personagem, e os Lendários para cima brilham.
+| Comum | Garoto Bolha, Garota Mola, Capitão Chinelo, Senhor Pipoca | $25 – $90 | $1 – $4/s |
+| Incomum | Ventania, Doutor Gelinho, Faísca, Escudeiro Mirim | $200 – $600 | $8 – $22/s |
+| Raro | Trovoada, Lâmina Noturna, Punho de Aço, Sombra Veloz | $1,2K – $3,5K | $40 – $100/s |
+| Épico | Capitão Cometa, Fênix Rubra, Guardião Esmeralda | $8K – $18K | $200 – $420/s |
+| Lendário | Titã Dourado, Dama do Relâmpago, Coronel Galáxia | $50K – $120K | $1K – $2,2K/s |
+| Mítico | Imperador Solar, Rainha Nebulosa | $400K – $650K | $6K – $9K/s |
+| Divino | Arcanjo Supremo, Oráculo Eterno | $2M – $3,5M | $25K – $40K/s |
+| SECRETO | O Herói Desconhecido, Mestre Multiverso | $15M – $30M | $150K – $280K/s |
 
 ---
 
 ## Como personalizar
 
-Tudo fica no começo do `JogoRoubo`:
+Quase tudo se muda no **`ConfigHerois`**, sem mexer na lógica:
 
-- **`CONFIG`**: dinheiro inicial, velocidade da passarela, tempo de tranca, porcentagem de venda etc.
-- **`PERSONAGENS`**: para criar um personagem novo, copie uma linha e mude nome, raridade, preço, renda e cor:
-  ```lua
-  { nome = "Gato de Óculos", raridade = "Raro", preco = 200, renda = 8, cor = Color3.fromRGB(255, 140, 0) },
-  ```
-- **`RARIDADES`**: a `chance` controla quantas vezes cada raridade aparece.
-- **`POSICOES_BASES`**: adicione posições para ter mais bases (1 base por jogador).
+- **Novo herói:** copie uma linha de `Config.Herois` e troque `id`, `nome`, `raridade`, `preco`, `renda`, `icone`, `cabeca` e as cores.
+- **Música de fundo:** na Caixa de ferramentas → **Áudio**, escolha uma música, clique com o botão direito → **Copiar ID do recurso**, e cole em `Config.Sons.Musica = "rbxassetid://NUMERO"`.
+- **Preços das melhorias, renascimento, prêmio diário, eventos, mutações e chances:** cada um tem sua seção comentada.
+- **Robux:** crie o Game Pass e os Produtos no Creator Dashboard e cole os IDs em `Config.Robux`. Com ID `0` a oferta fica escondida.
 
-## Como o código funciona (resumo)
+## Como o código funciona
 
-1. **Mapa**: `construirBase` cria o chão, as paredes, a barreira, a placa, o botão e os 8 pedestais de cada base, tudo com `Instance.new("Part")`.
-2. **Jogador entra** (`aoEntrar`): ganha a `leaderstats` com o Dinheiro, recebe uma base livre e um HUD na tela. Toda vez que nasce, é levado para dentro da própria base.
-3. **Passarela**: a cada 3s, `criarPersonagem` monta um boneco (corpo, cabeça, olhos e pernas) com um `ProximityPrompt` de compra. O `Heartbeat` move os bonecos até o fim da passarela.
-4. **Compra** (`aoComprar`): confere dinheiro e pedestal livre, desconta o preço e usa o `TweenService` para levar o boneco até a base.
-5. **Renda**: um loop a cada 1 segundo soma a renda dos personagens de cada base e paga o dono.
-6. **Roubo** (`aoRoubar`): o boneco é soldado (`WeldConstraint`) em cima da cabeça do ladrão. A cada frame, `verificarCarregado` checa se ele chegou na própria base (`entregar`) ou se o dono encostou nele (`devolver`).
-7. **Tranca**: usa *Collision Groups*. A barreira colide com todo mundo, menos com o dono da base.
-8. **Cliente** (`RouboCliente`): esconde o botão "Roubar" nos seus personagens e o botão "Vender" nos personagens dos outros.
+```
+ReplicatedStorage/ConfigHerois      → configurações (lidas pelo servidor e pela interface)
+ServerScriptService/Mapa            → constrói a cidade, a passarela, as bases e os quadros
+ServerScriptService/Dados           → salva e carrega (DataStore) + ranking global
+ServerScriptService/JogoHerois      → regras do jogo (servidor)
+StarterPlayerScripts/InterfaceHerois → interface e efeitos (cada jogador)
+```
+
+- O **servidor** decide tudo: dinheiro, compras, roubos e melhorias. A interface só **pede** coisas (`RemoteFunction "Acao"`) e o servidor confere antes de aceitar. Isso evita trapaças.
+- O servidor manda o estado para a interface por **atributos** do jogador (`Dinheiro`, `RendaPorSegundo`, `NivelVelocidade`...) e por eventos (`Notificar`, `Anuncio`, `Efeito`).
+- Cada herói é montado com peças soldadas (`WeldConstraint`) a um tronco. Mover o tronco move o herói inteiro.
+- A tranca usa **Collision Groups**: a barreira bloqueia todo mundo, menos o dono da base.
+
+## Para desenvolvedores (Rojo)
+
+O projeto também funciona com [Rojo](https://rojo.space): `rojo serve` para sincronizar com o Studio, ou `rojo build -o RoubeUmHeroi.rbxlx` para gerar o arquivo de lugar.
 
 ## Problemas comuns
 
-- **Nada aparece no mapa**: confira se o script está em `ServerScriptService` e se é um **Script** (não um LocalScript). Abra **Janela → Saída** para ver erros em vermelho.
-- **Aparece "Roubar" nos meus próprios personagens**: o `RouboCliente` não está em `StarterPlayerScripts`, ou foi criado como Script em vez de LocalScript.
-- **O dinheiro não salva quando saio**: isso ainda não foi feito. O próximo passo seria usar o `DataStoreService`.
+- **Nada aparece quando aperto Jogar:** abra **Janela → Saída** e veja o erro em vermelho. Normalmente é um script com nome ou tipo errado, como Script em vez de ModuleScript.
+- **"Infinite yield possible on ... ConfigHerois":** o ModuleScript `ConfigHerois` não está em `ReplicatedStorage` ou está com outro nome.
+- **Aparece "Roubar" nos meus heróis:** o `InterfaceHerois` precisa ser um **LocalScript** em `StarterPlayerScripts`.
+- **"Seu progresso NÃO será salvo":** veja a seção *Salvar o progresso*.
