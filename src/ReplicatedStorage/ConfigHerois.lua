@@ -57,6 +57,9 @@ Config.Geral = {
 
 	-- Comandos de teste (/dinheiro, /evento, /heroi) funcionam no Studio e para o dono do jogo
 	ComandosDeTeste = true,
+
+	-- Distância máxima da tenda para comprar na Loja
+	DistanciaLoja = 32,
 }
 
 --------------------------------------------------------------------------
@@ -103,101 +106,204 @@ Config.Mutacoes = {
 }
 
 --------------------------------------------------------------------------
--- HERÓIS
--- cabeca: "mascara", "capacete", "coroa" ou "antena"
+-- HERÓIS (36 super-heróis inspirados nos filmes, com nomes e visuais originais)
+--
+-- visual: cores do uniforme e o que o herói usa.
+--   cabeca: bone, quepe, capaceteBombeiro, toucaMedica, chapeuAbas, capaceteAstronauta,
+--           capacetePiloto, cabelo, capuzAranha, capuzMorcego, capaceteEstrela,
+--           orelhasRaio, elmoTrovao, tiara, capaceteArmadura
+--   rosto: oculos, oculosSol, oculosProtecao, mascaraCirurgica, mascaraMergulho
+--   corpo (lista): faixasRefletivas, jaleco, colete, avental, estetoscopio, distintivo,
+--           cintoUtilidade, teia, listrasPeito, discosPeito, faixasAmarelas, binoculo, armaduraOuro
+--   emblema: cruz, estrela, raio, aranha, morcego, reator, supremo, bandeira
+--   mao: extintor, machado, vassoura, livro, maleta, frasco, boia, prancheta, lanterna, carta, martelo, laco
+--   maoEsquerda: escudo | costas: tanque, mochilaAstronauta, bolsaCarteiro | capa: cor
 -- renda = dinheiro por segundo
 --------------------------------------------------------------------------
-local PELE_CLARA = Color3.fromRGB(255, 214, 180)
-local PELE_MEDIA = Color3.fromRGB(224, 172, 120)
-local PELE_MORENA = Color3.fromRGB(170, 110, 70)
-local PELE_ESCURA = Color3.fromRGB(110, 70, 45)
-
-local function cores(traje, capa, emblema, pele, botas)
-	return { traje = traje, capa = capa, emblema = emblema, pele = pele, botas = botas }
-end
 local rgb = Color3.fromRGB
+local PELE_CLARA = rgb(255, 214, 180)
+local PELE_MEDIA = rgb(224, 172, 120)
+local PELE_MORENA = rgb(170, 110, 70)
+local PELE_ESCURA = rgb(110, 70, 45)
+local PRETO = rgb(25, 25, 30)
+local BRANCO = rgb(245, 245, 245)
+local CASTANHO = rgb(90, 55, 30)
+local LOIRO = rgb(240, 200, 90)
 
 Config.Herois = {
 	-- Comum
-	{ id = "GarotoBolha", nome = "Garoto Bolha", raridade = "Comum", preco = 25, renda = 1, icone = "🫧", cabeca = "mascara",
-		cores = cores(rgb(90, 180, 255), rgb(255, 255, 255), rgb(200, 240, 255), PELE_CLARA, rgb(40, 90, 170)) },
-	{ id = "GarotaMola", nome = "Garota Mola", raridade = "Comum", preco = 40, renda = 2, icone = "🌀", cabeca = "mascara",
-		cores = cores(rgb(255, 120, 180), rgb(120, 60, 160), rgb(255, 230, 0), PELE_MORENA, rgb(120, 60, 160)) },
-	{ id = "CapitaoChinelo", nome = "Capitão Chinelo", raridade = "Comum", preco = 60, renda = 3, icone = "🩴", cabeca = "capacete",
-		cores = cores(rgb(60, 140, 60), rgb(230, 60, 60), rgb(255, 255, 255), PELE_MEDIA, rgb(230, 60, 60)) },
-	{ id = "SenhorPipoca", nome = "Senhor Pipoca", raridade = "Comum", preco = 90, renda = 4, icone = "🍿", cabeca = "antena",
-		cores = cores(rgb(255, 230, 150), rgb(220, 40, 40), rgb(255, 255, 255), PELE_CLARA, rgb(220, 40, 40)) },
+	{ id = "FormigaAtomica", nome = "Formiga Atômica", raridade = "Comum", preco = 25, renda = 1, icone = "🐜", visual = {
+		pele = PELE_CLARA, camisa = rgb(190, 30, 30), mangas = rgb(30, 30, 35), calca = rgb(30, 30, 35), botas = PRETO, maos = PRETO,
+		cabeca = "capaceteFormiga", cabecaCor = rgb(170, 175, 185), corpo = { "cintoUtilidade" }, cintoCor = rgb(170, 175, 185) } },
+	{ id = "FlechaCerteira", nome = "Flecha Certeira", raridade = "Comum", preco = 40, renda = 2, icone = "🏹", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, camisa = rgb(40, 120, 50), calca = rgb(35, 80, 40), botas = rgb(90, 60, 35), maos = rgb(90, 60, 35),
+		cabeca = "capuzArqueiro", cabecaCor = rgb(30, 100, 40), rosto = "mascaraDomino", mascaraCor = rgb(20, 70, 30),
+		maoEsquerda = "arco", costas = "aljava" } },
+	{ id = "ReiDosMares", nome = "Rei dos Mares", raridade = "Comum", preco = 60, renda = 3, icone = "🔱", visual = {
+		pele = PELE_MEDIA, cabelo = LOIRO, estiloCabelo = "longo", camisa = rgb(240, 140, 30), calca = rgb(30, 130, 70), botas = rgb(30, 130, 70),
+		maos = rgb(30, 130, 70), cabeca = "cabelo", rosto = "barba", corpo = { "escamas" }, mao = "tridente" } },
+	{ id = "AgenteSombra", nome = "Agente Sombra", raridade = "Comum", preco = 90, renda = 4, icone = "🕶️", visual = {
+		pele = PELE_CLARA, cabelo = rgb(180, 40, 30), estiloCabelo = "longo", camisa = rgb(25, 25, 30), calca = rgb(25, 25, 30), botas = PRETO,
+		maos = PRETO, cabeca = "cabelo", corpo = { "cintoUtilidade" }, cintoCor = rgb(70, 70, 80), mao = "blasters" } },
+	{ id = "PassaroVermelho", nome = "Pássaro Vermelho", raridade = "Comum", preco = 130, renda = 5, icone = "🐦", visual = {
+		pele = PELE_CLARA, cabelo = PRETO, camisa = rgb(200, 30, 30), mangas = rgb(30, 110, 50), calca = rgb(30, 110, 50), botas = PRETO,
+		maos = rgb(30, 110, 50), cabeca = "cabelo", rosto = "mascaraDomino", corpo = { "cintoUtilidade" }, capa = rgb(255, 200, 40) } },
+	{ id = "AsaDeAco", nome = "Asa de Aço", raridade = "Comum", preco = 180, renda = 6, icone = "🦅", visual = {
+		pele = PELE_ESCURA, cabelo = PRETO, camisa = rgb(110, 115, 125), calca = rgb(60, 62, 70), botas = PRETO, maos = PRETO,
+		cabeca = "cabelo", rosto = "oculosVoo", costas = "asasMetal", corpo = { "cintoUtilidade" }, cintoCor = rgb(200, 40, 40) } },
 
 	-- Incomum
-	{ id = "Ventania", nome = "Ventania", raridade = "Incomum", preco = 200, renda = 8, icone = "🌪️", cabeca = "mascara",
-		cores = cores(rgb(170, 220, 230), rgb(40, 90, 140), rgb(255, 255, 255), PELE_ESCURA, rgb(40, 90, 140)) },
-	{ id = "DoutorGelinho", nome = "Doutor Gelinho", raridade = "Incomum", preco = 300, renda = 12, icone = "❄️", cabeca = "capacete",
-		cores = cores(rgb(180, 230, 255), rgb(40, 120, 200), rgb(255, 255, 255), PELE_CLARA, rgb(40, 120, 200)) },
-	{ id = "Faisca", nome = "Faísca", raridade = "Incomum", preco = 450, renda = 17, icone = "⚡", cabeca = "mascara",
-		cores = cores(rgb(255, 210, 0), rgb(30, 30, 30), rgb(255, 120, 0), PELE_MEDIA, rgb(30, 30, 30)) },
-	{ id = "EscudeiroMirim", nome = "Escudeiro Mirim", raridade = "Incomum", preco = 600, renda = 22, icone = "🛡️", cabeca = "capacete",
-		cores = cores(rgb(40, 70, 170), rgb(200, 30, 30), rgb(255, 255, 255), PELE_MORENA, rgb(200, 30, 30)) },
+	{ id = "PanteraReal", nome = "Pantera Real", raridade = "Incomum", preco = 300, renda = 10, icone = "🐾", visual = {
+		pele = PELE_ESCURA, camisa = rgb(25, 25, 30), calca = rgb(25, 25, 30), botas = PRETO, maos = PRETO,
+		cabeca = "capuzPantera", corpo = { "linhasPrata", "colar" } } },
+	{ id = "MagoSupremo", nome = "Mago Supremo", raridade = "Incomum", preco = 420, renda = 14, icone = "🔮", visual = {
+		pele = PELE_CLARA, cabelo = PRETO, camisa = rgb(30, 60, 130), calca = rgb(25, 35, 80), botas = rgb(90, 60, 35),
+		maos = rgb(160, 120, 70), cabeca = "magoCabelo", corpo = { "robe", "amuleto" }, capa = rgb(180, 20, 30), mao = "magia" } },
+	{ id = "CiborgueMax", nome = "Ciborgue Max", raridade = "Incomum", preco = 560, renda = 18, icone = "🦾", visual = {
+		pele = PELE_ESCURA, cabelo = PRETO, camisa = rgb(130, 135, 145), calca = rgb(110, 115, 125), botas = rgb(60, 62, 70),
+		maos = rgb(150, 155, 165), material = "Metal", cabeca = "capaceteCiborgue", corpo = { "metadeMetal" } } },
+	{ id = "GarraSelvagem", nome = "Garra Selvagem", raridade = "Incomum", preco = 750, renda = 24, icone = "🐺", visual = {
+		pele = PELE_CLARA, camisa = rgb(255, 200, 0), calca = rgb(40, 60, 160), botas = rgb(40, 60, 160), maos = rgb(40, 60, 160),
+		cabeca = "mascaraGarra", cabecaCor = rgb(255, 200, 0), corpo = { "faixasPretasLaterais", "cintoUtilidade" }, cintoCor = rgb(200, 30, 30),
+		mao = "garras" } },
+	{ id = "MercenarioTagarela", nome = "Mercenário Tagarela", raridade = "Incomum", preco = 950, renda = 30, icone = "⚔️", visual = {
+		pele = PELE_CLARA, camisa = rgb(170, 20, 25), calca = rgb(170, 20, 25), botas = PRETO, maos = PRETO,
+		cabeca = "mascaraMercenario", cabecaCor = rgb(170, 20, 25), corpo = { "cintoUtilidade" }, cintoCor = PRETO, costas = "espadas" } },
+	{ id = "SenhoraTempestade", nome = "Senhora Tempestade", raridade = "Incomum", preco = 1200, renda = 36, icone = "🌩️", visual = {
+		pele = PELE_ESCURA, cabelo = rgb(240, 240, 245), estiloCabelo = "longo", camisa = rgb(30, 30, 35), calca = rgb(30, 30, 35),
+		botas = PRETO, maos = PRETO, cabeca = "cabelo", rosto = "olhosBrancos", capa = rgb(60, 60, 75), mao = "raios" } },
 
 	-- Raro
-	{ id = "Trovoada", nome = "Trovoada", raridade = "Raro", preco = 1200, renda = 40, icone = "🌩️", cabeca = "antena",
-		cores = cores(rgb(60, 60, 90), rgb(120, 160, 255), rgb(255, 255, 120), PELE_ESCURA, rgb(120, 160, 255)) },
-	{ id = "LaminaNoturna", nome = "Lâmina Noturna", raridade = "Raro", preco = 1800, renda = 55, icone = "🗡️", cabeca = "mascara",
-		cores = cores(rgb(25, 25, 35), rgb(90, 0, 0), rgb(255, 40, 40), PELE_CLARA, rgb(90, 0, 0)) },
-	{ id = "PunhoDeAco", nome = "Punho de Aço", raridade = "Raro", preco = 2500, renda = 75, icone = "👊", cabeca = "capacete",
-		cores = cores(rgb(150, 150, 160), rgb(255, 140, 0), rgb(255, 200, 0), PELE_MEDIA, rgb(80, 80, 90)) },
-	{ id = "SombraVeloz", nome = "Sombra Veloz", raridade = "Raro", preco = 3500, renda = 100, icone = "💨", cabeca = "mascara",
-		cores = cores(rgb(80, 40, 120), rgb(20, 20, 20), rgb(200, 120, 255), PELE_MORENA, rgb(20, 20, 20)) },
+	{ id = "OlhoLaser", nome = "Olho Laser", raridade = "Raro", preco = 2000, renda = 60, icone = "👁️", visual = {
+		pele = PELE_CLARA, cabelo = CASTANHO, camisa = rgb(30, 40, 90), calca = rgb(30, 40, 90), botas = rgb(255, 200, 0), maos = rgb(255, 200, 0),
+		cabeca = "cabelo", rosto = "viseira", corpo = { "cintoUtilidade" } } },
+	{ id = "GarotaInvisivel", nome = "Garota Invisível", raridade = "Raro", preco = 2800, renda = 80, icone = "🫥", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, estiloCabelo = "longo", camisa = rgb(40, 90, 200), calca = rgb(40, 90, 200), botas = PRETO,
+		maos = PRETO, cabeca = "cabelo", transparencia = 0.45, corpo = { "cintoUtilidade" }, cintoCor = PRETO } },
+	{ id = "ChamaViva", nome = "Chama Viva", raridade = "Raro", preco = 3800, renda = 105, icone = "🔥", visual = {
+		pele = rgb(255, 130, 30), camisa = rgb(255, 90, 10), calca = rgb(255, 120, 20), botas = rgb(255, 180, 40), maos = rgb(255, 160, 40),
+		material = "Neon", cabeca = "cabecaFogo", corpo = { "chamas" } } },
+	{ id = "GiganteDePedra", nome = "Gigante de Pedra", raridade = "Raro", preco = 5000, renda = 135, icone = "🪨", visual = {
+		pele = rgb(220, 120, 50), camisa = rgb(220, 120, 50), calca = rgb(40, 60, 160), botas = rgb(220, 120, 50), maos = rgb(220, 120, 50),
+		material = "Concrete", largo = true, cabeca = "cabecaPedra", corpo = { "corpoPedra" } } },
+	{ id = "AndroideRubro", nome = "Androide Rubro", raridade = "Raro", preco = 6500, renda = 170, icone = "💎", visual = {
+		pele = rgb(200, 40, 50), camisa = rgb(40, 120, 70), calca = rgb(40, 120, 70), botas = rgb(200, 160, 40), maos = rgb(200, 40, 50),
+		cabeca = "androide", corpo = { "linhasDouradas" }, capa = rgb(230, 180, 40) } },
+	{ id = "CorvoMistico", nome = "Corvo Místico", raridade = "Raro", preco = 8500, renda = 210, icone = "🐦‍⬛", visual = {
+		pele = rgb(215, 195, 230), cabelo = rgb(60, 40, 120), camisa = rgb(40, 30, 90), calca = rgb(30, 25, 70), botas = rgb(30, 25, 70),
+		cabeca = "capuzCorvo", cabecaCor = rgb(50, 40, 110), capa = rgb(50, 40, 110), corpo = { "cintoUtilidade" } } },
 
 	-- Épico
-	{ id = "CapitaoCometa", nome = "Capitão Cometa", raridade = "Epico", preco = 8000, renda = 200, icone = "☄️", cabeca = "capacete",
-		cores = cores(rgb(30, 60, 150), rgb(255, 120, 0), rgb(255, 220, 0), PELE_CLARA, rgb(255, 120, 0)) },
-	{ id = "FenixRubra", nome = "Fênix Rubra", raridade = "Epico", preco = 12000, renda = 300, icone = "🔥", cabeca = "coroa",
-		cores = cores(rgb(220, 40, 20), rgb(255, 170, 0), rgb(255, 230, 120), PELE_MEDIA, rgb(255, 170, 0)) },
-	{ id = "GuardiaoEsmeralda", nome = "Guardião Esmeralda", raridade = "Epico", preco = 18000, renda = 420, icone = "💚", cabeca = "mascara",
-		cores = cores(rgb(20, 160, 80), rgb(10, 60, 30), rgb(120, 255, 160), PELE_ESCURA, rgb(10, 60, 30)) },
+	{ id = "BruxaRubi", nome = "Bruxa Rubi", raridade = "Epico", preco = 15000, renda = 350, icone = "🔴", visual = {
+		pele = PELE_CLARA, cabelo = rgb(150, 50, 30), camisa = rgb(170, 20, 40), calca = rgb(80, 10, 20), botas = rgb(170, 20, 40),
+		maos = rgb(170, 20, 40), cabeca = "tiaraBruxa", capa = rgb(140, 15, 35), mao = "energiaVermelha" } },
+	{ id = "CapitaCosmica", nome = "Capitã Cósmica", raridade = "Epico", preco = 22000, renda = 480, icone = "⭐", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, camisa = rgb(190, 25, 35), calca = rgb(30, 50, 140), botas = rgb(190, 25, 35), maos = rgb(190, 25, 35),
+		cabeca = "cabelo", corpo = { "faixaAzul" }, emblema = "estrelaDourada", mao = "punhoEnergia" } },
+	{ id = "LanternaEsmeralda", nome = "Lanterna Esmeralda", raridade = "Epico", preco = 30000, renda = 620, icone = "💚", visual = {
+		pele = PELE_MEDIA, cabelo = CASTANHO, camisa = rgb(30, 170, 70), mangas = rgb(25, 25, 30), calca = rgb(25, 25, 30), botas = rgb(30, 170, 70),
+		maos = BRANCO, cabeca = "cabelo", rosto = "mascaraDomino", mascaraCor = rgb(30, 170, 70), emblema = "lanterna", mao = "anelVerde" } },
+	{ id = "GataNoturna", nome = "Gata Noturna", raridade = "Epico", preco = 42000, renda = 800, icone = "🐈‍⬛", visual = {
+		pele = PELE_CLARA, camisa = rgb(28, 28, 34), calca = rgb(28, 28, 34), botas = PRETO, maos = PRETO,
+		cabeca = "capuzGata", mao = "chicote", corpo = { "cintoUtilidade" }, cintoCor = rgb(70, 70, 80) } },
+	{ id = "LordeGalactico", nome = "Lorde Galáctico", raridade = "Epico", preco = 58000, renda = 1050, icone = "🚀", visual = {
+		pele = PELE_CLARA, camisa = rgb(120, 30, 30), calca = rgb(40, 35, 45), botas = PRETO, maos = PRETO,
+		cabeca = "mascaraLorde", corpo = { "casaco" }, mao = "blasters" } },
 
 	-- Lendário
-	{ id = "TitaDourado", nome = "Titã Dourado", raridade = "Lendario", preco = 50000, renda = 1000, icone = "🏆", cabeca = "coroa",
-		cores = cores(rgb(230, 180, 30), rgb(130, 20, 20), rgb(255, 255, 255), PELE_MORENA, rgb(130, 20, 20)) },
-	{ id = "DamaDoRelampago", nome = "Dama do Relâmpago", raridade = "Lendario", preco = 80000, renda = 1500, icone = "🌟", cabeca = "antena",
-		cores = cores(rgb(250, 250, 255), rgb(90, 130, 255), rgb(255, 230, 0), PELE_CLARA, rgb(90, 130, 255)) },
-	{ id = "CoronelGalaxia", nome = "Coronel Galáxia", raridade = "Lendario", preco = 120000, renda = 2200, icone = "🪐", cabeca = "capacete",
-		cores = cores(rgb(40, 20, 80), rgb(200, 60, 255), rgb(120, 255, 255), PELE_ESCURA, rgb(200, 60, 255)) },
+	{ id = "AranhaEscarlate", nome = "Aranha Escarlate", raridade = "Lendario", preco = 100000, renda = 1600, icone = "🕷️", visual = {
+		pele = PELE_CLARA, camisa = rgb(210, 25, 35), calca = rgb(30, 60, 170), botas = rgb(210, 25, 35), maos = rgb(210, 25, 35),
+		cabeca = "capuzAranha", cabecaCor = rgb(210, 25, 35), corpo = { "teia" }, emblema = "aranha" } },
+	{ id = "CavaleiroMorcego", nome = "Cavaleiro Morcego", raridade = "Lendario", preco = 140000, renda = 2100, icone = "🦇", visual = {
+		pele = PELE_MEDIA, camisa = rgb(35, 32, 45), calca = rgb(22, 20, 28), botas = PRETO, maos = PRETO,
+		cabeca = "capuzMorcego", cabecaCor = rgb(22, 20, 28), corpo = { "cintoUtilidade" }, cintoCor = rgb(120, 60, 220),
+		emblema = "morcego", capa = rgb(40, 18, 70) } },
+	{ id = "CapitaoEstrela", nome = "Capitão Estrela", raridade = "Lendario", preco = 190000, renda = 2700, icone = "🛡️", visual = {
+		pele = PELE_CLARA, camisa = rgb(30, 60, 170), calca = rgb(30, 60, 170), botas = rgb(200, 30, 30), maos = rgb(120, 80, 45),
+		cabeca = "capaceteEstrela", cabecaCor = rgb(30, 60, 170), corpo = { "listrasPeito" }, emblema = "estrela", maoEsquerda = "escudo" } },
+	{ id = "RaioVeloz", nome = "Raio Veloz", raridade = "Lendario", preco = 260000, renda = 3500, icone = "⚡", visual = {
+		pele = PELE_CLARA, camisa = rgb(200, 20, 25), calca = rgb(200, 20, 25), botas = rgb(255, 200, 0), maos = rgb(200, 20, 25),
+		cabeca = "orelhasRaio", cabecaCor = rgb(200, 20, 25), emblema = "raio" } },
+	{ id = "SimbionteSombrio", nome = "Simbionte Sombrio", raridade = "Lendario", preco = 350000, renda = 4500, icone = "🕸️", visual = {
+		pele = rgb(20, 20, 25), camisa = rgb(20, 20, 25), calca = rgb(20, 20, 25), botas = rgb(20, 20, 25), maos = rgb(20, 20, 25),
+		largo = true, cabeca = "capuzSimbionte", emblema = "aranha", emblemaCor = BRANCO } },
 
 	-- Mítico
-	{ id = "ImperadorSolar", nome = "Imperador Solar", raridade = "Mitico", preco = 400000, renda = 6000, icone = "☀️", cabeca = "coroa",
-		cores = cores(rgb(255, 150, 0), rgb(255, 240, 120), rgb(255, 255, 255), PELE_MEDIA, rgb(200, 80, 0)) },
-	{ id = "RainhaNebulosa", nome = "Rainha Nebulosa", raridade = "Mitico", preco = 650000, renda = 9000, icone = "🌌", cabeca = "coroa",
-		cores = cores(rgb(120, 60, 200), rgb(255, 100, 200), rgb(150, 255, 255), PELE_ESCURA, rgb(255, 100, 200)) },
+	{ id = "TitaEsmeralda", nome = "Titã Esmeralda", raridade = "Mitico", preco = 700000, renda = 8000, icone = "💪", visual = {
+		pele = rgb(70, 170, 70), cabelo = PRETO, camisa = rgb(70, 170, 70), calca = rgb(110, 50, 150), botas = rgb(70, 170, 70),
+		cabeca = "cabelo", largo = true } },
+	{ id = "GuardiaoTrovao", nome = "Guardião do Trovão", raridade = "Mitico", preco = 1000000, renda = 11000, icone = "🔨", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, camisa = rgb(70, 75, 90), calca = rgb(25, 25, 32), botas = rgb(120, 125, 135),
+		maos = rgb(150, 155, 165), cabeca = "elmoTrovao", corpo = { "discosPeito" }, capa = rgb(190, 20, 25), mao = "martelo" } },
+	{ id = "AmazonaDourada", nome = "Amazona Dourada", raridade = "Mitico", preco = 1400000, renda = 15000, icone = "👑", visual = {
+		pele = PELE_MORENA, cabelo = PRETO, camisa = rgb(180, 20, 30), calca = rgb(180, 20, 30), botas = rgb(180, 20, 30),
+		maos = rgb(200, 205, 215), cabeca = "tiara", corpo = { "armaduraOuro" }, mao = "laco" } },
+	{ id = "CapitaoRelampago", nome = "Capitão Relâmpago", raridade = "Mitico", preco = 2000000, renda = 20000, icone = "💥", visual = {
+		pele = PELE_MEDIA, cabelo = PRETO, camisa = rgb(190, 20, 25), calca = rgb(190, 20, 25), botas = rgb(255, 200, 40),
+		maos = rgb(255, 200, 40), cabeca = "cabelo", emblema = "raioPeito", capa = rgb(245, 245, 240), corpo = { "cintoUtilidade" } } },
 
 	-- Divino
-	{ id = "ArcanjoSupremo", nome = "Arcanjo Supremo", raridade = "Divino", preco = 2000000, renda = 25000, icone = "😇", cabeca = "coroa",
-		cores = cores(rgb(255, 255, 255), rgb(255, 215, 0), rgb(255, 240, 150), PELE_CLARA, rgb(255, 215, 0)) },
-	{ id = "OraculoEterno", nome = "Oráculo Eterno", raridade = "Divino", preco = 3500000, renda = 40000, icone = "🔮", cabeca = "antena",
-		cores = cores(rgb(60, 0, 90), rgb(0, 255, 200), rgb(255, 255, 255), PELE_MORENA, rgb(0, 255, 200)) },
+	{ id = "ArmaduraRubi", nome = "Armadura Rubi", raridade = "Divino", preco = 5000000, renda = 45000, icone = "🤖", visual = {
+		pele = PELE_CLARA, camisa = rgb(170, 20, 25), calca = rgb(170, 20, 25), botas = rgb(255, 190, 40), maos = rgb(255, 190, 40),
+		material = "Metal", cabeca = "capaceteArmadura", cabecaCor = rgb(170, 20, 25), emblema = "reator" } },
+	{ id = "FenixCosmica", nome = "Fênix Cósmica", raridade = "Divino", preco = 8000000, renda = 70000, icone = "🌟", visual = {
+		pele = PELE_CLARA, cabelo = rgb(220, 50, 20), camisa = rgb(220, 40, 20), calca = rgb(220, 40, 20), botas = rgb(255, 190, 40),
+		maos = rgb(255, 190, 40), cabeca = "cabeloChamas", emblema = "fenix", corpo = { "chamas", "cintoUtilidade" } } },
 
 	-- Secreto
-	{ id = "HeroiDesconhecido", nome = "O Herói Desconhecido", raridade = "Secreto", preco = 15000000, renda = 150000, icone = "❓", cabeca = "mascara",
-		cores = cores(rgb(15, 15, 15), rgb(255, 0, 60), rgb(255, 0, 60), PELE_MEDIA, rgb(255, 0, 60)) },
-	{ id = "MestreMultiverso", nome = "Mestre Multiverso", raridade = "Secreto", preco = 30000000, renda = 280000, icone = "♾️", cabeca = "capacete",
-		cores = cores(rgb(0, 0, 0), rgb(0, 200, 255), rgb(255, 255, 255), PELE_ESCURA, rgb(0, 200, 255)) },
+	{ id = "HeroiSupremo", nome = "Herói Supremo", raridade = "Secreto", preco = 25000000, renda = 200000, icone = "🦸", visual = {
+		pele = PELE_CLARA, cabelo = PRETO, estiloCabelo = "cacho", camisa = rgb(30, 80, 200), calca = rgb(30, 80, 200),
+		botas = rgb(200, 25, 30), maos = rgb(30, 80, 200), cabeca = "cabelo", emblema = "supremo", capa = rgb(200, 25, 30) } },
+	{ id = "ViajantePrata", nome = "Viajante de Prata", raridade = "Secreto", preco = 50000000, renda = 380000, icone = "🏄", visual = {
+		pele = rgb(205, 210, 220), camisa = rgb(205, 210, 220), calca = rgb(205, 210, 220), botas = rgb(205, 210, 220),
+		maos = rgb(205, 210, 220), material = "Foil", mao = "prancha" } },
+}
+
+-- Heróis da versão antiga do jogo viram os novos (para ninguém perder o que salvou)
+Config.IdsAntigos = {
+	GarotoBolha = "FormigaAtomica", GarotaMola = "FlechaCerteira", CapitaoChinelo = "ReiDosMares", SenhorPipoca = "AgenteSombra",
+	Ventania = "PanteraReal", DoutorGelinho = "MagoSupremo", Faisca = "CiborgueMax", EscudeiroMirim = "GarraSelvagem",
+	Trovoada = "OlhoLaser", LaminaNoturna = "GarotaInvisivel", PunhoDeAco = "ChamaViva", SombraVeloz = "GiganteDePedra",
+	CapitaoCometa = "BruxaRubi", FenixRubra = "CapitaCosmica", GuardiaoEsmeralda = "LanternaEsmeralda",
+	TitaDourado = "AranhaEscarlate", DamaDoRelampago = "CavaleiroMorcego", CoronelGalaxia = "CapitaoEstrela",
+	ImperadorSolar = "TitaEsmeralda", RainhaNebulosa = "GuardiaoTrovao", ArcanjoSupremo = "ArmaduraRubi",
+	OraculoEterno = "FenixCosmica", HeroiDesconhecido = "HeroiSupremo", MestreMultiverso = "ViajantePrata",
 }
 
 --------------------------------------------------------------------------
--- MELHORIAS (Loja)
+-- LUVAS (compradas na tenda da Loja). A Básica todo mundo já tem.
+-- forca = empurrão do soco | alcance = distância | recarga = segundos entre socos
+-- atordoar = segundos que a vítima fica caída
+--------------------------------------------------------------------------
+Config.Luvas = {
+	{ id = "Basica", nome = "Luva Básica", icone = "🥊", preco = 0, forca = 75, alcance = 8, recarga = 0.8, atordoar = 0.8,
+		cor = rgb(215, 30, 30), corPunho = BRANCO, corDetalhe = rgb(30, 30, 30) },
+	{ id = "Ferro", nome = "Luva de Ferro", icone = "🔩", preco = 5000, forca = 95, alcance = 9, recarga = 0.75, atordoar = 1.0,
+		cor = rgb(170, 175, 185), corPunho = rgb(60, 60, 70), corDetalhe = rgb(255, 200, 40), material = "Metal" },
+	{ id = "Turbo", nome = "Luva Turbo", icone = "💨", preco = 50000, forca = 115, alcance = 10, recarga = 0.65, atordoar = 1.2,
+		cor = rgb(30, 110, 255), corPunho = rgb(20, 30, 60), corDetalhe = rgb(80, 240, 255), neon = true },
+	{ id = "Trovao", nome = "Luva Trovão", icone = "⚡", preco = 500000, forca = 140, alcance = 11, recarga = 0.55, atordoar = 1.4,
+		cor = rgb(255, 200, 0), corPunho = rgb(25, 25, 30), corDetalhe = rgb(255, 255, 150), neon = true, particulas = rgb(255, 240, 120) },
+	{ id = "Cosmica", nome = "Luva Cósmica", icone = "🌌", preco = 5000000, forca = 170, alcance = 12.5, recarga = 0.45, atordoar = 1.7,
+		cor = rgb(120, 40, 220), corPunho = rgb(20, 10, 40), corDetalhe = rgb(255, 120, 255), material = "Neon", neon = true,
+		particulas = rgb(200, 120, 255) },
+}
+
+--------------------------------------------------------------------------
+-- MELHORIAS (compradas na tenda da Loja)
 --------------------------------------------------------------------------
 Config.Melhorias = {
 	{
 		id = "Velocidade",
-		nome = "Botas Turbo",
-		icone = "👟",
+		nome = "Mola Turbo",
+		icone = "🌀",
 		precos = { 300, 1500, 6000, 25000, 100000, 400000, 1500000, 6000000, 25000000, 100000000 },
 	},
 	{
 		id = "Pedestais",
 		nome = "Mais Pedestais",
 		icone = "🏛️",
-		precos = { 800, 5000, 30000, 200000, 1200000, 8000000 },
+		precos = { 800, 5000, 30000, 150000, 700000, 3000000, 12000000, 50000000, 200000000 },
 	},
 	{
 		id = "Tranca",
@@ -217,8 +323,12 @@ function Config.velocidadeDoNivel(nivel)
 	return 16 + 2 * nivel
 end
 
+function Config.puloDoNivel(nivel)
+	return 7.2 + 0.7 * nivel -- altura do pulo (a mola faz pular mais alto)
+end
+
 function Config.pedestaisDoNivel(nivel)
-	return 6 + nivel
+	return 6 + 2 * nivel -- de 6 até 24 (3 andares com 8 pedestais)
 end
 
 function Config.trancaDoNivel(nivel)
@@ -228,7 +338,7 @@ end
 -- Texto mostrado na Loja para cada melhoria
 function Config.descricaoMelhoria(id, nivel)
 	if id == "Velocidade" then
-		return "Velocidade " .. Config.velocidadeDoNivel(nivel)
+		return "Velocidade " .. Config.velocidadeDoNivel(nivel) .. " e pulo mais alto"
 	elseif id == "Pedestais" then
 		return Config.pedestaisDoNivel(nivel) .. " pedestais na base"
 	elseif id == "Tranca" then
@@ -238,6 +348,26 @@ function Config.descricaoMelhoria(id, nivel)
 	end
 	return ""
 end
+
+--------------------------------------------------------------------------
+-- ROLETA DA SORTE (gira a cada 12 horas)
+-- tipo: dinheiro (minutos de renda, com valor mínimo), boostRenda, boostVelocidade,
+--       heroi (raridade), girarDeNovo | peso = chance
+--------------------------------------------------------------------------
+Config.Roleta = {
+	IntervaloHoras = 12,
+	DuracaoGiro = 6,
+	Premios = {
+		{ id = "MoedasP", nome = "Saquinho de Moedas", curto = "$", icone = "💰", cor = rgb(80, 200, 90), peso = 30, tipo = "dinheiro", minutos = 3, minimo = 1000 },
+		{ id = "Renda2x", nome = "Renda 2x por 15 min", curto = "2x", icone = "⚡", cor = rgb(255, 200, 40), peso = 15, tipo = "boostRenda", minutos = 15 },
+		{ id = "HeroiEpico", nome = "Herói Épico", curto = "Épico", icone = "🦸", cor = rgb(170, 80, 255), peso = 12, tipo = "heroi", raridade = "Epico" },
+		{ id = "MoedasM", nome = "Cofre de Moedas", curto = "$$", icone = "🏦", cor = rgb(40, 170, 220), peso = 20, tipo = "dinheiro", minutos = 15, minimo = 5000 },
+		{ id = "Velocidade", nome = "Super velocidade por 10 min", curto = "Rápido", icone = "🌀", cor = rgb(60, 220, 200), peso = 10, tipo = "boostVelocidade", minutos = 10 },
+		{ id = "HeroiLendario", nome = "Herói Lendário", curto = "Lendário", icone = "🌟", cor = rgb(255, 140, 30), peso = 3, tipo = "heroi", raridade = "Lendario" },
+		{ id = "MoedasG", nome = "Tesouro de Moedas", curto = "$$$", icone = "💎", cor = rgb(230, 60, 130), peso = 6, tipo = "dinheiro", minutos = 45, minimo = 25000 },
+		{ id = "GirarDeNovo", nome = "Gire de novo!", curto = "+1", icone = "🔁", cor = rgb(90, 110, 255), peso = 4, tipo = "girarDeNovo" },
+	},
+}
 
 --------------------------------------------------------------------------
 -- RENASCIMENTO
@@ -367,6 +497,18 @@ end
 Config.MelhoriaPorId = {}
 for _, melhoria in Config.Melhorias do
 	Config.MelhoriaPorId[melhoria.id] = melhoria
+end
+
+Config.LuvaPorId = {}
+for ordem, luva in Config.Luvas do
+	luva.ordem = ordem
+	Config.LuvaPorId[luva.id] = luva
+end
+
+Config.PremioPorId = {}
+for indice, premio in Config.Roleta.Premios do
+	premio.indice = indice
+	Config.PremioPorId[premio.id] = premio
 end
 
 Config.EventoPorId = {}

@@ -2,13 +2,14 @@
 	ROUBE UM HERÓI - Script principal do servidor
 
 	Onde colocar: ServerScriptService -> Script (nome: JogoHerois)
-	Precisa também de: ServerScriptService/Mapa, ServerScriptService/Dados
-	e ReplicatedStorage/ConfigHerois (ModuleScripts).
+	Precisa também de: ServerScriptService/Mapa, ServerScriptService/Dados,
+	ServerScriptService/ModelosHerois e ReplicatedStorage/ConfigHerois (ModuleScripts).
 
 	Cuida de toda a lógica do jogo:
 	  - heróis saindo do portal e andando pela passarela (com mutações)
 	  - compra, renda por segundo, coleta nos pedestais, venda
-	  - roubo (segurar E), carregar o herói até a sua base, Luva Heroica
+	  - roubo (segurar E), carregar o herói até a sua base, Luva Heroica (5 níveis)
+	  - bases de 3 andares com elevador, tenda da Loja e Roleta da Sorte
 	  - tranca da base, melhorias, renascimento, recompensa diária
 	  - eventos, ciclo dia/noite, coroa do mais rico
 	  - salvamento (DataStore), ranking global e compras com Robux
@@ -19,7 +20,6 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPack = game:GetService("StarterPack")
-local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
@@ -28,12 +28,12 @@ local Debris = game:GetService("Debris")
 local Config = require(ReplicatedStorage:WaitForChild("ConfigHerois"))
 local Mapa = require(script.Parent:WaitForChild("Mapa"))
 local Dados = require(script.Parent:WaitForChild("Dados"))
+local Modelos = require(script.Parent:WaitForChild("ModelosHerois"))
 
 local G = Config.Geral
 local formatar = Config.formatar
 
 local NOME_LUVA = "Luva Heroica"
-local PELE_PADRAO = Color3.fromRGB(255, 214, 180)
 
 local function ordemRaridade(id)
 	local raridade = Config.RaridadePorId[id] or Config.Raridades[#Config.Raridades]
@@ -65,13 +65,15 @@ local Efeito = criarRemoto("RemoteEvent", "Efeito")
 local Empurrao = criarRemoto("RemoteEvent", "Empurrao")
 local Acao = criarRemoto("RemoteFunction", "Acao")
 local ObterRanking = criarRemoto("RemoteFunction", "ObterRanking")
+local AbrirLoja = criarRemoto("RemoteEvent", "AbrirLoja")
+local RoletaGiro = criarRemoto("RemoteEvent", "RoletaGiro")
 remotes.Parent = ReplicatedStorage
 
 --------------------------------------------------------------------------
 -- MAPA E ESTADO
 --------------------------------------------------------------------------
 Dados.iniciar(Config)
-local mapa = Mapa.construir(Config)
+local mapa = Mapa.construir(Config, Modelos)
 local bases = mapa.bases
 
 local sessoes = {} -- [jogador] = sessão (dados salvos + base + controles)
@@ -135,7 +137,28 @@ local function nivel(jogador, id)
 end
 
 local function velocidadeJogador(jogador)
-	return Config.velocidadeDoNivel(nivel(jogador, "Velocidade"))
+	local velocidade = Config.velocidadeDoNivel(nivel(jogador, "Velocidade"))
+	local sessao = sessoes[jogador]
+	if sessao and os.time() < (sessao.boostVelocidadeAte or 0) then
+		velocidade *= 1.5
+	end
+	return velocidade
+end
+
+-- Aplica velocidade e pulo (Mola Turbo, bônus da roleta e peso do herói roubado)
+local function aplicarMovimento(jogador)
+	local humanoid = humanoidDe(jogador)
+	if not humanoid then
+		return
+	end
+	local velocidade = velocidadeJogador(jogador)
+	if carregando[jogador] then
+		velocidade *= G.MultiplicadorCarregando
+	end
+	humanoid.WalkSpeed = velocidade
+	local pulo = Config.puloDoNivel(nivel(jogador, "Velocidade"))
+	humanoid.JumpHeight = pulo
+	humanoid.JumpPower = math.sqrt(2 * workspace.Gravity * pulo)
 end
 
 local function pedestaisJogador(jogador)
@@ -149,6 +172,9 @@ local function multiplicadorJogador(jogador)
 	end
 	local multiplicador = Config.multiplicadorRenascimento(sessao.dados.renascimentos)
 	if sessao.passeDobro then
+		multiplicador *= 2
+	end
+	if os.time() < (sessao.boostRendaAte or 0) then
 		multiplicador *= 2
 	end
 	return multiplicador
@@ -188,6 +214,15 @@ local function atualizarAtributos(jogador)
 		table.insert(descobertos, id)
 	end
 	jogador:SetAttribute("Descobertos", HttpService:JSONEncode(descobertos))
+	local luvas = {}
+	for id in d.luvas do
+		table.insert(luvas, id)
+	end
+	jogador:SetAttribute("Luvas", HttpService:JSONEncode(luvas))
+	jogador:SetAttribute("LuvaEquipada", d.luvaEquipada)
+	jogador:SetAttribute("UltimaRoleta", d.ultimaRoleta)
+	jogador:SetAttribute("BoostRenda", sessao.boostRendaAte or 0)
+	jogador:SetAttribute("BoostVelocidade", sessao.boostVelocidadeAte or 0)
 	sessao.statRoubos.Value = d.roubos
 	sessao.statRenascimentos.Value = d.renascimentos
 end
@@ -222,184 +257,6 @@ local function descobrir(jogador, def)
 end
 
 --------------------------------------------------------------------------
--- MODELO 3D DOS HERÓIS
---------------------------------------------------------------------------
-local function criarModeloHeroi(def, mutacao)
-	local raridade = Config.RaridadePorId[def.raridade]
-	local s = raridade.escala
-	local cores = def.cores
-	local corTraje, corCapa = cores.traje, cores.capa
-	local corEmblema = cores.emblema or cores.capa
-	local corPele = cores.pele or PELE_PADRAO
-	local corBotas = cores.botas or cores.capa
-	local materialTraje = Enum.Material.SmoothPlastic
-
-	if mutacao.id == "Ouro" then
-		corTraje, corCapa, materialTraje = mutacao.cor, Color3.fromRGB(255, 235, 150), Enum.Material.Foil
-	elseif mutacao.id == "Diamante" then
-		corTraje, corCapa, materialTraje = mutacao.cor, Color3.fromRGB(200, 245, 255), Enum.Material.Glass
-	elseif mutacao.id == "Cosmico" then
-		corTraje, corCapa, materialTraje = Color3.fromRGB(50, 0, 110), mutacao.cor, Enum.Material.Neon
-	end
-
-	local modelo = Instance.new("Model")
-	modelo.Name = def.nome
-	modelo:SetAttribute("HeroiId", def.id)
-	modelo:SetAttribute("Mutacao", mutacao.id)
-
-	local function nova(nome, forma, tamanho, cf, cor, material)
-		local p = Instance.new("Part")
-		p.Name = nome
-		p.Shape = forma
-		p.Size = tamanho
-		p.CFrame = cf
-		p.Color = cor
-		p.Material = material or Enum.Material.SmoothPlastic
-		p.TopSurface = Enum.SurfaceType.Smooth
-		p.BottomSurface = Enum.SurfaceType.Smooth
-		p.CanCollide = false
-		p.CanTouch = false
-		p.CanQuery = false
-		p.Massless = true
-		p.Anchored = false
-		p.Parent = modelo
-		return p
-	end
-
-	local BLOCO, BOLA, CILINDRO = Enum.PartType.Block, Enum.PartType.Ball, Enum.PartType.Cylinder
-	local NEON = Enum.Material.Neon
-
-	-- O tronco é a peça principal: todas as outras ficam soldadas nele
-	local raiz = nova("Tronco", BLOCO, Vector3.new(1.6 * s, 1.6 * s, 0.9 * s), CFrame.new(), corTraje, materialTraje)
-	raiz.Anchored = true
-	raiz:SetAttribute("Pintavel", true)
-
-	local function peca(nome, forma, tamanho, cf, cor, material, pintavel)
-		local p = nova(nome, forma, tamanho, cf, cor, material)
-		if pintavel then
-			p:SetAttribute("Pintavel", true)
-		end
-		local solda = Instance.new("WeldConstraint")
-		solda.Part0 = raiz
-		solda.Part1 = p
-		solda.Parent = p
-		return p
-	end
-
-	for _, lado in { -1, 1 } do
-		peca("Perna", BLOCO, Vector3.new(0.6 * s, 1.2 * s, 0.6 * s), CFrame.new(0.42 * s * lado, -1.4 * s, 0), corTraje, materialTraje, true)
-		peca("Bota", BLOCO, Vector3.new(0.68 * s, 0.45 * s, 0.78 * s), CFrame.new(0.42 * s * lado, -1.8 * s, -0.05 * s), corBotas)
-		peca("Braco", BLOCO, Vector3.new(0.45 * s, 1.4 * s, 0.45 * s),
-			CFrame.new(1.05 * s * lado, 0.05 * s, 0) * CFrame.Angles(0, 0, math.rad(8 * lado)), corTraje, materialTraje, true)
-		peca("Luva", BOLA, Vector3.one * 0.55 * s, CFrame.new(1.15 * s * lado, -0.7 * s, 0), corBotas)
-	end
-	peca("Cinto", BLOCO, Vector3.new(1.66 * s, 0.22 * s, 0.96 * s), CFrame.new(0, -0.62 * s, 0), Color3.fromRGB(35, 35, 40))
-	peca("Fivela", BLOCO, Vector3.new(0.3 * s, 0.26 * s, 0.1 * s), CFrame.new(0, -0.62 * s, -0.5 * s), Color3.fromRGB(255, 210, 60), NEON)
-	peca("Emblema", BLOCO, Vector3.new(0.55 * s, 0.55 * s, 0.1 * s),
-		CFrame.new(0, 0.22 * s, -0.47 * s) * CFrame.Angles(0, 0, math.rad(45)), corEmblema, NEON)
-	peca("Capa", BLOCO, Vector3.new(1.5 * s, 2.3 * s, 0.12 * s),
-		CFrame.new(0, -0.3 * s, 0.56 * s) * CFrame.Angles(math.rad(10), 0, 0), corCapa,
-		materialTraje == NEON and NEON or Enum.Material.SmoothPlastic)
-	peca("Gola", BLOCO, Vector3.new(1.65 * s, 0.2 * s, 0.95 * s), CFrame.new(0, 0.78 * s, 0), corCapa)
-
-	-- Cabeça e acessório
-	local yCabeca = 1.32 * s
-	peca("Cabeca", BOLA, Vector3.one * 1.1 * s, CFrame.new(0, yCabeca, 0), corPele)
-	local function olhos(cor, z, material)
-		for _, lado in { -1, 1 } do
-			peca("Olho", BOLA, Vector3.one * 0.2 * s, CFrame.new(0.2 * s * lado, yCabeca + 0.06 * s, z * s), cor, material)
-		end
-	end
-
-	if def.cabeca == "mascara" then
-		peca("Mascara", BLOCO, Vector3.new(1.14 * s, 0.28 * s, 1.14 * s), CFrame.new(0, yCabeca + 0.06 * s, 0), corCapa)
-		olhos(Color3.new(1, 1, 1), -0.6, NEON)
-	elseif def.cabeca == "capacete" then
-		peca("Capacete", BOLA, Vector3.one * 1.2 * s, CFrame.new(0, yCabeca + 0.05 * s, 0), corCapa, materialTraje)
-		peca("Visor", BLOCO, Vector3.new(0.85 * s, 0.25 * s, 0.2 * s), CFrame.new(0, yCabeca + 0.06 * s, -0.55 * s), corEmblema, NEON)
-	elseif def.cabeca == "coroa" then
-		olhos(Color3.new(0, 0, 0), -0.5)
-		peca("Coroa", CILINDRO, Vector3.new(0.35 * s, 0.85 * s, 0.85 * s),
-			CFrame.new(0, yCabeca + 0.6 * s, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(255, 200, 40), Enum.Material.Foil)
-		peca("Joia", BOLA, Vector3.one * 0.2 * s, CFrame.new(0, yCabeca + 0.6 * s, -0.42 * s), corEmblema, NEON)
-	else -- antena
-		olhos(Color3.new(0, 0, 0), -0.5)
-		for _, lado in { -1, 1 } do
-			peca("Haste", BLOCO, Vector3.new(0.08 * s, 0.6 * s, 0.08 * s), CFrame.new(0.22 * s * lado, yCabeca + 0.75 * s, 0), Color3.fromRGB(40, 40, 40))
-			peca("Ponta", BOLA, Vector3.one * 0.22 * s, CFrame.new(0.22 * s * lado, yCabeca + 1.08 * s, 0), corEmblema, NEON)
-		end
-	end
-
-	-- Efeitos das raridades altas e mutações
-	if raridade.ordem >= ORDEM_LENDARIO then
-		local luz = Instance.new("PointLight")
-		luz.Color = raridade.cor
-		luz.Range = 10
-		luz.Brightness = 1.5
-		luz.Parent = raiz
-	end
-	if def.raridade == "Divino" then
-		peca("Aureola", CILINDRO, Vector3.new(0.12 * s, 1.3 * s, 1.3 * s),
-			CFrame.new(0, yCabeca + 1.05 * s, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(255, 240, 150), NEON)
-	end
-	if def.raridade == "Secreto" or mutacao.id == "Cosmico" then
-		local particulas = Instance.new("ParticleEmitter")
-		particulas.Color = def.raridade == "Secreto"
-				and ColorSequence.new(Color3.fromRGB(0, 0, 0), Color3.fromRGB(0, 255, 200))
-			or ColorSequence.new(Color3.fromRGB(150, 70, 255), Color3.fromRGB(255, 120, 255))
-		particulas.LightEmission = 0.6
-		particulas.Rate = 14
-		particulas.Lifetime = NumberRange.new(0.8, 1.6)
-		particulas.Speed = NumberRange.new(1, 3)
-		particulas.SpreadAngle = Vector2.new(180, 180)
-		particulas.Size = NumberSequence.new(0.5 * s, 0)
-		particulas.Parent = raiz
-	end
-	if mutacao.id == "ArcoIris" then
-		CollectionService:AddTag(modelo, "HeroiArcoIris")
-	end
-
-	-- Placa em cima da cabeça
-	local placa = Instance.new("BillboardGui")
-	placa.Name = "Info"
-	placa.Size = UDim2.fromOffset(240, 96)
-	placa.StudsOffset = Vector3.new(0, 2.7 * s + 1.4, 0)
-	placa.MaxDistance = 70
-	placa.LightInfluence = 0
-	placa.Parent = raiz
-	local layout = Instance.new("UIListLayout")
-	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Parent = placa
-
-	local function linha(ordem, texto, cor, fonte)
-		local rotulo = Instance.new("TextLabel")
-		rotulo.LayoutOrder = ordem
-		rotulo.Size = UDim2.new(1, 0, 0, 23)
-		rotulo.BackgroundTransparency = 1
-		rotulo.Text = texto
-		rotulo.TextColor3 = cor
-		rotulo.Font = fonte or Enum.Font.FredokaOne
-		rotulo.TextScaled = true
-		rotulo.TextStrokeTransparency = 0
-		rotulo.Parent = placa
-		return rotulo
-	end
-	if mutacao.id ~= "Normal" then
-		local rotulo = linha(1, "✦ " .. mutacao.nome .. " ✦", mutacao.cor)
-		if mutacao.id == "ArcoIris" then
-			rotulo.Name = "TextoArcoIris"
-		end
-	end
-	linha(2, def.nome, Color3.new(1, 1, 1))
-	linha(3, raridade.nome, raridade.cor)
-	linha(4, formatar(def.preco * mutacao.multiplicador) .. "  •  +" .. formatar(def.renda * mutacao.multiplicador) .. "/s",
-		Color3.fromRGB(110, 255, 130), Enum.Font.GothamBold)
-
-	return modelo, raiz
-end
-
---------------------------------------------------------------------------
 -- HERÓIS: CRIAR, REMOVER, BOTÕES (ProximityPrompt)
 --------------------------------------------------------------------------
 local function valorHeroi(h)
@@ -419,7 +276,7 @@ end
 
 local function novoHeroi(def, mutacaoId)
 	local mutacao = Config.MutacaoPorId[mutacaoId] or Config.MutacaoPorId.Normal
-	local modelo, raiz = criarModeloHeroi(def, mutacao)
+	local modelo, raiz = Modelos.heroi(def, mutacao, Config)
 	modelo.Parent = mapa.pastaHerois
 	local raridade = Config.RaridadePorId[def.raridade]
 	local h = {
@@ -622,10 +479,7 @@ local function terminarCarregar(h)
 		carregando[ladrao] = nil
 		marcarLadrao(ladrao, false)
 		ladrao:SetAttribute("Carregando", nil)
-		local humanoid = humanoidDe(ladrao)
-		if humanoid then
-			humanoid.WalkSpeed = velocidadeJogador(ladrao)
-		end
+		aplicarMovimento(ladrao)
 	end
 	h.ladrao = nil
 	local slotDestino = h.slotDestino
@@ -748,7 +602,7 @@ function aoRoubar(h, ladrao)
 	solda.Parent = h.raiz
 	h.raiz.Anchored = false
 
-	humanoid.WalkSpeed = velocidadeJogador(ladrao) * G.MultiplicadorCarregando
+	aplicarMovimento(ladrao)
 	h.conexaoMorte = humanoid.Died:Connect(function()
 		devolver(h, "💀 Você caiu e perdeu o herói!")
 	end)
@@ -852,8 +706,14 @@ local function sortearMutacao()
 end
 
 --------------------------------------------------------------------------
--- LUVA HEROICA (soco)
+-- LUVA HEROICA (soco). O modelo 3D da luva é colocado na mão quando equipa.
 --------------------------------------------------------------------------
+local function luvaDoJogador(jogador)
+	local sessao = sessoes[jogador]
+	local id = sessao and sessao.dados.luvaEquipada or "Basica"
+	return Config.LuvaPorId[id] or Config.Luvas[1]
+end
+
 local function criarLuva()
 	local existente = StarterPack:FindFirstChild(NOME_LUVA)
 	if existente then
@@ -864,28 +724,15 @@ local function criarLuva()
 	luva.CanBeDropped = false
 	luva.ToolTip = "Clique para socar! Ladrões socados derrubam o herói."
 
+	-- A alça é invisível: o que aparece é a luva 3D colocada na mão
 	local alca = Instance.new("Part")
 	alca.Name = "Handle"
-	alca.Shape = Enum.PartType.Ball
-	alca.Size = Vector3.new(1.3, 1.3, 1.3)
-	alca.Color = Color3.fromRGB(220, 30, 30)
-	alca.Material = Enum.Material.SmoothPlastic
+	alca.Size = Vector3.new(0.4, 0.4, 0.4)
+	alca.Transparency = 1
 	alca.CanCollide = false
+	alca.CanTouch = false
 	alca.Massless = true
 	alca.Parent = luva
-
-	local punho = Instance.new("Part")
-	punho.Name = "Punho"
-	punho.Size = Vector3.new(1, 0.4, 1)
-	punho.CFrame = alca.CFrame * CFrame.new(0, -0.7, 0)
-	punho.Color = Color3.fromRGB(255, 255, 255)
-	punho.CanCollide = false
-	punho.Massless = true
-	punho.Parent = luva
-	local solda = Instance.new("WeldConstraint")
-	solda.Part0 = alca
-	solda.Part1 = punho
-	solda.Parent = punho
 
 	local som = Instance.new("Sound")
 	som.Name = "SomSoco"
@@ -897,13 +744,54 @@ local function criarLuva()
 end
 criarLuva()
 
+local function tirarLuvaVisual(personagem)
+	local antiga = personagem:FindFirstChild("LuvaVisual")
+	if antiga then
+		antiga:Destroy()
+	end
+end
+
+local function vestirLuva(jogador)
+	local personagem = jogador.Character
+	if not personagem then
+		return
+	end
+	tirarLuvaVisual(personagem)
+	if not personagem:FindFirstChild(NOME_LUVA) then
+		return -- só aparece com a luva equipada
+	end
+	local mao = personagem:FindFirstChild("RightHand") or personagem:FindFirstChild("Right Arm")
+	if not mao or not mao:IsA("BasePart") then
+		return
+	end
+	local modelo, raiz = Modelos.luva(luvaDoJogador(jogador), 1.4)
+	modelo.Name = "LuvaVisual"
+	local alvo = mao.CFrame * (mao.Name == "RightHand" and CFrame.new(0, -0.15, 0) or CFrame.new(0, -0.95, 0))
+	for _, parte in modelo:GetDescendants() do
+		if parte:IsA("BasePart") then
+			parte.CFrame = alvo * parte.CFrame
+			parte.Anchored = false
+			parte.Massless = true
+			parte.CanCollide = false
+			parte.CanTouch = false
+			parte.CanQuery = false
+		end
+	end
+	modelo.Parent = personagem
+	local solda = Instance.new("WeldConstraint")
+	solda.Part0 = mao
+	solda.Part1 = raiz
+	solda.Parent = raiz
+end
+
 local function socar(jogador, luva)
 	local sessao = sessoes[jogador]
 	if not sessao then
 		return
 	end
+	local def = luvaDoJogador(jogador)
 	local agora = os.clock()
-	if agora - sessao.ultimoSoco < G.RecargaSoco then
+	if agora - sessao.ultimoSoco < def.recarga then
 		return
 	end
 	sessao.ultimoSoco = agora
@@ -929,11 +817,11 @@ local function socar(jogador, luva)
 		local humanoidOutro = humanoidDe(outro)
 		if outro ~= jogador and raizOutro and humanoidOutro and humanoidOutro.Health > 0 then
 			local delta = raizOutro.Position - raiz.Position
-			if delta.Magnitude <= G.AlcanceSoco then
+			if delta.Magnitude <= def.alcance then
 				local plano = Vector3.new(delta.X, 0, delta.Z)
 				local direcao = plano.Magnitude > 0.1 and plano.Unit or raiz.CFrame.LookVector
 				if raiz.CFrame.LookVector:Dot(direcao) > 0.2 then
-					Empurrao:FireClient(outro, direcao * G.ForcaSoco + Vector3.new(0, 35, 0))
+					Empurrao:FireClient(outro, direcao * def.forca + Vector3.new(0, 35, 0), def.atordoar)
 					local h = carregando[outro]
 					if h then
 						devolver(h, "🥊 " .. jogador.DisplayName .. " te deu um soco e você derrubou o herói!")
@@ -947,11 +835,14 @@ end
 
 local luvasConectadas = setmetatable({}, { __mode = "k" })
 local function conectarLuva(jogador, objeto)
-	if objeto:IsA("Tool") and objeto.Name == NOME_LUVA and not luvasConectadas[objeto] then
-		luvasConectadas[objeto] = true
-		objeto.Activated:Connect(function()
-			socar(jogador, objeto)
-		end)
+	if objeto:IsA("Tool") and objeto.Name == NOME_LUVA then
+		if not luvasConectadas[objeto] then
+			luvasConectadas[objeto] = true
+			objeto.Activated:Connect(function()
+				socar(jogador, objeto)
+			end)
+		end
+		vestirLuva(jogador)
 	end
 end
 
@@ -988,10 +879,20 @@ end
 --------------------------------------------------------------------------
 -- AÇÕES PEDIDAS PELA INTERFACE (Loja, Renascer, Diária...)
 --------------------------------------------------------------------------
+local MENSAGEM_LOJA = "🎪 Vá até a tenda da Loja (no meio do mapa) para comprar!"
+
+local function pertoDaLoja(jogador)
+	local raiz = raizDe(jogador)
+	return raiz ~= nil and (raiz.Position - mapa.loja.centro).Magnitude <= G.DistanciaLoja
+end
+
 local function comprarMelhoria(jogador, id)
 	local melhoria = type(id) == "string" and Config.MelhoriaPorId[id]
 	if not melhoria then
 		return false, "Melhoria inválida"
+	end
+	if not pertoDaLoja(jogador) then
+		return false, MENSAGEM_LOJA
 	end
 	local sessao = sessoes[jogador]
 	local atual = sessao.dados.niveis[id] or 0
@@ -1005,16 +906,39 @@ local function comprarMelhoria(jogador, id)
 	sessao.dados.niveis[id] = atual + 1
 
 	if id == "Velocidade" then
-		local humanoid = humanoidDe(jogador)
-		if humanoid and not carregando[jogador] then
-			humanoid.WalkSpeed = velocidadeJogador(jogador)
-		end
+		aplicarMovimento(jogador)
 	elseif id == "Pedestais" and sessao.base then
 		atualizarSlots(sessao.base)
 	end
 	atualizarAtributos(jogador)
 	efeito(jogador, "som", "compra")
 	return true, melhoria.icone .. " " .. melhoria.nome .. " agora é nível " .. (atual + 1) .. "!"
+end
+
+local function comprarLuva(jogador, id)
+	local def = type(id) == "string" and Config.LuvaPorId[id]
+	if not def then
+		return false, "Luva inválida"
+	end
+	local d = sessoes[jogador].dados
+	if d.luvas[id] then
+		d.luvaEquipada = id
+		vestirLuva(jogador)
+		atualizarAtributos(jogador)
+		return true, def.icone .. " " .. def.nome .. " equipada!"
+	end
+	if not pertoDaLoja(jogador) then
+		return false, MENSAGEM_LOJA
+	end
+	if not gastar(jogador, def.preco) then
+		return false, "Dinheiro insuficiente! Custa " .. formatar(def.preco)
+	end
+	d.luvas[id] = true
+	d.luvaEquipada = id
+	vestirLuva(jogador)
+	atualizarAtributos(jogador)
+	efeito(jogador, "som", "compra")
+	return true, def.icone .. " Você comprou a " .. def.nome .. "! Equipe a luva (tecla 1) e soque os ladrões."
 end
 
 local function renascer(jogador)
@@ -1073,6 +997,8 @@ Acao.OnServerInvoke = function(jogador, acao, argumento)
 
 	if acao == "Melhoria" then
 		return comprarMelhoria(jogador, argumento)
+	elseif acao == "Luva" then
+		return comprarLuva(jogador, argumento)
 	elseif acao == "Renascer" then
 		return renascer(jogador)
 	elseif acao == "Diaria" then
@@ -1134,7 +1060,7 @@ local function aoNascer(jogador, personagem)
 	if not humanoid or not raiz or not humanoid:IsA("Humanoid") then
 		return
 	end
-	humanoid.WalkSpeed = velocidadeJogador(jogador)
+	aplicarMovimento(jogador)
 
 	if sessao.base then
 		-- Deixa o dono atravessar a barreira da própria base
@@ -1153,6 +1079,11 @@ local function aoNascer(jogador, personagem)
 
 	personagem.ChildAdded:Connect(function(objeto)
 		conectarLuva(jogador, objeto)
+	end)
+	personagem.ChildRemoved:Connect(function(objeto)
+		if objeto:IsA("Tool") and objeto.Name == NOME_LUVA then
+			tirarLuvaVisual(personagem)
+		end
 	end)
 	for _, objeto in personagem:GetChildren() do
 		conectarLuva(jogador, objeto)
@@ -1190,6 +1121,19 @@ local function aoEntrar(jogador)
 	end
 	if dados.ultimoLogin == 0 and dados.dinheiro == 0 then
 		dados.dinheiro = Config.dinheiroInicial(0)
+	end
+	-- Heróis da versão antiga viram os novos
+	for _, salvo in dados.herois do
+		salvo.id = Config.IdsAntigos[salvo.id] or salvo.id
+	end
+	local descobertos = {}
+	for id in dados.descobertos do
+		descobertos[Config.IdsAntigos[id] or id] = true
+	end
+	dados.descobertos = descobertos
+	dados.luvas.Basica = true
+	if not Config.LuvaPorId[dados.luvaEquipada] or not dados.luvas[dados.luvaEquipada] then
+		dados.luvaEquipada = "Basica"
 	end
 
 	local sessao = {
@@ -1321,7 +1265,7 @@ local function aoSair(jogador)
 end
 
 --------------------------------------------------------------------------
--- COMANDOS DE TESTE (no chat: !dinheiro 1000000 | !evento | !heroi MestreMultiverso Cosmico)
+-- COMANDOS DE TESTE (no chat: !dinheiro 1000000 | !evento | !heroi HeroiSupremo Cosmico | !roleta)
 --------------------------------------------------------------------------
 local function processarComando(jogador, mensagem)
 	if not G.ComandosDeTeste or not (RunService:IsStudio() or jogador.UserId == game.CreatorId) then
@@ -1336,10 +1280,17 @@ local function processarComando(jogador, mensagem)
 	elseif comando == "!evento" then
 		local evento = Config.EventoPorId[partes[2] or ""] or Config.Eventos[math.random(#Config.Eventos)]
 		iniciarEvento(evento)
+	elseif comando == "!roleta" then
+		local sessao = sessoes[jogador]
+		if sessao then
+			sessao.dados.ultimaRoleta = 0
+			atualizarAtributos(jogador)
+			notificar(jogador, "🎡 Roleta liberada!", "sucesso")
+		end
 	elseif comando == "!heroi" then
 		local def = Config.HeroiPorId[partes[2] or ""]
 		if not def then
-			notificar(jogador, "Use: !heroi IdDoHeroi [Mutacao]  (ex: !heroi FenixRubra Ouro)", "aviso")
+			notificar(jogador, "Use: !heroi IdDoHeroi [Mutacao]  (ex: !heroi AranhaEscarlate Ouro)", "aviso")
 			return
 		end
 		local mutacao = Config.MutacaoPorId[partes[3] or ""] and partes[3] or "Normal"
@@ -1453,8 +1404,176 @@ for _, base in bases do
 			efeito(dono, "coleta", valor, slot.pad.Position)
 		end)
 	end
+	-- Elevador: subir e descer entre os andares
+	for _, elevador in base.elevadores do
+		local function botaoElevador(nome, texto, tecla, destino)
+			local prompt = Instance.new("ProximityPrompt")
+			prompt.Name = nome
+			prompt.ActionText = texto
+			prompt.ObjectText = "Elevador"
+			prompt.KeyboardKeyCode = tecla
+			prompt.HoldDuration = 0
+			prompt.MaxActivationDistance = 7
+			prompt.RequiresLineOfSight = false
+			prompt.Parent = elevador.plataforma
+			prompt.Triggered:Connect(function(jogador)
+				local personagem = jogador.Character
+				if personagem then
+					personagem:PivotTo(base.elevadores[destino].saida)
+				end
+			end)
+		end
+		if elevador.andar < #base.elevadores then
+			botaoElevador("Subir", "⬆ Subir para o " .. (elevador.andar + 1) .. "º", Enum.KeyCode.E, elevador.andar + 1)
+		end
+		if elevador.andar > 1 then
+			botaoElevador("Descer", "⬇ Descer para o " .. (elevador.andar - 1) .. "º", Enum.KeyCode.R, elevador.andar - 1)
+		end
+	end
 	atualizarSlots(base)
 	atualizarBarreira(base)
+end
+
+--------------------------------------------------------------------------
+-- TENDA DA LOJA
+--------------------------------------------------------------------------
+do
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "AbrirLoja"
+	prompt.ActionText = "Abrir loja"
+	prompt.ObjectText = "Loja dos Heróis"
+	prompt.HoldDuration = 0
+	prompt.MaxActivationDistance = 14
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = mapa.loja.balcao
+	prompt.Triggered:Connect(function(jogador)
+		AbrirLoja:FireClient(jogador)
+	end)
+end
+
+--------------------------------------------------------------------------
+-- ROLETA DA SORTE (a cada 12 horas)
+--------------------------------------------------------------------------
+local roletaGirando = false
+local anguloRoleta = 0
+
+local function sortearPremio()
+	local total = 0
+	for _, premio in Config.Roleta.Premios do
+		total += premio.peso
+	end
+	local sorteio = math.random() * total
+	for _, premio in Config.Roleta.Premios do
+		sorteio -= premio.peso
+		if sorteio <= 0 then
+			return premio
+		end
+	end
+	return Config.Roleta.Premios[1]
+end
+
+local function darPremio(jogador, premio)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return ""
+	end
+	local d = sessao.dados
+	if premio.tipo == "dinheiro" then
+		local renda = jogador:GetAttribute("RendaPorSegundo") or 0
+		local valor = math.max(premio.minimo * (1 + d.renascimentos), renda * 60 * premio.minutos)
+		ganhar(jogador, valor)
+		return premio.icone .. " " .. premio.nome .. ": +" .. formatar(valor) .. "!"
+	elseif premio.tipo == "boostRenda" then
+		sessao.boostRendaAte = math.max(os.time(), sessao.boostRendaAte or 0) + premio.minutos * 60
+		atualizarAtributos(jogador)
+		return "⚡ Sua renda está em DOBRO por " .. premio.minutos .. " minutos!"
+	elseif premio.tipo == "boostVelocidade" then
+		sessao.boostVelocidadeAte = math.max(os.time(), sessao.boostVelocidadeAte or 0) + premio.minutos * 60
+		aplicarMovimento(jogador)
+		atualizarAtributos(jogador)
+		task.delay(premio.minutos * 60 + 1, function()
+			if jogador.Parent then
+				aplicarMovimento(jogador)
+			end
+		end)
+		return "🌀 Super velocidade por " .. premio.minutos .. " minutos!"
+	elseif premio.tipo == "heroi" then
+		local opcoes = {}
+		for _, def in Config.Herois do
+			if def.raridade == premio.raridade then
+				table.insert(opcoes, def)
+			end
+		end
+		local def = opcoes[math.random(#opcoes)]
+		local slot = sessao.base and slotLivre(sessao.base, pedestaisJogador(jogador))
+		if slot then
+			colocarNaBase(novoHeroi(def, "Normal"), sessao.base, slot, false)
+			descobrir(jogador, def)
+			return "🦸 Você ganhou " .. def.nome .. "! Ele já está na sua base."
+		end
+		ganhar(jogador, def.preco)
+		return "🦸 Sua base estava cheia: você ganhou " .. formatar(def.preco) .. " no lugar de " .. def.nome .. "!"
+	elseif premio.tipo == "girarDeNovo" then
+		d.ultimaRoleta = 0
+		atualizarAtributos(jogador)
+		return "🔁 Você pode girar a roleta de novo agora!"
+	end
+	return ""
+end
+
+local function girarRoleta(jogador)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	local d = sessao.dados
+	local agora = os.time()
+	local proxima = d.ultimaRoleta + Config.Roleta.IntervaloHoras * 3600
+	if agora < proxima then
+		notificar(jogador, "🎡 A roleta libera de novo em " .. Config.formatarTempo(proxima - agora), "aviso")
+		return
+	end
+	if roletaGirando then
+		notificar(jogador, "🎡 A roleta está girando, espere um pouquinho!", "aviso")
+		return
+	end
+	roletaGirando = true
+	d.ultimaRoleta = agora
+	atualizarAtributos(jogador)
+
+	local premio = sortearPremio()
+	local volta = math.pi * 2
+	local alvo = (premio.indice - 1) * (volta / #Config.Roleta.Premios)
+	local final = anguloRoleta - (anguloRoleta % volta) + 5 * volta + alvo
+	local duracao = Config.Roleta.DuracaoGiro
+	RoletaGiro:FireAllClients(mapa.roleta.cf0, anguloRoleta, final, duracao)
+	notificar(jogador, "🎡 Girando a roleta...", "info")
+
+	task.delay(duracao, function()
+		anguloRoleta = final
+		mapa.roleta.eixo.CFrame = mapa.roleta.cf0 * CFrame.Angles(0, 0, final % volta)
+		roletaGirando = false
+		if not jogador.Parent then
+			return
+		end
+		local mensagem = darPremio(jogador, premio)
+		efeito(jogador, "premio", premio.icone, mensagem)
+		if (premio.tipo == "heroi" and premio.raridade == "Lendario") or premio.id == "MoedasG" then
+			anunciar("🎡 " .. jogador.DisplayName .. " ganhou " .. premio.nome .. " na Roleta da Sorte!", premio.cor)
+		end
+	end)
+end
+
+do
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "GirarRoleta"
+	prompt.ActionText = "Girar a roleta"
+	prompt.ObjectText = "Roleta da Sorte"
+	prompt.HoldDuration = 0.3
+	prompt.MaxActivationDistance = 12
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = mapa.roleta.botao
+	prompt.Triggered:Connect(girarRoleta)
 end
 
 --------------------------------------------------------------------------
@@ -1588,6 +1707,7 @@ task.spawn(function()
 					ganhar(dono, direto)
 				end
 				dono:SetAttribute("RendaPorSegundo", rendaTotal)
+				dono:SetAttribute("Multiplicador", multiplicadorJogador(dono))
 				base.textoPlaca.Text = "BASE DE " .. string.upper(dono.DisplayName)
 				base.textoRenda.Text = "+" .. formatar(rendaTotal) .. "/s"
 			else

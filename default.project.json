@@ -16,6 +16,9 @@
       },
       "Dados": {
         "$path": "src/ServerScriptService/Dados.lua"
+      },
+      "ModelosHerois": {
+        "$path": "src/ServerScriptService/ModelosHerois.lua"
       }
     },
     "StarterPlayer": {

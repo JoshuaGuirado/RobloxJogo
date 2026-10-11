@@ -28,6 +28,8 @@ local Efeito = remotes:WaitForChild("Efeito")
 local Empurrao = remotes:WaitForChild("Empurrao")
 local Acao = remotes:WaitForChild("Acao")
 local ObterRanking = remotes:WaitForChild("ObterRanking")
+local AbrirLoja = remotes:WaitForChild("AbrirLoja")
+local RoletaGiro = remotes:WaitForChild("RoletaGiro")
 
 local formatar = Config.formatar
 
@@ -567,6 +569,34 @@ local textoEvento = rotulo({
 	Parent = barraEvento,
 }, { contornoTexto(2) })
 
+local textoBoosts = rotulo({
+	Name = "Bonus",
+	Text = "",
+	Font = FONTE_TITULO,
+	TextColor3 = COR.amarelo,
+	AnchorPoint = Vector2.new(0.5, 0),
+	Position = UDim2.new(0.5, 0, 0, 84),
+	Size = UDim2.fromOffset(420, 26),
+	Visible = false,
+	Parent = gui,
+}, { contornoTexto(2) })
+
+local function atualizarBoosts()
+	local agora = workspace:GetServerTimeNow()
+	local partes = {}
+	local renda = atributo("BoostRenda", 0) - agora
+	if renda > 0 then
+		table.insert(partes, "⚡ Renda x2  " .. Config.formatarTempo(renda))
+	end
+	local velocidade = atributo("BoostVelocidade", 0) - agora
+	if velocidade > 0 then
+		table.insert(partes, "🌀 Super velocidade  " .. Config.formatarTempo(velocidade))
+	end
+	textoBoosts.Visible = #partes > 0
+	textoBoosts.Text = table.concat(partes, "     ")
+	textoBoosts.Position = UDim2.new(0.5, 0, 0, barraEvento.Visible and 124 or 84)
+end
+
 local valorExibido = 0
 local alvoDinheiro = 0
 
@@ -591,7 +621,7 @@ local menu = criar("Frame", {
 	Name = "Menu",
 	AnchorPoint = Vector2.new(0, 0.5),
 	Position = UDim2.new(0, 10, 0.5, 0),
-	Size = UDim2.fromOffset(152, 236),
+	Size = UDim2.fromOffset(152, 312),
 	BackgroundTransparency = 1,
 	Parent = gui,
 }, {
@@ -600,7 +630,7 @@ local menu = criar("Frame", {
 local escalaMenu = criar("UIScale", { Parent = menu })
 local alertasMenu = {}
 
-local function botaoMenu(ordem, nome, icone, texto, cor)
+local function botaoMenu(ordem, nome, icone, texto, cor, aoClicar)
 	local b = criar("TextButton", {
 		Name = nome,
 		LayoutOrder = ordem,
@@ -626,17 +656,88 @@ local function botaoMenu(ordem, nome, icone, texto, cor)
 	animarBotao(b)
 	b.Activated:Connect(function()
 		tocar("clique")
-		abrirPainel(nome)
+		if aoClicar then
+			aoClicar()
+		else
+			abrirPainel(nome)
+		end
 	end)
 	return b
 end
 
-botaoMenu(1, "Loja", "🛒", "Loja", COR.verde)
-botaoMenu(2, "Indice", "📖", "Índice", COR.azul)
-botaoMenu(3, "Ranking", "🏆", "Ranking", COR.amarelo)
-botaoMenu(4, "Renascer", "♻️", "Renascer", COR.roxo)
-botaoMenu(5, "Diario", "🎁", "Diário", COR.rosa)
-botaoMenu(6, "Config", "⚙️", "Opções", COR.desligado)
+--------------------------------------------------------------------------
+-- GUIA: um feixe brilhante que leva até um lugar do mapa (loja, roleta)
+--------------------------------------------------------------------------
+local guia = nil
+
+local function pararGuia()
+	if guia then
+		guia.feixe:Destroy()
+		guia.anexo:Destroy()
+		guia.anexoAlvo:Destroy()
+		guia = nil
+	end
+end
+
+local function lugarDoMapa(nome, parte)
+	local mapa = workspace:FindFirstChild("MapaHerois")
+	local modelo = mapa and mapa:FindFirstChild(nome)
+	local alvo = modelo and modelo:FindFirstChild(parte)
+	if alvo and alvo:IsA("BasePart") then
+		return alvo
+	end
+	return nil
+end
+
+local function distanciaAte(parte)
+	local raiz = jogador.Character and jogador.Character:FindFirstChild("HumanoidRootPart")
+	if not parte or not raiz or not raiz:IsA("BasePart") then
+		return math.huge
+	end
+	return (raiz.Position - parte.Position).Magnitude
+end
+
+local function guiarAte(parte, cor)
+	pararGuia()
+	local raiz = jogador.Character and jogador.Character:FindFirstChild("HumanoidRootPart")
+	if not parte or not raiz then
+		return
+	end
+	local anexo = criar("Attachment", { Name = "AnexoGuia", Parent = raiz })
+	local anexoAlvo = criar("Attachment", { Name = "AnexoGuia", Position = Vector3.new(0, 3, 0), Parent = parte })
+	local feixe = criar("Beam", {
+		Name = "Guia",
+		Attachment0 = anexo,
+		Attachment1 = anexoAlvo,
+		Color = ColorSequence.new(Color3.new(1, 1, 1), cor),
+		Transparency = NumberSequence.new(0.1),
+		LightEmission = 1,
+		FaceCamera = true,
+		Width0 = 0.8,
+		Width1 = 0.8,
+		Segments = 20,
+		Parent = raiz,
+	})
+	guia = { feixe = feixe, anexo = anexo, anexoAlvo = anexoAlvo, alvo = parte, ate = os.clock() + 90 }
+end
+
+local function irParaLoja()
+	local balcao = lugarDoMapa("Loja", "Balcao")
+	if distanciaAte(balcao) <= Config.Geral.DistanciaLoja then
+		abrirPainel("Loja")
+		return
+	end
+	notificar("🎪 A Loja é uma tenda no meio do mapa. Siga a luz verde!", "aviso")
+	guiarAte(balcao, COR.verde)
+end
+
+botaoMenu(1, "Loja", "🎪", "Loja", COR.verde, irParaLoja)
+botaoMenu(2, "Roleta", "🎡", "Roleta", COR.laranja)
+botaoMenu(3, "Indice", "📖", "Índice", COR.azul)
+botaoMenu(4, "Ranking", "🏆", "Ranking", COR.amarelo)
+botaoMenu(5, "Renascer", "♻️", "Renascer", COR.roxo)
+botaoMenu(6, "Diario", "🎁", "Diário", COR.rosa)
+botaoMenu(7, "Config", "⚙️", "Opções", COR.desligado)
 
 -- Ajusta o tamanho em telas pequenas (celular)
 local function ajustarEscala()
@@ -652,9 +753,71 @@ end
 --------------------------------------------------------------------------
 local atualizarLoja
 do
-	local painel = criarPainel("Loja", "🛒 LOJA DE MELHORIAS", COR.verde)
-	local lista = listaRolavel(painel.corpo)
+	local painel = criarPainel("Loja", "🎪 LOJA DOS HERÓIS", COR.verde)
+	local abas = criar("Frame", { Name = "Abas", Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, Parent = painel.corpo }, {
+		criar("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
+	})
+	local listaLuvas = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 52), Size = UDim2.new(1, 0, 1, -52) })
+	criar("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = listaLuvas })
+	local lista = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 52), Size = UDim2.new(1, 0, 1, -52), Visible = false })
 	criar("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = lista })
+
+	local botoesAba = {}
+	local function mostrarAba(nome)
+		listaLuvas.Visible = nome == "Luvas"
+		lista.Visible = nome == "Melhorias"
+		for id, b in botoesAba do
+			b.BackgroundColor3 = id == nome and COR.amarelo or COR.fundo3
+		end
+	end
+	botoesAba.Luvas = botao({ Text = "🥊 Luvas", LayoutOrder = 1, Size = UDim2.fromOffset(170, 42), Parent = abas }, function()
+		mostrarAba("Luvas")
+	end)
+	botoesAba.Melhorias = botao({ Text = "🌀 Melhorias", LayoutOrder = 2, Size = UDim2.fromOffset(170, 42), Parent = abas }, function()
+		mostrarAba("Melhorias")
+	end)
+	mostrarAba("Luvas")
+
+	-- Luvas: cada uma soca mais forte, mais longe e mais rápido
+	local cartoesLuva = {}
+	for i, luva in Config.Luvas do
+		local cartao = criar("Frame", { LayoutOrder = i, Size = UDim2.new(1, 0, 0, 80), BackgroundColor3 = COR.fundo2, Parent = listaLuvas }, {
+			canto(14),
+			borda(luva.cor, 2, 0.35),
+		})
+		rotulo({ Text = luva.icone, Size = UDim2.fromOffset(56, 56), Position = UDim2.fromOffset(10, 12), Parent = cartao })
+		rotulo({
+			Text = luva.nome,
+			Font = FONTE_TITULO,
+			TextColor3 = luva.cor:Lerp(Color3.new(1, 1, 1), 0.35),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -230, 0, 28),
+			Position = UDim2.fromOffset(76, 10),
+			Parent = cartao,
+		}, { limiteTexto(26), contornoTexto(1.5) })
+		rotulo({
+			Text = "💥 Força " .. luva.forca .. "  •  📏 Alcance " .. luva.alcance .. "\n⏱ Recarga " .. luva.recarga .. "s  •  😵 Atordoa " .. luva.atordoar .. "s",
+			Font = FONTE_TEXTO,
+			TextColor3 = COR.cinza,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -230, 0, 32),
+			Position = UDim2.fromOffset(76, 40),
+			TextWrapped = true,
+			Parent = cartao,
+		}, { limiteTexto(15) })
+		local b = botao({
+			Text = "",
+			Cor = COR.verde,
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -12, 0.5, 0),
+			Size = UDim2.fromOffset(140, 50),
+			Parent = cartao,
+		}, function()
+			local ok, mensagem = invocar("Luva", luva.id)
+			notificar(mensagem, ok and "sucesso" or "erro")
+		end)
+		cartoesLuva[luva.id] = { botao = b, luva = luva }
+	end
 
 	local cartoes = {}
 	for i, melhoria in Config.Melhorias do
@@ -754,6 +917,28 @@ do
 
 	function atualizarLoja()
 		local dinheiro = atributo("Dinheiro", 0)
+		local minhas = {}
+		local ok, listaMinhas = pcall(function()
+			return HttpService:JSONDecode(atributo("Luvas", "[]"))
+		end)
+		if ok and type(listaMinhas) == "table" then
+			for _, id in listaMinhas do
+				minhas[id] = true
+			end
+		end
+		local equipada = atributo("LuvaEquipada", "Basica")
+		for id, cartao in cartoesLuva do
+			if id == equipada then
+				cartao.botao.Text = "✔ EQUIPADA"
+				cartao.botao.BackgroundColor3 = COR.amarelo
+			elseif minhas[id] then
+				cartao.botao.Text = "EQUIPAR"
+				cartao.botao.BackgroundColor3 = COR.azul
+			else
+				cartao.botao.Text = formatar(cartao.luva.preco)
+				cartao.botao.BackgroundColor3 = dinheiro >= cartao.luva.preco and COR.verde or COR.desligado
+			end
+		end
 		for id, cartao in cartoes do
 			local nivel = atributo("Nivel" .. id, 0)
 			local precos = cartao.melhoria.precos
@@ -781,6 +966,86 @@ do
 		end
 	end
 	painel.aoAbrir = atualizarLoja
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: ROLETA DA SORTE
+--------------------------------------------------------------------------
+local atualizarRoleta
+do
+	local painel = criarPainel("Roleta", "🎡 ROLETA DA SORTE", COR.laranja)
+	local textoTempo = rotulo({ Text = "", Font = FONTE_TITULO, Size = UDim2.new(1, 0, 0, 34), Parent = painel.corpo }, { contornoTexto(2) })
+	rotulo({
+		Text = "Gire de graça a cada " .. Config.Roleta.IntervaloHoras .. " horas! A roleta gigante fica no meio do mapa.",
+		Font = FONTE_TEXTO,
+		TextColor3 = COR.cinza,
+		Size = UDim2.new(1, 0, 0, 20),
+		Position = UDim2.fromOffset(0, 36),
+		Parent = painel.corpo,
+	}, { limiteTexto(16) })
+	local grade = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 64), Size = UDim2.new(1, 0, 1, -128) })
+	criar("UIGridLayout", {
+		CellSize = UDim2.new(0.5, -6, 0, 52),
+		CellPadding = UDim2.fromOffset(8, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = grade,
+	})
+	local pesoTotal = 0
+	for _, premio in Config.Roleta.Premios do
+		pesoTotal += premio.peso
+	end
+	for i, premio in Config.Roleta.Premios do
+		local cartao = criar("Frame", { LayoutOrder = i, BackgroundColor3 = COR.fundo2, Parent = grade }, { canto(12), borda(premio.cor, 2, 0.2) })
+		rotulo({ Text = premio.icone, Size = UDim2.fromOffset(38, 38), Position = UDim2.fromOffset(8, 7), Parent = cartao })
+		rotulo({
+			Text = premio.nome,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -110, 0, 36),
+			Position = UDim2.fromOffset(52, 8),
+			TextWrapped = true,
+			Parent = cartao,
+		}, { limiteTexto(17) })
+		rotulo({
+			Text = math.floor(premio.peso / pesoTotal * 100 + 0.5) .. "%",
+			Font = FONTE_TITULO,
+			TextColor3 = premio.cor:Lerp(Color3.new(1, 1, 1), 0.3),
+			AnchorPoint = Vector2.new(1, 0),
+			Size = UDim2.fromOffset(52, 36),
+			Position = UDim2.new(1, -6, 0, 8),
+			Parent = cartao,
+		}, { contornoTexto(1.5) })
+	end
+	botao({
+		Text = "📍 Ir até a roleta",
+		Cor = COR.laranja,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, 0),
+		Size = UDim2.fromOffset(250, 52),
+		Parent = painel.corpo,
+	}, function()
+		fecharPainel()
+		guiarAte(lugarDoMapa("Roleta", "BotaoRoleta"), COR.laranja)
+		notificar("🎡 Siga a luz até a roleta e aperte E no botão rosa!", "info")
+	end)
+
+	local estavaPronta = nil
+	function atualizarRoleta()
+		local falta = atributo("UltimaRoleta", 0) + Config.Roleta.IntervaloHoras * 3600 - workspace:GetServerTimeNow()
+		local pronta = falta <= 0
+		if pronta then
+			textoTempo.Text = "✅ PRONTA PARA GIRAR!"
+			textoTempo.TextColor3 = COR.verde
+		else
+			textoTempo.Text = "⏳ Próximo giro em " .. Config.formatarTempo(falta)
+			textoTempo.TextColor3 = COR.amarelo
+		end
+		alertasMenu.Roleta.Visible = pronta
+		if pronta and estavaPronta == false then
+			notificar("🎡 A Roleta da Sorte está pronta para girar!", "sucesso")
+		end
+		estavaPronta = pronta
+	end
+	painel.aoAbrir = atualizarRoleta
 end
 
 --------------------------------------------------------------------------
@@ -986,7 +1251,7 @@ do
 	}, { contornoTexto(2) })
 	local progresso = barraProgresso(corpo, UDim2.fromOffset(0, 78), UDim2.new(1, 0, 0, 30), COR.roxo)
 	rotulo({
-		Text = "❌ Você PERDE: seu dinheiro e seus heróis\n✅ Você MANTÉM: melhorias da Loja e o Índice\n⭐ Bônus: +50% de renda PARA SEMPRE!",
+		Text = "❌ Você PERDE: seu dinheiro e seus heróis\n✅ Você MANTÉM: melhorias, luvas e o Índice\n⭐ Bônus: +50% de renda PARA SEMPRE!",
 		Font = FONTE_TEXTO,
 		TextColor3 = COR.cinza,
 		TextWrapped = true,
@@ -1200,7 +1465,7 @@ do
 		{ "💰", "Ganhe dinheiro", "Cada herói gera dinheiro por segundo. O dinheiro fica guardado no botão verde na frente do pedestal: pise nele para coletar!" },
 		{ "🦹", "Roube heróis!", "Entre na base de outro jogador e SEGURE E perto de um herói. Corra de volta para a sua base carregando ele. Você fica mais lento!" },
 		{ "🥊", "Defenda sua base", "Use a Luva Heroica (tecla 1) e clique para socar: o ladrão derruba o herói. Pise no botão verde da entrada para trancar sua base." },
-		{ "🚀", "Fique cada vez mais forte", "Compre melhorias na Loja, complete o Índice, resgate o prêmio diário e Renasça para multiplicar sua renda. Bom jogo, herói!" },
+		{ "🚀", "Fique cada vez mais forte", "Vá até a tenda da Loja comprar luvas e a Mola Turbo, gire a Roleta a cada 12h, complete o Índice, resgate o prêmio diário e Renasça para multiplicar sua renda. Bom jogo, herói!" },
 	}
 	local pagina = 1
 	local icone = rotulo({ Text = "", Size = UDim2.new(1, 0, 0, 70), Parent = corpo })
@@ -1393,6 +1658,29 @@ local function confete()
 	end
 end
 
+local function mostrarPremio(icone, mensagem)
+	local quadro = criar("Frame", {
+		Name = "Premio",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.42),
+		Size = UDim2.fromOffset(460, 210),
+		BackgroundColor3 = COR.fundo,
+		ZIndex = 20,
+		Parent = gui,
+	}, { canto(24), borda(COR.amarelo, 4), gradiente(Color3.new(1, 1, 1), Color3.fromRGB(190, 190, 210), 90) })
+	local escala = criar("UIScale", { Scale = 0.3, Parent = quadro })
+	rotulo({ Text = "🎉 PRÊMIO DA ROLETA!", Font = FONTE_TITULO, TextColor3 = COR.amarelo, Size = UDim2.new(1, -20, 0, 36), Position = UDim2.fromOffset(10, 10), ZIndex = 21, Parent = quadro }, { contornoTexto(2.5) })
+	rotulo({ Text = icone or "🎁", Size = UDim2.fromOffset(80, 80), AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 48), ZIndex = 21, Parent = quadro })
+	rotulo({ Text = mensagem or "", Size = UDim2.new(1, -30, 0, 56), Position = UDim2.fromOffset(15, 140), TextWrapped = true, ZIndex = 21, Parent = quadro }, { contornoTexto(2), limiteTexto(24) })
+	TweenService:Create(escala, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	confete()
+	tocar("compra")
+	task.delay(4.5, function()
+		TweenService:Create(escala, TweenInfo.new(0.25), { Scale = 0 }):Play()
+		Debris:AddItem(quadro, 0.3)
+	end)
+end
+
 local function piscarAlarme(ladrao, heroi)
 	anunciar("🚨 " .. tostring(ladrao) .. " está roubando seu " .. tostring(heroi) .. "! Soque ele com a Luva!", COR.vermelho, 5)
 	task.spawn(function()
@@ -1499,10 +1787,12 @@ Efeito.OnClientEvent:Connect(function(tipo, a, b)
 		tocar("compra")
 	elseif tipo == "offline" then
 		mostrarBemVindo(a, b)
+	elseif tipo == "premio" then
+		mostrarPremio(a, b)
 	end
 end)
 
-Empurrao.OnClientEvent:Connect(function(velocidade)
+Empurrao.OnClientEvent:Connect(function(velocidade, atordoar)
 	local personagem = jogador.Character
 	local raiz = personagem and personagem:FindFirstChild("HumanoidRootPart")
 	local humanoid = personagem and personagem:FindFirstChildOfClass("Humanoid")
@@ -1512,10 +1802,49 @@ Empurrao.OnClientEvent:Connect(function(velocidade)
 	humanoid.PlatformStand = true
 	raiz.AssemblyLinearVelocity = velocidade
 	tremerCamera(0.35, 0.8)
-	task.delay(0.8, function()
+	task.delay(atordoar or 0.8, function()
 		if humanoid.Parent then
 			humanoid.PlatformStand = false
 			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)
+end)
+
+AbrirLoja.OnClientEvent:Connect(function()
+	if guia and guia.alvo.Name == "Balcao" then
+		pararGuia()
+	end
+	if painelAberto ~= "Loja" then
+		abrirPainel("Loja")
+	end
+end)
+
+-- A roleta gira igual para todo mundo; o servidor só manda de onde até onde
+RoletaGiro.OnClientEvent:Connect(function(cf0, de, para, duracao)
+	local eixo = lugarDoMapa("Roleta", "Eixo")
+	if not eixo then
+		return
+	end
+	if guia and guia.alvo.Name == "BotaoRoleta" then
+		pararGuia()
+	end
+	local fatia = math.pi * 2 / #Config.Roleta.Premios
+	local inicio = os.clock()
+	local fatiaAnterior = math.floor(de / fatia + 0.5)
+	local conexao
+	conexao = RunService.RenderStepped:Connect(function()
+		local t = math.min(1, (os.clock() - inicio) / duracao)
+		local angulo = de + (para - de) * (1 - (1 - t) ^ 3)
+		eixo.CFrame = cf0 * CFrame.Angles(0, 0, angulo)
+		local atual = math.floor(angulo / fatia + 0.5)
+		if atual ~= fatiaAnterior then
+			fatiaAnterior = atual
+			if distanciaAte(eixo) < 60 then
+				tocar("clique")
+			end
+		end
+		if t >= 1 then
+			conexao:Disconnect()
 		end
 	end)
 end)
@@ -1549,6 +1878,12 @@ jogador.AttributeChanged:Connect(function(nome)
 		atualizarDiario()
 	elseif nome == "Carregando" then
 		atualizarCarregando()
+	elseif nome == "Luvas" or nome == "LuvaEquipada" then
+		atualizarLoja()
+	elseif nome == "UltimaRoleta" then
+		atualizarRoleta()
+	elseif nome == "BoostRenda" or nome == "BoostVelocidade" then
+		atualizarBoosts()
 	elseif nome == "Musica" or nome == "Sons" then
 		configLocal.musica = atributo("Musica", true)
 		configLocal.sons = atributo("Sons", true)
@@ -1601,6 +1936,14 @@ task.spawn(function()
 			barraEvento.Visible = false
 		end
 		atualizarDiario()
+		atualizarRoleta()
+		atualizarBoosts()
+		if guia and (distanciaAte(guia.alvo) < 12 or os.clock() > guia.ate or not guia.alvo.Parent) then
+			pararGuia()
+		end
+		if painelAberto == "Loja" and distanciaAte(lugarDoMapa("Loja", "Balcao")) > Config.Geral.DistanciaLoja + 10 then
+			fecharPainel()
+		end
 		if painelAberto == "Ranking" then
 			atualizarRankingPainel(true)
 		end
@@ -1672,6 +2015,8 @@ aplicarMusica()
 atualizarRenda()
 atualizarLoja()
 atualizarIndice()
+atualizarRoleta()
+atualizarBoosts()
 atualizarRenascer()
 atualizarDiario()
 atualizarConfig()

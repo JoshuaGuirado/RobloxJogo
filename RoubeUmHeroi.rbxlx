@@ -71,6 +71,9 @@ Config.Geral = {
 
 	-- Comandos de teste (/dinheiro, /evento, /heroi) funcionam no Studio e para o dono do jogo
 	ComandosDeTeste = true,
+
+	-- Distância máxima da tenda para comprar na Loja
+	DistanciaLoja = 32,
 }
 
 --------------------------------------------------------------------------
@@ -117,101 +120,204 @@ Config.Mutacoes = {
 }
 
 --------------------------------------------------------------------------
--- HERÓIS
--- cabeca: "mascara", "capacete", "coroa" ou "antena"
+-- HERÓIS (36 super-heróis inspirados nos filmes, com nomes e visuais originais)
+--
+-- visual: cores do uniforme e o que o herói usa.
+--   cabeca: bone, quepe, capaceteBombeiro, toucaMedica, chapeuAbas, capaceteAstronauta,
+--           capacetePiloto, cabelo, capuzAranha, capuzMorcego, capaceteEstrela,
+--           orelhasRaio, elmoTrovao, tiara, capaceteArmadura
+--   rosto: oculos, oculosSol, oculosProtecao, mascaraCirurgica, mascaraMergulho
+--   corpo (lista): faixasRefletivas, jaleco, colete, avental, estetoscopio, distintivo,
+--           cintoUtilidade, teia, listrasPeito, discosPeito, faixasAmarelas, binoculo, armaduraOuro
+--   emblema: cruz, estrela, raio, aranha, morcego, reator, supremo, bandeira
+--   mao: extintor, machado, vassoura, livro, maleta, frasco, boia, prancheta, lanterna, carta, martelo, laco
+--   maoEsquerda: escudo | costas: tanque, mochilaAstronauta, bolsaCarteiro | capa: cor
 -- renda = dinheiro por segundo
 --------------------------------------------------------------------------
-local PELE_CLARA = Color3.fromRGB(255, 214, 180)
-local PELE_MEDIA = Color3.fromRGB(224, 172, 120)
-local PELE_MORENA = Color3.fromRGB(170, 110, 70)
-local PELE_ESCURA = Color3.fromRGB(110, 70, 45)
-
-local function cores(traje, capa, emblema, pele, botas)
-	return { traje = traje, capa = capa, emblema = emblema, pele = pele, botas = botas }
-end
 local rgb = Color3.fromRGB
+local PELE_CLARA = rgb(255, 214, 180)
+local PELE_MEDIA = rgb(224, 172, 120)
+local PELE_MORENA = rgb(170, 110, 70)
+local PELE_ESCURA = rgb(110, 70, 45)
+local PRETO = rgb(25, 25, 30)
+local BRANCO = rgb(245, 245, 245)
+local CASTANHO = rgb(90, 55, 30)
+local LOIRO = rgb(240, 200, 90)
 
 Config.Herois = {
 	-- Comum
-	{ id = "GarotoBolha", nome = "Garoto Bolha", raridade = "Comum", preco = 25, renda = 1, icone = "🫧", cabeca = "mascara",
-		cores = cores(rgb(90, 180, 255), rgb(255, 255, 255), rgb(200, 240, 255), PELE_CLARA, rgb(40, 90, 170)) },
-	{ id = "GarotaMola", nome = "Garota Mola", raridade = "Comum", preco = 40, renda = 2, icone = "🌀", cabeca = "mascara",
-		cores = cores(rgb(255, 120, 180), rgb(120, 60, 160), rgb(255, 230, 0), PELE_MORENA, rgb(120, 60, 160)) },
-	{ id = "CapitaoChinelo", nome = "Capitão Chinelo", raridade = "Comum", preco = 60, renda = 3, icone = "🩴", cabeca = "capacete",
-		cores = cores(rgb(60, 140, 60), rgb(230, 60, 60), rgb(255, 255, 255), PELE_MEDIA, rgb(230, 60, 60)) },
-	{ id = "SenhorPipoca", nome = "Senhor Pipoca", raridade = "Comum", preco = 90, renda = 4, icone = "🍿", cabeca = "antena",
-		cores = cores(rgb(255, 230, 150), rgb(220, 40, 40), rgb(255, 255, 255), PELE_CLARA, rgb(220, 40, 40)) },
+	{ id = "FormigaAtomica", nome = "Formiga Atômica", raridade = "Comum", preco = 25, renda = 1, icone = "🐜", visual = {
+		pele = PELE_CLARA, camisa = rgb(190, 30, 30), mangas = rgb(30, 30, 35), calca = rgb(30, 30, 35), botas = PRETO, maos = PRETO,
+		cabeca = "capaceteFormiga", cabecaCor = rgb(170, 175, 185), corpo = { "cintoUtilidade" }, cintoCor = rgb(170, 175, 185) } },
+	{ id = "FlechaCerteira", nome = "Flecha Certeira", raridade = "Comum", preco = 40, renda = 2, icone = "🏹", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, camisa = rgb(40, 120, 50), calca = rgb(35, 80, 40), botas = rgb(90, 60, 35), maos = rgb(90, 60, 35),
+		cabeca = "capuzArqueiro", cabecaCor = rgb(30, 100, 40), rosto = "mascaraDomino", mascaraCor = rgb(20, 70, 30),
+		maoEsquerda = "arco", costas = "aljava" } },
+	{ id = "ReiDosMares", nome = "Rei dos Mares", raridade = "Comum", preco = 60, renda = 3, icone = "🔱", visual = {
+		pele = PELE_MEDIA, cabelo = LOIRO, estiloCabelo = "longo", camisa = rgb(240, 140, 30), calca = rgb(30, 130, 70), botas = rgb(30, 130, 70),
+		maos = rgb(30, 130, 70), cabeca = "cabelo", rosto = "barba", corpo = { "escamas" }, mao = "tridente" } },
+	{ id = "AgenteSombra", nome = "Agente Sombra", raridade = "Comum", preco = 90, renda = 4, icone = "🕶️", visual = {
+		pele = PELE_CLARA, cabelo = rgb(180, 40, 30), estiloCabelo = "longo", camisa = rgb(25, 25, 30), calca = rgb(25, 25, 30), botas = PRETO,
+		maos = PRETO, cabeca = "cabelo", corpo = { "cintoUtilidade" }, cintoCor = rgb(70, 70, 80), mao = "blasters" } },
+	{ id = "PassaroVermelho", nome = "Pássaro Vermelho", raridade = "Comum", preco = 130, renda = 5, icone = "🐦", visual = {
+		pele = PELE_CLARA, cabelo = PRETO, camisa = rgb(200, 30, 30), mangas = rgb(30, 110, 50), calca = rgb(30, 110, 50), botas = PRETO,
+		maos = rgb(30, 110, 50), cabeca = "cabelo", rosto = "mascaraDomino", corpo = { "cintoUtilidade" }, capa = rgb(255, 200, 40) } },
+	{ id = "AsaDeAco", nome = "Asa de Aço", raridade = "Comum", preco = 180, renda = 6, icone = "🦅", visual = {
+		pele = PELE_ESCURA, cabelo = PRETO, camisa = rgb(110, 115, 125), calca = rgb(60, 62, 70), botas = PRETO, maos = PRETO,
+		cabeca = "cabelo", rosto = "oculosVoo", costas = "asasMetal", corpo = { "cintoUtilidade" }, cintoCor = rgb(200, 40, 40) } },
 
 	-- Incomum
-	{ id = "Ventania", nome = "Ventania", raridade = "Incomum", preco = 200, renda = 8, icone = "🌪️", cabeca = "mascara",
-		cores = cores(rgb(170, 220, 230), rgb(40, 90, 140), rgb(255, 255, 255), PELE_ESCURA, rgb(40, 90, 140)) },
-	{ id = "DoutorGelinho", nome = "Doutor Gelinho", raridade = "Incomum", preco = 300, renda = 12, icone = "❄️", cabeca = "capacete",
-		cores = cores(rgb(180, 230, 255), rgb(40, 120, 200), rgb(255, 255, 255), PELE_CLARA, rgb(40, 120, 200)) },
-	{ id = "Faisca", nome = "Faísca", raridade = "Incomum", preco = 450, renda = 17, icone = "⚡", cabeca = "mascara",
-		cores = cores(rgb(255, 210, 0), rgb(30, 30, 30), rgb(255, 120, 0), PELE_MEDIA, rgb(30, 30, 30)) },
-	{ id = "EscudeiroMirim", nome = "Escudeiro Mirim", raridade = "Incomum", preco = 600, renda = 22, icone = "🛡️", cabeca = "capacete",
-		cores = cores(rgb(40, 70, 170), rgb(200, 30, 30), rgb(255, 255, 255), PELE_MORENA, rgb(200, 30, 30)) },
+	{ id = "PanteraReal", nome = "Pantera Real", raridade = "Incomum", preco = 300, renda = 10, icone = "🐾", visual = {
+		pele = PELE_ESCURA, camisa = rgb(25, 25, 30), calca = rgb(25, 25, 30), botas = PRETO, maos = PRETO,
+		cabeca = "capuzPantera", corpo = { "linhasPrata", "colar" } } },
+	{ id = "MagoSupremo", nome = "Mago Supremo", raridade = "Incomum", preco = 420, renda = 14, icone = "🔮", visual = {
+		pele = PELE_CLARA, cabelo = PRETO, camisa = rgb(30, 60, 130), calca = rgb(25, 35, 80), botas = rgb(90, 60, 35),
+		maos = rgb(160, 120, 70), cabeca = "magoCabelo", corpo = { "robe", "amuleto" }, capa = rgb(180, 20, 30), mao = "magia" } },
+	{ id = "CiborgueMax", nome = "Ciborgue Max", raridade = "Incomum", preco = 560, renda = 18, icone = "🦾", visual = {
+		pele = PELE_ESCURA, cabelo = PRETO, camisa = rgb(130, 135, 145), calca = rgb(110, 115, 125), botas = rgb(60, 62, 70),
+		maos = rgb(150, 155, 165), material = "Metal", cabeca = "capaceteCiborgue", corpo = { "metadeMetal" } } },
+	{ id = "GarraSelvagem", nome = "Garra Selvagem", raridade = "Incomum", preco = 750, renda = 24, icone = "🐺", visual = {
+		pele = PELE_CLARA, camisa = rgb(255, 200, 0), calca = rgb(40, 60, 160), botas = rgb(40, 60, 160), maos = rgb(40, 60, 160),
+		cabeca = "mascaraGarra", cabecaCor = rgb(255, 200, 0), corpo = { "faixasPretasLaterais", "cintoUtilidade" }, cintoCor = rgb(200, 30, 30),
+		mao = "garras" } },
+	{ id = "MercenarioTagarela", nome = "Mercenário Tagarela", raridade = "Incomum", preco = 950, renda = 30, icone = "⚔️", visual = {
+		pele = PELE_CLARA, camisa = rgb(170, 20, 25), calca = rgb(170, 20, 25), botas = PRETO, maos = PRETO,
+		cabeca = "mascaraMercenario", cabecaCor = rgb(170, 20, 25), corpo = { "cintoUtilidade" }, cintoCor = PRETO, costas = "espadas" } },
+	{ id = "SenhoraTempestade", nome = "Senhora Tempestade", raridade = "Incomum", preco = 1200, renda = 36, icone = "🌩️", visual = {
+		pele = PELE_ESCURA, cabelo = rgb(240, 240, 245), estiloCabelo = "longo", camisa = rgb(30, 30, 35), calca = rgb(30, 30, 35),
+		botas = PRETO, maos = PRETO, cabeca = "cabelo", rosto = "olhosBrancos", capa = rgb(60, 60, 75), mao = "raios" } },
 
 	-- Raro
-	{ id = "Trovoada", nome = "Trovoada", raridade = "Raro", preco = 1200, renda = 40, icone = "🌩️", cabeca = "antena",
-		cores = cores(rgb(60, 60, 90), rgb(120, 160, 255), rgb(255, 255, 120), PELE_ESCURA, rgb(120, 160, 255)) },
-	{ id = "LaminaNoturna", nome = "Lâmina Noturna", raridade = "Raro", preco = 1800, renda = 55, icone = "🗡️", cabeca = "mascara",
-		cores = cores(rgb(25, 25, 35), rgb(90, 0, 0), rgb(255, 40, 40), PELE_CLARA, rgb(90, 0, 0)) },
-	{ id = "PunhoDeAco", nome = "Punho de Aço", raridade = "Raro", preco = 2500, renda = 75, icone = "👊", cabeca = "capacete",
-		cores = cores(rgb(150, 150, 160), rgb(255, 140, 0), rgb(255, 200, 0), PELE_MEDIA, rgb(80, 80, 90)) },
-	{ id = "SombraVeloz", nome = "Sombra Veloz", raridade = "Raro", preco = 3500, renda = 100, icone = "💨", cabeca = "mascara",
-		cores = cores(rgb(80, 40, 120), rgb(20, 20, 20), rgb(200, 120, 255), PELE_MORENA, rgb(20, 20, 20)) },
+	{ id = "OlhoLaser", nome = "Olho Laser", raridade = "Raro", preco = 2000, renda = 60, icone = "👁️", visual = {
+		pele = PELE_CLARA, cabelo = CASTANHO, camisa = rgb(30, 40, 90), calca = rgb(30, 40, 90), botas = rgb(255, 200, 0), maos = rgb(255, 200, 0),
+		cabeca = "cabelo", rosto = "viseira", corpo = { "cintoUtilidade" } } },
+	{ id = "GarotaInvisivel", nome = "Garota Invisível", raridade = "Raro", preco = 2800, renda = 80, icone = "🫥", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, estiloCabelo = "longo", camisa = rgb(40, 90, 200), calca = rgb(40, 90, 200), botas = PRETO,
+		maos = PRETO, cabeca = "cabelo", transparencia = 0.45, corpo = { "cintoUtilidade" }, cintoCor = PRETO } },
+	{ id = "ChamaViva", nome = "Chama Viva", raridade = "Raro", preco = 3800, renda = 105, icone = "🔥", visual = {
+		pele = rgb(255, 130, 30), camisa = rgb(255, 90, 10), calca = rgb(255, 120, 20), botas = rgb(255, 180, 40), maos = rgb(255, 160, 40),
+		material = "Neon", cabeca = "cabecaFogo", corpo = { "chamas" } } },
+	{ id = "GiganteDePedra", nome = "Gigante de Pedra", raridade = "Raro", preco = 5000, renda = 135, icone = "🪨", visual = {
+		pele = rgb(220, 120, 50), camisa = rgb(220, 120, 50), calca = rgb(40, 60, 160), botas = rgb(220, 120, 50), maos = rgb(220, 120, 50),
+		material = "Concrete", largo = true, cabeca = "cabecaPedra", corpo = { "corpoPedra" } } },
+	{ id = "AndroideRubro", nome = "Androide Rubro", raridade = "Raro", preco = 6500, renda = 170, icone = "💎", visual = {
+		pele = rgb(200, 40, 50), camisa = rgb(40, 120, 70), calca = rgb(40, 120, 70), botas = rgb(200, 160, 40), maos = rgb(200, 40, 50),
+		cabeca = "androide", corpo = { "linhasDouradas" }, capa = rgb(230, 180, 40) } },
+	{ id = "CorvoMistico", nome = "Corvo Místico", raridade = "Raro", preco = 8500, renda = 210, icone = "🐦‍⬛", visual = {
+		pele = rgb(215, 195, 230), cabelo = rgb(60, 40, 120), camisa = rgb(40, 30, 90), calca = rgb(30, 25, 70), botas = rgb(30, 25, 70),
+		cabeca = "capuzCorvo", cabecaCor = rgb(50, 40, 110), capa = rgb(50, 40, 110), corpo = { "cintoUtilidade" } } },
 
 	-- Épico
-	{ id = "CapitaoCometa", nome = "Capitão Cometa", raridade = "Epico", preco = 8000, renda = 200, icone = "☄️", cabeca = "capacete",
-		cores = cores(rgb(30, 60, 150), rgb(255, 120, 0), rgb(255, 220, 0), PELE_CLARA, rgb(255, 120, 0)) },
-	{ id = "FenixRubra", nome = "Fênix Rubra", raridade = "Epico", preco = 12000, renda = 300, icone = "🔥", cabeca = "coroa",
-		cores = cores(rgb(220, 40, 20), rgb(255, 170, 0), rgb(255, 230, 120), PELE_MEDIA, rgb(255, 170, 0)) },
-	{ id = "GuardiaoEsmeralda", nome = "Guardião Esmeralda", raridade = "Epico", preco = 18000, renda = 420, icone = "💚", cabeca = "mascara",
-		cores = cores(rgb(20, 160, 80), rgb(10, 60, 30), rgb(120, 255, 160), PELE_ESCURA, rgb(10, 60, 30)) },
+	{ id = "BruxaRubi", nome = "Bruxa Rubi", raridade = "Epico", preco = 15000, renda = 350, icone = "🔴", visual = {
+		pele = PELE_CLARA, cabelo = rgb(150, 50, 30), camisa = rgb(170, 20, 40), calca = rgb(80, 10, 20), botas = rgb(170, 20, 40),
+		maos = rgb(170, 20, 40), cabeca = "tiaraBruxa", capa = rgb(140, 15, 35), mao = "energiaVermelha" } },
+	{ id = "CapitaCosmica", nome = "Capitã Cósmica", raridade = "Epico", preco = 22000, renda = 480, icone = "⭐", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, camisa = rgb(190, 25, 35), calca = rgb(30, 50, 140), botas = rgb(190, 25, 35), maos = rgb(190, 25, 35),
+		cabeca = "cabelo", corpo = { "faixaAzul" }, emblema = "estrelaDourada", mao = "punhoEnergia" } },
+	{ id = "LanternaEsmeralda", nome = "Lanterna Esmeralda", raridade = "Epico", preco = 30000, renda = 620, icone = "💚", visual = {
+		pele = PELE_MEDIA, cabelo = CASTANHO, camisa = rgb(30, 170, 70), mangas = rgb(25, 25, 30), calca = rgb(25, 25, 30), botas = rgb(30, 170, 70),
+		maos = BRANCO, cabeca = "cabelo", rosto = "mascaraDomino", mascaraCor = rgb(30, 170, 70), emblema = "lanterna", mao = "anelVerde" } },
+	{ id = "GataNoturna", nome = "Gata Noturna", raridade = "Epico", preco = 42000, renda = 800, icone = "🐈‍⬛", visual = {
+		pele = PELE_CLARA, camisa = rgb(28, 28, 34), calca = rgb(28, 28, 34), botas = PRETO, maos = PRETO,
+		cabeca = "capuzGata", mao = "chicote", corpo = { "cintoUtilidade" }, cintoCor = rgb(70, 70, 80) } },
+	{ id = "LordeGalactico", nome = "Lorde Galáctico", raridade = "Epico", preco = 58000, renda = 1050, icone = "🚀", visual = {
+		pele = PELE_CLARA, camisa = rgb(120, 30, 30), calca = rgb(40, 35, 45), botas = PRETO, maos = PRETO,
+		cabeca = "mascaraLorde", corpo = { "casaco" }, mao = "blasters" } },
 
 	-- Lendário
-	{ id = "TitaDourado", nome = "Titã Dourado", raridade = "Lendario", preco = 50000, renda = 1000, icone = "🏆", cabeca = "coroa",
-		cores = cores(rgb(230, 180, 30), rgb(130, 20, 20), rgb(255, 255, 255), PELE_MORENA, rgb(130, 20, 20)) },
-	{ id = "DamaDoRelampago", nome = "Dama do Relâmpago", raridade = "Lendario", preco = 80000, renda = 1500, icone = "🌟", cabeca = "antena",
-		cores = cores(rgb(250, 250, 255), rgb(90, 130, 255), rgb(255, 230, 0), PELE_CLARA, rgb(90, 130, 255)) },
-	{ id = "CoronelGalaxia", nome = "Coronel Galáxia", raridade = "Lendario", preco = 120000, renda = 2200, icone = "🪐", cabeca = "capacete",
-		cores = cores(rgb(40, 20, 80), rgb(200, 60, 255), rgb(120, 255, 255), PELE_ESCURA, rgb(200, 60, 255)) },
+	{ id = "AranhaEscarlate", nome = "Aranha Escarlate", raridade = "Lendario", preco = 100000, renda = 1600, icone = "🕷️", visual = {
+		pele = PELE_CLARA, camisa = rgb(210, 25, 35), calca = rgb(30, 60, 170), botas = rgb(210, 25, 35), maos = rgb(210, 25, 35),
+		cabeca = "capuzAranha", cabecaCor = rgb(210, 25, 35), corpo = { "teia" }, emblema = "aranha" } },
+	{ id = "CavaleiroMorcego", nome = "Cavaleiro Morcego", raridade = "Lendario", preco = 140000, renda = 2100, icone = "🦇", visual = {
+		pele = PELE_MEDIA, camisa = rgb(35, 32, 45), calca = rgb(22, 20, 28), botas = PRETO, maos = PRETO,
+		cabeca = "capuzMorcego", cabecaCor = rgb(22, 20, 28), corpo = { "cintoUtilidade" }, cintoCor = rgb(120, 60, 220),
+		emblema = "morcego", capa = rgb(40, 18, 70) } },
+	{ id = "CapitaoEstrela", nome = "Capitão Estrela", raridade = "Lendario", preco = 190000, renda = 2700, icone = "🛡️", visual = {
+		pele = PELE_CLARA, camisa = rgb(30, 60, 170), calca = rgb(30, 60, 170), botas = rgb(200, 30, 30), maos = rgb(120, 80, 45),
+		cabeca = "capaceteEstrela", cabecaCor = rgb(30, 60, 170), corpo = { "listrasPeito" }, emblema = "estrela", maoEsquerda = "escudo" } },
+	{ id = "RaioVeloz", nome = "Raio Veloz", raridade = "Lendario", preco = 260000, renda = 3500, icone = "⚡", visual = {
+		pele = PELE_CLARA, camisa = rgb(200, 20, 25), calca = rgb(200, 20, 25), botas = rgb(255, 200, 0), maos = rgb(200, 20, 25),
+		cabeca = "orelhasRaio", cabecaCor = rgb(200, 20, 25), emblema = "raio" } },
+	{ id = "SimbionteSombrio", nome = "Simbionte Sombrio", raridade = "Lendario", preco = 350000, renda = 4500, icone = "🕸️", visual = {
+		pele = rgb(20, 20, 25), camisa = rgb(20, 20, 25), calca = rgb(20, 20, 25), botas = rgb(20, 20, 25), maos = rgb(20, 20, 25),
+		largo = true, cabeca = "capuzSimbionte", emblema = "aranha", emblemaCor = BRANCO } },
 
 	-- Mítico
-	{ id = "ImperadorSolar", nome = "Imperador Solar", raridade = "Mitico", preco = 400000, renda = 6000, icone = "☀️", cabeca = "coroa",
-		cores = cores(rgb(255, 150, 0), rgb(255, 240, 120), rgb(255, 255, 255), PELE_MEDIA, rgb(200, 80, 0)) },
-	{ id = "RainhaNebulosa", nome = "Rainha Nebulosa", raridade = "Mitico", preco = 650000, renda = 9000, icone = "🌌", cabeca = "coroa",
-		cores = cores(rgb(120, 60, 200), rgb(255, 100, 200), rgb(150, 255, 255), PELE_ESCURA, rgb(255, 100, 200)) },
+	{ id = "TitaEsmeralda", nome = "Titã Esmeralda", raridade = "Mitico", preco = 700000, renda = 8000, icone = "💪", visual = {
+		pele = rgb(70, 170, 70), cabelo = PRETO, camisa = rgb(70, 170, 70), calca = rgb(110, 50, 150), botas = rgb(70, 170, 70),
+		cabeca = "cabelo", largo = true } },
+	{ id = "GuardiaoTrovao", nome = "Guardião do Trovão", raridade = "Mitico", preco = 1000000, renda = 11000, icone = "🔨", visual = {
+		pele = PELE_CLARA, cabelo = LOIRO, camisa = rgb(70, 75, 90), calca = rgb(25, 25, 32), botas = rgb(120, 125, 135),
+		maos = rgb(150, 155, 165), cabeca = "elmoTrovao", corpo = { "discosPeito" }, capa = rgb(190, 20, 25), mao = "martelo" } },
+	{ id = "AmazonaDourada", nome = "Amazona Dourada", raridade = "Mitico", preco = 1400000, renda = 15000, icone = "👑", visual = {
+		pele = PELE_MORENA, cabelo = PRETO, camisa = rgb(180, 20, 30), calca = rgb(180, 20, 30), botas = rgb(180, 20, 30),
+		maos = rgb(200, 205, 215), cabeca = "tiara", corpo = { "armaduraOuro" }, mao = "laco" } },
+	{ id = "CapitaoRelampago", nome = "Capitão Relâmpago", raridade = "Mitico", preco = 2000000, renda = 20000, icone = "💥", visual = {
+		pele = PELE_MEDIA, cabelo = PRETO, camisa = rgb(190, 20, 25), calca = rgb(190, 20, 25), botas = rgb(255, 200, 40),
+		maos = rgb(255, 200, 40), cabeca = "cabelo", emblema = "raioPeito", capa = rgb(245, 245, 240), corpo = { "cintoUtilidade" } } },
 
 	-- Divino
-	{ id = "ArcanjoSupremo", nome = "Arcanjo Supremo", raridade = "Divino", preco = 2000000, renda = 25000, icone = "😇", cabeca = "coroa",
-		cores = cores(rgb(255, 255, 255), rgb(255, 215, 0), rgb(255, 240, 150), PELE_CLARA, rgb(255, 215, 0)) },
-	{ id = "OraculoEterno", nome = "Oráculo Eterno", raridade = "Divino", preco = 3500000, renda = 40000, icone = "🔮", cabeca = "antena",
-		cores = cores(rgb(60, 0, 90), rgb(0, 255, 200), rgb(255, 255, 255), PELE_MORENA, rgb(0, 255, 200)) },
+	{ id = "ArmaduraRubi", nome = "Armadura Rubi", raridade = "Divino", preco = 5000000, renda = 45000, icone = "🤖", visual = {
+		pele = PELE_CLARA, camisa = rgb(170, 20, 25), calca = rgb(170, 20, 25), botas = rgb(255, 190, 40), maos = rgb(255, 190, 40),
+		material = "Metal", cabeca = "capaceteArmadura", cabecaCor = rgb(170, 20, 25), emblema = "reator" } },
+	{ id = "FenixCosmica", nome = "Fênix Cósmica", raridade = "Divino", preco = 8000000, renda = 70000, icone = "🌟", visual = {
+		pele = PELE_CLARA, cabelo = rgb(220, 50, 20), camisa = rgb(220, 40, 20), calca = rgb(220, 40, 20), botas = rgb(255, 190, 40),
+		maos = rgb(255, 190, 40), cabeca = "cabeloChamas", emblema = "fenix", corpo = { "chamas", "cintoUtilidade" } } },
 
 	-- Secreto
-	{ id = "HeroiDesconhecido", nome = "O Herói Desconhecido", raridade = "Secreto", preco = 15000000, renda = 150000, icone = "❓", cabeca = "mascara",
-		cores = cores(rgb(15, 15, 15), rgb(255, 0, 60), rgb(255, 0, 60), PELE_MEDIA, rgb(255, 0, 60)) },
-	{ id = "MestreMultiverso", nome = "Mestre Multiverso", raridade = "Secreto", preco = 30000000, renda = 280000, icone = "♾️", cabeca = "capacete",
-		cores = cores(rgb(0, 0, 0), rgb(0, 200, 255), rgb(255, 255, 255), PELE_ESCURA, rgb(0, 200, 255)) },
+	{ id = "HeroiSupremo", nome = "Herói Supremo", raridade = "Secreto", preco = 25000000, renda = 200000, icone = "🦸", visual = {
+		pele = PELE_CLARA, cabelo = PRETO, estiloCabelo = "cacho", camisa = rgb(30, 80, 200), calca = rgb(30, 80, 200),
+		botas = rgb(200, 25, 30), maos = rgb(30, 80, 200), cabeca = "cabelo", emblema = "supremo", capa = rgb(200, 25, 30) } },
+	{ id = "ViajantePrata", nome = "Viajante de Prata", raridade = "Secreto", preco = 50000000, renda = 380000, icone = "🏄", visual = {
+		pele = rgb(205, 210, 220), camisa = rgb(205, 210, 220), calca = rgb(205, 210, 220), botas = rgb(205, 210, 220),
+		maos = rgb(205, 210, 220), material = "Foil", mao = "prancha" } },
+}
+
+-- Heróis da versão antiga do jogo viram os novos (para ninguém perder o que salvou)
+Config.IdsAntigos = {
+	GarotoBolha = "FormigaAtomica", GarotaMola = "FlechaCerteira", CapitaoChinelo = "ReiDosMares", SenhorPipoca = "AgenteSombra",
+	Ventania = "PanteraReal", DoutorGelinho = "MagoSupremo", Faisca = "CiborgueMax", EscudeiroMirim = "GarraSelvagem",
+	Trovoada = "OlhoLaser", LaminaNoturna = "GarotaInvisivel", PunhoDeAco = "ChamaViva", SombraVeloz = "GiganteDePedra",
+	CapitaoCometa = "BruxaRubi", FenixRubra = "CapitaCosmica", GuardiaoEsmeralda = "LanternaEsmeralda",
+	TitaDourado = "AranhaEscarlate", DamaDoRelampago = "CavaleiroMorcego", CoronelGalaxia = "CapitaoEstrela",
+	ImperadorSolar = "TitaEsmeralda", RainhaNebulosa = "GuardiaoTrovao", ArcanjoSupremo = "ArmaduraRubi",
+	OraculoEterno = "FenixCosmica", HeroiDesconhecido = "HeroiSupremo", MestreMultiverso = "ViajantePrata",
 }
 
 --------------------------------------------------------------------------
--- MELHORIAS (Loja)
+-- LUVAS (compradas na tenda da Loja). A Básica todo mundo já tem.
+-- forca = empurrão do soco | alcance = distância | recarga = segundos entre socos
+-- atordoar = segundos que a vítima fica caída
+--------------------------------------------------------------------------
+Config.Luvas = {
+	{ id = "Basica", nome = "Luva Básica", icone = "🥊", preco = 0, forca = 75, alcance = 8, recarga = 0.8, atordoar = 0.8,
+		cor = rgb(215, 30, 30), corPunho = BRANCO, corDetalhe = rgb(30, 30, 30) },
+	{ id = "Ferro", nome = "Luva de Ferro", icone = "🔩", preco = 5000, forca = 95, alcance = 9, recarga = 0.75, atordoar = 1.0,
+		cor = rgb(170, 175, 185), corPunho = rgb(60, 60, 70), corDetalhe = rgb(255, 200, 40), material = "Metal" },
+	{ id = "Turbo", nome = "Luva Turbo", icone = "💨", preco = 50000, forca = 115, alcance = 10, recarga = 0.65, atordoar = 1.2,
+		cor = rgb(30, 110, 255), corPunho = rgb(20, 30, 60), corDetalhe = rgb(80, 240, 255), neon = true },
+	{ id = "Trovao", nome = "Luva Trovão", icone = "⚡", preco = 500000, forca = 140, alcance = 11, recarga = 0.55, atordoar = 1.4,
+		cor = rgb(255, 200, 0), corPunho = rgb(25, 25, 30), corDetalhe = rgb(255, 255, 150), neon = true, particulas = rgb(255, 240, 120) },
+	{ id = "Cosmica", nome = "Luva Cósmica", icone = "🌌", preco = 5000000, forca = 170, alcance = 12.5, recarga = 0.45, atordoar = 1.7,
+		cor = rgb(120, 40, 220), corPunho = rgb(20, 10, 40), corDetalhe = rgb(255, 120, 255), material = "Neon", neon = true,
+		particulas = rgb(200, 120, 255) },
+}
+
+--------------------------------------------------------------------------
+-- MELHORIAS (compradas na tenda da Loja)
 --------------------------------------------------------------------------
 Config.Melhorias = {
 	{
 		id = "Velocidade",
-		nome = "Botas Turbo",
-		icone = "👟",
+		nome = "Mola Turbo",
+		icone = "🌀",
 		precos = { 300, 1500, 6000, 25000, 100000, 400000, 1500000, 6000000, 25000000, 100000000 },
 	},
 	{
 		id = "Pedestais",
 		nome = "Mais Pedestais",
 		icone = "🏛️",
-		precos = { 800, 5000, 30000, 200000, 1200000, 8000000 },
+		precos = { 800, 5000, 30000, 150000, 700000, 3000000, 12000000, 50000000, 200000000 },
 	},
 	{
 		id = "Tranca",
@@ -231,8 +337,12 @@ function Config.velocidadeDoNivel(nivel)
 	return 16 + 2 * nivel
 end
 
+function Config.puloDoNivel(nivel)
+	return 7.2 + 0.7 * nivel -- altura do pulo (a mola faz pular mais alto)
+end
+
 function Config.pedestaisDoNivel(nivel)
-	return 6 + nivel
+	return 6 + 2 * nivel -- de 6 até 24 (3 andares com 8 pedestais)
 end
 
 function Config.trancaDoNivel(nivel)
@@ -242,7 +352,7 @@ end
 -- Texto mostrado na Loja para cada melhoria
 function Config.descricaoMelhoria(id, nivel)
 	if id == "Velocidade" then
-		return "Velocidade " .. Config.velocidadeDoNivel(nivel)
+		return "Velocidade " .. Config.velocidadeDoNivel(nivel) .. " e pulo mais alto"
 	elseif id == "Pedestais" then
 		return Config.pedestaisDoNivel(nivel) .. " pedestais na base"
 	elseif id == "Tranca" then
@@ -252,6 +362,26 @@ function Config.descricaoMelhoria(id, nivel)
 	end
 	return ""
 end
+
+--------------------------------------------------------------------------
+-- ROLETA DA SORTE (gira a cada 12 horas)
+-- tipo: dinheiro (minutos de renda, com valor mínimo), boostRenda, boostVelocidade,
+--       heroi (raridade), girarDeNovo | peso = chance
+--------------------------------------------------------------------------
+Config.Roleta = {
+	IntervaloHoras = 12,
+	DuracaoGiro = 6,
+	Premios = {
+		{ id = "MoedasP", nome = "Saquinho de Moedas", curto = "$", icone = "💰", cor = rgb(80, 200, 90), peso = 30, tipo = "dinheiro", minutos = 3, minimo = 1000 },
+		{ id = "Renda2x", nome = "Renda 2x por 15 min", curto = "2x", icone = "⚡", cor = rgb(255, 200, 40), peso = 15, tipo = "boostRenda", minutos = 15 },
+		{ id = "HeroiEpico", nome = "Herói Épico", curto = "Épico", icone = "🦸", cor = rgb(170, 80, 255), peso = 12, tipo = "heroi", raridade = "Epico" },
+		{ id = "MoedasM", nome = "Cofre de Moedas", curto = "$$", icone = "🏦", cor = rgb(40, 170, 220), peso = 20, tipo = "dinheiro", minutos = 15, minimo = 5000 },
+		{ id = "Velocidade", nome = "Super velocidade por 10 min", curto = "Rápido", icone = "🌀", cor = rgb(60, 220, 200), peso = 10, tipo = "boostVelocidade", minutos = 10 },
+		{ id = "HeroiLendario", nome = "Herói Lendário", curto = "Lendário", icone = "🌟", cor = rgb(255, 140, 30), peso = 3, tipo = "heroi", raridade = "Lendario" },
+		{ id = "MoedasG", nome = "Tesouro de Moedas", curto = "$$$", icone = "💎", cor = rgb(230, 60, 130), peso = 6, tipo = "dinheiro", minutos = 45, minimo = 25000 },
+		{ id = "GirarDeNovo", nome = "Gire de novo!", curto = "+1", icone = "🔁", cor = rgb(90, 110, 255), peso = 4, tipo = "girarDeNovo" },
+	},
+}
 
 --------------------------------------------------------------------------
 -- RENASCIMENTO
@@ -383,6 +513,18 @@ for _, melhoria in Config.Melhorias do
 	Config.MelhoriaPorId[melhoria.id] = melhoria
 end
 
+Config.LuvaPorId = {}
+for ordem, luva in Config.Luvas do
+	luva.ordem = ordem
+	Config.LuvaPorId[luva.id] = luva
+end
+
+Config.PremioPorId = {}
+for indice, premio in Config.Roleta.Premios do
+	premio.indice = indice
+	Config.PremioPorId[premio.id] = premio
+end
+
 Config.EventoPorId = {}
 for _, evento in Config.Eventos do
 	Config.EventoPorId[evento.id] = evento
@@ -429,8 +571,11 @@ function Dados.padrao()
 		renascimentos = 0,
 		roubos = 0,
 		niveis = { Velocidade = 0, Pedestais = 0, Tranca = 0, Coletor = 0 },
-		herois = {}, -- { {slot = 1, id = "GarotoBolha", mut = "Normal"}, ... }
+		herois = {}, -- { {slot = 1, id = "FormigaAtomica", mut = "Normal"}, ... }
 		descobertos = {}, -- [id] = true
+		luvas = { Basica = true }, -- [id] = true
+		luvaEquipada = "Basica",
+		ultimaRoleta = 0,
 		ultimaDiaria = 0,
 		sequenciaDiaria = 0,
 		ultimoLogin = 0,
@@ -605,13 +750,14 @@ return Dados
 	ROUBE UM HERÓI - Script principal do servidor
 
 	Onde colocar: ServerScriptService -> Script (nome: JogoHerois)
-	Precisa também de: ServerScriptService/Mapa, ServerScriptService/Dados
-	e ReplicatedStorage/ConfigHerois (ModuleScripts).
+	Precisa também de: ServerScriptService/Mapa, ServerScriptService/Dados,
+	ServerScriptService/ModelosHerois e ReplicatedStorage/ConfigHerois (ModuleScripts).
 
 	Cuida de toda a lógica do jogo:
 	  - heróis saindo do portal e andando pela passarela (com mutações)
 	  - compra, renda por segundo, coleta nos pedestais, venda
-	  - roubo (segurar E), carregar o herói até a sua base, Luva Heroica
+	  - roubo (segurar E), carregar o herói até a sua base, Luva Heroica (5 níveis)
+	  - bases de 3 andares com elevador, tenda da Loja e Roleta da Sorte
 	  - tranca da base, melhorias, renascimento, recompensa diária
 	  - eventos, ciclo dia/noite, coroa do mais rico
 	  - salvamento (DataStore), ranking global e compras com Robux
@@ -622,7 +768,6 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPack = game:GetService("StarterPack")
-local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
@@ -631,12 +776,12 @@ local Debris = game:GetService("Debris")
 local Config = require(ReplicatedStorage:WaitForChild("ConfigHerois"))
 local Mapa = require(script.Parent:WaitForChild("Mapa"))
 local Dados = require(script.Parent:WaitForChild("Dados"))
+local Modelos = require(script.Parent:WaitForChild("ModelosHerois"))
 
 local G = Config.Geral
 local formatar = Config.formatar
 
 local NOME_LUVA = "Luva Heroica"
-local PELE_PADRAO = Color3.fromRGB(255, 214, 180)
 
 local function ordemRaridade(id)
 	local raridade = Config.RaridadePorId[id] or Config.Raridades[#Config.Raridades]
@@ -668,13 +813,15 @@ local Efeito = criarRemoto("RemoteEvent", "Efeito")
 local Empurrao = criarRemoto("RemoteEvent", "Empurrao")
 local Acao = criarRemoto("RemoteFunction", "Acao")
 local ObterRanking = criarRemoto("RemoteFunction", "ObterRanking")
+local AbrirLoja = criarRemoto("RemoteEvent", "AbrirLoja")
+local RoletaGiro = criarRemoto("RemoteEvent", "RoletaGiro")
 remotes.Parent = ReplicatedStorage
 
 --------------------------------------------------------------------------
 -- MAPA E ESTADO
 --------------------------------------------------------------------------
 Dados.iniciar(Config)
-local mapa = Mapa.construir(Config)
+local mapa = Mapa.construir(Config, Modelos)
 local bases = mapa.bases
 
 local sessoes = {} -- [jogador] = sessão (dados salvos + base + controles)
@@ -738,7 +885,28 @@ local function nivel(jogador, id)
 end
 
 local function velocidadeJogador(jogador)
-	return Config.velocidadeDoNivel(nivel(jogador, "Velocidade"))
+	local velocidade = Config.velocidadeDoNivel(nivel(jogador, "Velocidade"))
+	local sessao = sessoes[jogador]
+	if sessao and os.time() < (sessao.boostVelocidadeAte or 0) then
+		velocidade *= 1.5
+	end
+	return velocidade
+end
+
+-- Aplica velocidade e pulo (Mola Turbo, bônus da roleta e peso do herói roubado)
+local function aplicarMovimento(jogador)
+	local humanoid = humanoidDe(jogador)
+	if not humanoid then
+		return
+	end
+	local velocidade = velocidadeJogador(jogador)
+	if carregando[jogador] then
+		velocidade *= G.MultiplicadorCarregando
+	end
+	humanoid.WalkSpeed = velocidade
+	local pulo = Config.puloDoNivel(nivel(jogador, "Velocidade"))
+	humanoid.JumpHeight = pulo
+	humanoid.JumpPower = math.sqrt(2 * workspace.Gravity * pulo)
 end
 
 local function pedestaisJogador(jogador)
@@ -752,6 +920,9 @@ local function multiplicadorJogador(jogador)
 	end
 	local multiplicador = Config.multiplicadorRenascimento(sessao.dados.renascimentos)
 	if sessao.passeDobro then
+		multiplicador *= 2
+	end
+	if os.time() < (sessao.boostRendaAte or 0) then
 		multiplicador *= 2
 	end
 	return multiplicador
@@ -791,6 +962,15 @@ local function atualizarAtributos(jogador)
 		table.insert(descobertos, id)
 	end
 	jogador:SetAttribute("Descobertos", HttpService:JSONEncode(descobertos))
+	local luvas = {}
+	for id in d.luvas do
+		table.insert(luvas, id)
+	end
+	jogador:SetAttribute("Luvas", HttpService:JSONEncode(luvas))
+	jogador:SetAttribute("LuvaEquipada", d.luvaEquipada)
+	jogador:SetAttribute("UltimaRoleta", d.ultimaRoleta)
+	jogador:SetAttribute("BoostRenda", sessao.boostRendaAte or 0)
+	jogador:SetAttribute("BoostVelocidade", sessao.boostVelocidadeAte or 0)
 	sessao.statRoubos.Value = d.roubos
 	sessao.statRenascimentos.Value = d.renascimentos
 end
@@ -825,184 +1005,6 @@ local function descobrir(jogador, def)
 end
 
 --------------------------------------------------------------------------
--- MODELO 3D DOS HERÓIS
---------------------------------------------------------------------------
-local function criarModeloHeroi(def, mutacao)
-	local raridade = Config.RaridadePorId[def.raridade]
-	local s = raridade.escala
-	local cores = def.cores
-	local corTraje, corCapa = cores.traje, cores.capa
-	local corEmblema = cores.emblema or cores.capa
-	local corPele = cores.pele or PELE_PADRAO
-	local corBotas = cores.botas or cores.capa
-	local materialTraje = Enum.Material.SmoothPlastic
-
-	if mutacao.id == "Ouro" then
-		corTraje, corCapa, materialTraje = mutacao.cor, Color3.fromRGB(255, 235, 150), Enum.Material.Foil
-	elseif mutacao.id == "Diamante" then
-		corTraje, corCapa, materialTraje = mutacao.cor, Color3.fromRGB(200, 245, 255), Enum.Material.Glass
-	elseif mutacao.id == "Cosmico" then
-		corTraje, corCapa, materialTraje = Color3.fromRGB(50, 0, 110), mutacao.cor, Enum.Material.Neon
-	end
-
-	local modelo = Instance.new("Model")
-	modelo.Name = def.nome
-	modelo:SetAttribute("HeroiId", def.id)
-	modelo:SetAttribute("Mutacao", mutacao.id)
-
-	local function nova(nome, forma, tamanho, cf, cor, material)
-		local p = Instance.new("Part")
-		p.Name = nome
-		p.Shape = forma
-		p.Size = tamanho
-		p.CFrame = cf
-		p.Color = cor
-		p.Material = material or Enum.Material.SmoothPlastic
-		p.TopSurface = Enum.SurfaceType.Smooth
-		p.BottomSurface = Enum.SurfaceType.Smooth
-		p.CanCollide = false
-		p.CanTouch = false
-		p.CanQuery = false
-		p.Massless = true
-		p.Anchored = false
-		p.Parent = modelo
-		return p
-	end
-
-	local BLOCO, BOLA, CILINDRO = Enum.PartType.Block, Enum.PartType.Ball, Enum.PartType.Cylinder
-	local NEON = Enum.Material.Neon
-
-	-- O tronco é a peça principal: todas as outras ficam soldadas nele
-	local raiz = nova("Tronco", BLOCO, Vector3.new(1.6 * s, 1.6 * s, 0.9 * s), CFrame.new(), corTraje, materialTraje)
-	raiz.Anchored = true
-	raiz:SetAttribute("Pintavel", true)
-
-	local function peca(nome, forma, tamanho, cf, cor, material, pintavel)
-		local p = nova(nome, forma, tamanho, cf, cor, material)
-		if pintavel then
-			p:SetAttribute("Pintavel", true)
-		end
-		local solda = Instance.new("WeldConstraint")
-		solda.Part0 = raiz
-		solda.Part1 = p
-		solda.Parent = p
-		return p
-	end
-
-	for _, lado in { -1, 1 } do
-		peca("Perna", BLOCO, Vector3.new(0.6 * s, 1.2 * s, 0.6 * s), CFrame.new(0.42 * s * lado, -1.4 * s, 0), corTraje, materialTraje, true)
-		peca("Bota", BLOCO, Vector3.new(0.68 * s, 0.45 * s, 0.78 * s), CFrame.new(0.42 * s * lado, -1.8 * s, -0.05 * s), corBotas)
-		peca("Braco", BLOCO, Vector3.new(0.45 * s, 1.4 * s, 0.45 * s),
-			CFrame.new(1.05 * s * lado, 0.05 * s, 0) * CFrame.Angles(0, 0, math.rad(8 * lado)), corTraje, materialTraje, true)
-		peca("Luva", BOLA, Vector3.one * 0.55 * s, CFrame.new(1.15 * s * lado, -0.7 * s, 0), corBotas)
-	end
-	peca("Cinto", BLOCO, Vector3.new(1.66 * s, 0.22 * s, 0.96 * s), CFrame.new(0, -0.62 * s, 0), Color3.fromRGB(35, 35, 40))
-	peca("Fivela", BLOCO, Vector3.new(0.3 * s, 0.26 * s, 0.1 * s), CFrame.new(0, -0.62 * s, -0.5 * s), Color3.fromRGB(255, 210, 60), NEON)
-	peca("Emblema", BLOCO, Vector3.new(0.55 * s, 0.55 * s, 0.1 * s),
-		CFrame.new(0, 0.22 * s, -0.47 * s) * CFrame.Angles(0, 0, math.rad(45)), corEmblema, NEON)
-	peca("Capa", BLOCO, Vector3.new(1.5 * s, 2.3 * s, 0.12 * s),
-		CFrame.new(0, -0.3 * s, 0.56 * s) * CFrame.Angles(math.rad(10), 0, 0), corCapa,
-		materialTraje == NEON and NEON or Enum.Material.SmoothPlastic)
-	peca("Gola", BLOCO, Vector3.new(1.65 * s, 0.2 * s, 0.95 * s), CFrame.new(0, 0.78 * s, 0), corCapa)
-
-	-- Cabeça e acessório
-	local yCabeca = 1.32 * s
-	peca("Cabeca", BOLA, Vector3.one * 1.1 * s, CFrame.new(0, yCabeca, 0), corPele)
-	local function olhos(cor, z, material)
-		for _, lado in { -1, 1 } do
-			peca("Olho", BOLA, Vector3.one * 0.2 * s, CFrame.new(0.2 * s * lado, yCabeca + 0.06 * s, z * s), cor, material)
-		end
-	end
-
-	if def.cabeca == "mascara" then
-		peca("Mascara", BLOCO, Vector3.new(1.14 * s, 0.28 * s, 1.14 * s), CFrame.new(0, yCabeca + 0.06 * s, 0), corCapa)
-		olhos(Color3.new(1, 1, 1), -0.6, NEON)
-	elseif def.cabeca == "capacete" then
-		peca("Capacete", BOLA, Vector3.one * 1.2 * s, CFrame.new(0, yCabeca + 0.05 * s, 0), corCapa, materialTraje)
-		peca("Visor", BLOCO, Vector3.new(0.85 * s, 0.25 * s, 0.2 * s), CFrame.new(0, yCabeca + 0.06 * s, -0.55 * s), corEmblema, NEON)
-	elseif def.cabeca == "coroa" then
-		olhos(Color3.new(0, 0, 0), -0.5)
-		peca("Coroa", CILINDRO, Vector3.new(0.35 * s, 0.85 * s, 0.85 * s),
-			CFrame.new(0, yCabeca + 0.6 * s, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(255, 200, 40), Enum.Material.Foil)
-		peca("Joia", BOLA, Vector3.one * 0.2 * s, CFrame.new(0, yCabeca + 0.6 * s, -0.42 * s), corEmblema, NEON)
-	else -- antena
-		olhos(Color3.new(0, 0, 0), -0.5)
-		for _, lado in { -1, 1 } do
-			peca("Haste", BLOCO, Vector3.new(0.08 * s, 0.6 * s, 0.08 * s), CFrame.new(0.22 * s * lado, yCabeca + 0.75 * s, 0), Color3.fromRGB(40, 40, 40))
-			peca("Ponta", BOLA, Vector3.one * 0.22 * s, CFrame.new(0.22 * s * lado, yCabeca + 1.08 * s, 0), corEmblema, NEON)
-		end
-	end
-
-	-- Efeitos das raridades altas e mutações
-	if raridade.ordem >= ORDEM_LENDARIO then
-		local luz = Instance.new("PointLight")
-		luz.Color = raridade.cor
-		luz.Range = 10
-		luz.Brightness = 1.5
-		luz.Parent = raiz
-	end
-	if def.raridade == "Divino" then
-		peca("Aureola", CILINDRO, Vector3.new(0.12 * s, 1.3 * s, 1.3 * s),
-			CFrame.new(0, yCabeca + 1.05 * s, 0) * CFrame.Angles(0, 0, math.rad(90)), Color3.fromRGB(255, 240, 150), NEON)
-	end
-	if def.raridade == "Secreto" or mutacao.id == "Cosmico" then
-		local particulas = Instance.new("ParticleEmitter")
-		particulas.Color = def.raridade == "Secreto"
-				and ColorSequence.new(Color3.fromRGB(0, 0, 0), Color3.fromRGB(0, 255, 200))
-			or ColorSequence.new(Color3.fromRGB(150, 70, 255), Color3.fromRGB(255, 120, 255))
-		particulas.LightEmission = 0.6
-		particulas.Rate = 14
-		particulas.Lifetime = NumberRange.new(0.8, 1.6)
-		particulas.Speed = NumberRange.new(1, 3)
-		particulas.SpreadAngle = Vector2.new(180, 180)
-		particulas.Size = NumberSequence.new(0.5 * s, 0)
-		particulas.Parent = raiz
-	end
-	if mutacao.id == "ArcoIris" then
-		CollectionService:AddTag(modelo, "HeroiArcoIris")
-	end
-
-	-- Placa em cima da cabeça
-	local placa = Instance.new("BillboardGui")
-	placa.Name = "Info"
-	placa.Size = UDim2.fromOffset(240, 96)
-	placa.StudsOffset = Vector3.new(0, 2.7 * s + 1.4, 0)
-	placa.MaxDistance = 70
-	placa.LightInfluence = 0
-	placa.Parent = raiz
-	local layout = Instance.new("UIListLayout")
-	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Parent = placa
-
-	local function linha(ordem, texto, cor, fonte)
-		local rotulo = Instance.new("TextLabel")
-		rotulo.LayoutOrder = ordem
-		rotulo.Size = UDim2.new(1, 0, 0, 23)
-		rotulo.BackgroundTransparency = 1
-		rotulo.Text = texto
-		rotulo.TextColor3 = cor
-		rotulo.Font = fonte or Enum.Font.FredokaOne
-		rotulo.TextScaled = true
-		rotulo.TextStrokeTransparency = 0
-		rotulo.Parent = placa
-		return rotulo
-	end
-	if mutacao.id ~= "Normal" then
-		local rotulo = linha(1, "✦ " .. mutacao.nome .. " ✦", mutacao.cor)
-		if mutacao.id == "ArcoIris" then
-			rotulo.Name = "TextoArcoIris"
-		end
-	end
-	linha(2, def.nome, Color3.new(1, 1, 1))
-	linha(3, raridade.nome, raridade.cor)
-	linha(4, formatar(def.preco * mutacao.multiplicador) .. "  •  +" .. formatar(def.renda * mutacao.multiplicador) .. "/s",
-		Color3.fromRGB(110, 255, 130), Enum.Font.GothamBold)
-
-	return modelo, raiz
-end
-
---------------------------------------------------------------------------
 -- HERÓIS: CRIAR, REMOVER, BOTÕES (ProximityPrompt)
 --------------------------------------------------------------------------
 local function valorHeroi(h)
@@ -1022,7 +1024,7 @@ end
 
 local function novoHeroi(def, mutacaoId)
 	local mutacao = Config.MutacaoPorId[mutacaoId] or Config.MutacaoPorId.Normal
-	local modelo, raiz = criarModeloHeroi(def, mutacao)
+	local modelo, raiz = Modelos.heroi(def, mutacao, Config)
 	modelo.Parent = mapa.pastaHerois
 	local raridade = Config.RaridadePorId[def.raridade]
 	local h = {
@@ -1225,10 +1227,7 @@ local function terminarCarregar(h)
 		carregando[ladrao] = nil
 		marcarLadrao(ladrao, false)
 		ladrao:SetAttribute("Carregando", nil)
-		local humanoid = humanoidDe(ladrao)
-		if humanoid then
-			humanoid.WalkSpeed = velocidadeJogador(ladrao)
-		end
+		aplicarMovimento(ladrao)
 	end
 	h.ladrao = nil
 	local slotDestino = h.slotDestino
@@ -1351,7 +1350,7 @@ function aoRoubar(h, ladrao)
 	solda.Parent = h.raiz
 	h.raiz.Anchored = false
 
-	humanoid.WalkSpeed = velocidadeJogador(ladrao) * G.MultiplicadorCarregando
+	aplicarMovimento(ladrao)
 	h.conexaoMorte = humanoid.Died:Connect(function()
 		devolver(h, "💀 Você caiu e perdeu o herói!")
 	end)
@@ -1455,8 +1454,14 @@ local function sortearMutacao()
 end
 
 --------------------------------------------------------------------------
--- LUVA HEROICA (soco)
+-- LUVA HEROICA (soco). O modelo 3D da luva é colocado na mão quando equipa.
 --------------------------------------------------------------------------
+local function luvaDoJogador(jogador)
+	local sessao = sessoes[jogador]
+	local id = sessao and sessao.dados.luvaEquipada or "Basica"
+	return Config.LuvaPorId[id] or Config.Luvas[1]
+end
+
 local function criarLuva()
 	local existente = StarterPack:FindFirstChild(NOME_LUVA)
 	if existente then
@@ -1467,28 +1472,15 @@ local function criarLuva()
 	luva.CanBeDropped = false
 	luva.ToolTip = "Clique para socar! Ladrões socados derrubam o herói."
 
+	-- A alça é invisível: o que aparece é a luva 3D colocada na mão
 	local alca = Instance.new("Part")
 	alca.Name = "Handle"
-	alca.Shape = Enum.PartType.Ball
-	alca.Size = Vector3.new(1.3, 1.3, 1.3)
-	alca.Color = Color3.fromRGB(220, 30, 30)
-	alca.Material = Enum.Material.SmoothPlastic
+	alca.Size = Vector3.new(0.4, 0.4, 0.4)
+	alca.Transparency = 1
 	alca.CanCollide = false
+	alca.CanTouch = false
 	alca.Massless = true
 	alca.Parent = luva
-
-	local punho = Instance.new("Part")
-	punho.Name = "Punho"
-	punho.Size = Vector3.new(1, 0.4, 1)
-	punho.CFrame = alca.CFrame * CFrame.new(0, -0.7, 0)
-	punho.Color = Color3.fromRGB(255, 255, 255)
-	punho.CanCollide = false
-	punho.Massless = true
-	punho.Parent = luva
-	local solda = Instance.new("WeldConstraint")
-	solda.Part0 = alca
-	solda.Part1 = punho
-	solda.Parent = punho
 
 	local som = Instance.new("Sound")
 	som.Name = "SomSoco"
@@ -1500,13 +1492,54 @@ local function criarLuva()
 end
 criarLuva()
 
+local function tirarLuvaVisual(personagem)
+	local antiga = personagem:FindFirstChild("LuvaVisual")
+	if antiga then
+		antiga:Destroy()
+	end
+end
+
+local function vestirLuva(jogador)
+	local personagem = jogador.Character
+	if not personagem then
+		return
+	end
+	tirarLuvaVisual(personagem)
+	if not personagem:FindFirstChild(NOME_LUVA) then
+		return -- só aparece com a luva equipada
+	end
+	local mao = personagem:FindFirstChild("RightHand") or personagem:FindFirstChild("Right Arm")
+	if not mao or not mao:IsA("BasePart") then
+		return
+	end
+	local modelo, raiz = Modelos.luva(luvaDoJogador(jogador), 1.4)
+	modelo.Name = "LuvaVisual"
+	local alvo = mao.CFrame * (mao.Name == "RightHand" and CFrame.new(0, -0.15, 0) or CFrame.new(0, -0.95, 0))
+	for _, parte in modelo:GetDescendants() do
+		if parte:IsA("BasePart") then
+			parte.CFrame = alvo * parte.CFrame
+			parte.Anchored = false
+			parte.Massless = true
+			parte.CanCollide = false
+			parte.CanTouch = false
+			parte.CanQuery = false
+		end
+	end
+	modelo.Parent = personagem
+	local solda = Instance.new("WeldConstraint")
+	solda.Part0 = mao
+	solda.Part1 = raiz
+	solda.Parent = raiz
+end
+
 local function socar(jogador, luva)
 	local sessao = sessoes[jogador]
 	if not sessao then
 		return
 	end
+	local def = luvaDoJogador(jogador)
 	local agora = os.clock()
-	if agora - sessao.ultimoSoco < G.RecargaSoco then
+	if agora - sessao.ultimoSoco < def.recarga then
 		return
 	end
 	sessao.ultimoSoco = agora
@@ -1532,11 +1565,11 @@ local function socar(jogador, luva)
 		local humanoidOutro = humanoidDe(outro)
 		if outro ~= jogador and raizOutro and humanoidOutro and humanoidOutro.Health > 0 then
 			local delta = raizOutro.Position - raiz.Position
-			if delta.Magnitude <= G.AlcanceSoco then
+			if delta.Magnitude <= def.alcance then
 				local plano = Vector3.new(delta.X, 0, delta.Z)
 				local direcao = plano.Magnitude > 0.1 and plano.Unit or raiz.CFrame.LookVector
 				if raiz.CFrame.LookVector:Dot(direcao) > 0.2 then
-					Empurrao:FireClient(outro, direcao * G.ForcaSoco + Vector3.new(0, 35, 0))
+					Empurrao:FireClient(outro, direcao * def.forca + Vector3.new(0, 35, 0), def.atordoar)
 					local h = carregando[outro]
 					if h then
 						devolver(h, "🥊 " .. jogador.DisplayName .. " te deu um soco e você derrubou o herói!")
@@ -1550,11 +1583,14 @@ end
 
 local luvasConectadas = setmetatable({}, { __mode = "k" })
 local function conectarLuva(jogador, objeto)
-	if objeto:IsA("Tool") and objeto.Name == NOME_LUVA and not luvasConectadas[objeto] then
-		luvasConectadas[objeto] = true
-		objeto.Activated:Connect(function()
-			socar(jogador, objeto)
-		end)
+	if objeto:IsA("Tool") and objeto.Name == NOME_LUVA then
+		if not luvasConectadas[objeto] then
+			luvasConectadas[objeto] = true
+			objeto.Activated:Connect(function()
+				socar(jogador, objeto)
+			end)
+		end
+		vestirLuva(jogador)
 	end
 end
 
@@ -1591,10 +1627,20 @@ end
 --------------------------------------------------------------------------
 -- AÇÕES PEDIDAS PELA INTERFACE (Loja, Renascer, Diária...)
 --------------------------------------------------------------------------
+local MENSAGEM_LOJA = "🎪 Vá até a tenda da Loja (no meio do mapa) para comprar!"
+
+local function pertoDaLoja(jogador)
+	local raiz = raizDe(jogador)
+	return raiz ~= nil and (raiz.Position - mapa.loja.centro).Magnitude <= G.DistanciaLoja
+end
+
 local function comprarMelhoria(jogador, id)
 	local melhoria = type(id) == "string" and Config.MelhoriaPorId[id]
 	if not melhoria then
 		return false, "Melhoria inválida"
+	end
+	if not pertoDaLoja(jogador) then
+		return false, MENSAGEM_LOJA
 	end
 	local sessao = sessoes[jogador]
 	local atual = sessao.dados.niveis[id] or 0
@@ -1608,16 +1654,39 @@ local function comprarMelhoria(jogador, id)
 	sessao.dados.niveis[id] = atual + 1
 
 	if id == "Velocidade" then
-		local humanoid = humanoidDe(jogador)
-		if humanoid and not carregando[jogador] then
-			humanoid.WalkSpeed = velocidadeJogador(jogador)
-		end
+		aplicarMovimento(jogador)
 	elseif id == "Pedestais" and sessao.base then
 		atualizarSlots(sessao.base)
 	end
 	atualizarAtributos(jogador)
 	efeito(jogador, "som", "compra")
 	return true, melhoria.icone .. " " .. melhoria.nome .. " agora é nível " .. (atual + 1) .. "!"
+end
+
+local function comprarLuva(jogador, id)
+	local def = type(id) == "string" and Config.LuvaPorId[id]
+	if not def then
+		return false, "Luva inválida"
+	end
+	local d = sessoes[jogador].dados
+	if d.luvas[id] then
+		d.luvaEquipada = id
+		vestirLuva(jogador)
+		atualizarAtributos(jogador)
+		return true, def.icone .. " " .. def.nome .. " equipada!"
+	end
+	if not pertoDaLoja(jogador) then
+		return false, MENSAGEM_LOJA
+	end
+	if not gastar(jogador, def.preco) then
+		return false, "Dinheiro insuficiente! Custa " .. formatar(def.preco)
+	end
+	d.luvas[id] = true
+	d.luvaEquipada = id
+	vestirLuva(jogador)
+	atualizarAtributos(jogador)
+	efeito(jogador, "som", "compra")
+	return true, def.icone .. " Você comprou a " .. def.nome .. "! Equipe a luva (tecla 1) e soque os ladrões."
 end
 
 local function renascer(jogador)
@@ -1676,6 +1745,8 @@ Acao.OnServerInvoke = function(jogador, acao, argumento)
 
 	if acao == "Melhoria" then
 		return comprarMelhoria(jogador, argumento)
+	elseif acao == "Luva" then
+		return comprarLuva(jogador, argumento)
 	elseif acao == "Renascer" then
 		return renascer(jogador)
 	elseif acao == "Diaria" then
@@ -1737,7 +1808,7 @@ local function aoNascer(jogador, personagem)
 	if not humanoid or not raiz or not humanoid:IsA("Humanoid") then
 		return
 	end
-	humanoid.WalkSpeed = velocidadeJogador(jogador)
+	aplicarMovimento(jogador)
 
 	if sessao.base then
 		-- Deixa o dono atravessar a barreira da própria base
@@ -1756,6 +1827,11 @@ local function aoNascer(jogador, personagem)
 
 	personagem.ChildAdded:Connect(function(objeto)
 		conectarLuva(jogador, objeto)
+	end)
+	personagem.ChildRemoved:Connect(function(objeto)
+		if objeto:IsA("Tool") and objeto.Name == NOME_LUVA then
+			tirarLuvaVisual(personagem)
+		end
 	end)
 	for _, objeto in personagem:GetChildren() do
 		conectarLuva(jogador, objeto)
@@ -1793,6 +1869,19 @@ local function aoEntrar(jogador)
 	end
 	if dados.ultimoLogin == 0 and dados.dinheiro == 0 then
 		dados.dinheiro = Config.dinheiroInicial(0)
+	end
+	-- Heróis da versão antiga viram os novos
+	for _, salvo in dados.herois do
+		salvo.id = Config.IdsAntigos[salvo.id] or salvo.id
+	end
+	local descobertos = {}
+	for id in dados.descobertos do
+		descobertos[Config.IdsAntigos[id] or id] = true
+	end
+	dados.descobertos = descobertos
+	dados.luvas.Basica = true
+	if not Config.LuvaPorId[dados.luvaEquipada] or not dados.luvas[dados.luvaEquipada] then
+		dados.luvaEquipada = "Basica"
 	end
 
 	local sessao = {
@@ -1924,7 +2013,7 @@ local function aoSair(jogador)
 end
 
 --------------------------------------------------------------------------
--- COMANDOS DE TESTE (no chat: !dinheiro 1000000 | !evento | !heroi MestreMultiverso Cosmico)
+-- COMANDOS DE TESTE (no chat: !dinheiro 1000000 | !evento | !heroi HeroiSupremo Cosmico | !roleta)
 --------------------------------------------------------------------------
 local function processarComando(jogador, mensagem)
 	if not G.ComandosDeTeste or not (RunService:IsStudio() or jogador.UserId == game.CreatorId) then
@@ -1939,10 +2028,17 @@ local function processarComando(jogador, mensagem)
 	elseif comando == "!evento" then
 		local evento = Config.EventoPorId[partes[2] or ""] or Config.Eventos[math.random(#Config.Eventos)]
 		iniciarEvento(evento)
+	elseif comando == "!roleta" then
+		local sessao = sessoes[jogador]
+		if sessao then
+			sessao.dados.ultimaRoleta = 0
+			atualizarAtributos(jogador)
+			notificar(jogador, "🎡 Roleta liberada!", "sucesso")
+		end
 	elseif comando == "!heroi" then
 		local def = Config.HeroiPorId[partes[2] or ""]
 		if not def then
-			notificar(jogador, "Use: !heroi IdDoHeroi [Mutacao]  (ex: !heroi FenixRubra Ouro)", "aviso")
+			notificar(jogador, "Use: !heroi IdDoHeroi [Mutacao]  (ex: !heroi AranhaEscarlate Ouro)", "aviso")
 			return
 		end
 		local mutacao = Config.MutacaoPorId[partes[3] or ""] and partes[3] or "Normal"
@@ -2056,8 +2152,176 @@ for _, base in bases do
 			efeito(dono, "coleta", valor, slot.pad.Position)
 		end)
 	end
+	-- Elevador: subir e descer entre os andares
+	for _, elevador in base.elevadores do
+		local function botaoElevador(nome, texto, tecla, destino)
+			local prompt = Instance.new("ProximityPrompt")
+			prompt.Name = nome
+			prompt.ActionText = texto
+			prompt.ObjectText = "Elevador"
+			prompt.KeyboardKeyCode = tecla
+			prompt.HoldDuration = 0
+			prompt.MaxActivationDistance = 7
+			prompt.RequiresLineOfSight = false
+			prompt.Parent = elevador.plataforma
+			prompt.Triggered:Connect(function(jogador)
+				local personagem = jogador.Character
+				if personagem then
+					personagem:PivotTo(base.elevadores[destino].saida)
+				end
+			end)
+		end
+		if elevador.andar < #base.elevadores then
+			botaoElevador("Subir", "⬆ Subir para o " .. (elevador.andar + 1) .. "º", Enum.KeyCode.E, elevador.andar + 1)
+		end
+		if elevador.andar > 1 then
+			botaoElevador("Descer", "⬇ Descer para o " .. (elevador.andar - 1) .. "º", Enum.KeyCode.R, elevador.andar - 1)
+		end
+	end
 	atualizarSlots(base)
 	atualizarBarreira(base)
+end
+
+--------------------------------------------------------------------------
+-- TENDA DA LOJA
+--------------------------------------------------------------------------
+do
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "AbrirLoja"
+	prompt.ActionText = "Abrir loja"
+	prompt.ObjectText = "Loja dos Heróis"
+	prompt.HoldDuration = 0
+	prompt.MaxActivationDistance = 14
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = mapa.loja.balcao
+	prompt.Triggered:Connect(function(jogador)
+		AbrirLoja:FireClient(jogador)
+	end)
+end
+
+--------------------------------------------------------------------------
+-- ROLETA DA SORTE (a cada 12 horas)
+--------------------------------------------------------------------------
+local roletaGirando = false
+local anguloRoleta = 0
+
+local function sortearPremio()
+	local total = 0
+	for _, premio in Config.Roleta.Premios do
+		total += premio.peso
+	end
+	local sorteio = math.random() * total
+	for _, premio in Config.Roleta.Premios do
+		sorteio -= premio.peso
+		if sorteio <= 0 then
+			return premio
+		end
+	end
+	return Config.Roleta.Premios[1]
+end
+
+local function darPremio(jogador, premio)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return ""
+	end
+	local d = sessao.dados
+	if premio.tipo == "dinheiro" then
+		local renda = jogador:GetAttribute("RendaPorSegundo") or 0
+		local valor = math.max(premio.minimo * (1 + d.renascimentos), renda * 60 * premio.minutos)
+		ganhar(jogador, valor)
+		return premio.icone .. " " .. premio.nome .. ": +" .. formatar(valor) .. "!"
+	elseif premio.tipo == "boostRenda" then
+		sessao.boostRendaAte = math.max(os.time(), sessao.boostRendaAte or 0) + premio.minutos * 60
+		atualizarAtributos(jogador)
+		return "⚡ Sua renda está em DOBRO por " .. premio.minutos .. " minutos!"
+	elseif premio.tipo == "boostVelocidade" then
+		sessao.boostVelocidadeAte = math.max(os.time(), sessao.boostVelocidadeAte or 0) + premio.minutos * 60
+		aplicarMovimento(jogador)
+		atualizarAtributos(jogador)
+		task.delay(premio.minutos * 60 + 1, function()
+			if jogador.Parent then
+				aplicarMovimento(jogador)
+			end
+		end)
+		return "🌀 Super velocidade por " .. premio.minutos .. " minutos!"
+	elseif premio.tipo == "heroi" then
+		local opcoes = {}
+		for _, def in Config.Herois do
+			if def.raridade == premio.raridade then
+				table.insert(opcoes, def)
+			end
+		end
+		local def = opcoes[math.random(#opcoes)]
+		local slot = sessao.base and slotLivre(sessao.base, pedestaisJogador(jogador))
+		if slot then
+			colocarNaBase(novoHeroi(def, "Normal"), sessao.base, slot, false)
+			descobrir(jogador, def)
+			return "🦸 Você ganhou " .. def.nome .. "! Ele já está na sua base."
+		end
+		ganhar(jogador, def.preco)
+		return "🦸 Sua base estava cheia: você ganhou " .. formatar(def.preco) .. " no lugar de " .. def.nome .. "!"
+	elseif premio.tipo == "girarDeNovo" then
+		d.ultimaRoleta = 0
+		atualizarAtributos(jogador)
+		return "🔁 Você pode girar a roleta de novo agora!"
+	end
+	return ""
+end
+
+local function girarRoleta(jogador)
+	local sessao = sessoes[jogador]
+	if not sessao then
+		return
+	end
+	local d = sessao.dados
+	local agora = os.time()
+	local proxima = d.ultimaRoleta + Config.Roleta.IntervaloHoras * 3600
+	if agora < proxima then
+		notificar(jogador, "🎡 A roleta libera de novo em " .. Config.formatarTempo(proxima - agora), "aviso")
+		return
+	end
+	if roletaGirando then
+		notificar(jogador, "🎡 A roleta está girando, espere um pouquinho!", "aviso")
+		return
+	end
+	roletaGirando = true
+	d.ultimaRoleta = agora
+	atualizarAtributos(jogador)
+
+	local premio = sortearPremio()
+	local volta = math.pi * 2
+	local alvo = (premio.indice - 1) * (volta / #Config.Roleta.Premios)
+	local final = anguloRoleta - (anguloRoleta % volta) + 5 * volta + alvo
+	local duracao = Config.Roleta.DuracaoGiro
+	RoletaGiro:FireAllClients(mapa.roleta.cf0, anguloRoleta, final, duracao)
+	notificar(jogador, "🎡 Girando a roleta...", "info")
+
+	task.delay(duracao, function()
+		anguloRoleta = final
+		mapa.roleta.eixo.CFrame = mapa.roleta.cf0 * CFrame.Angles(0, 0, final % volta)
+		roletaGirando = false
+		if not jogador.Parent then
+			return
+		end
+		local mensagem = darPremio(jogador, premio)
+		efeito(jogador, "premio", premio.icone, mensagem)
+		if (premio.tipo == "heroi" and premio.raridade == "Lendario") or premio.id == "MoedasG" then
+			anunciar("🎡 " .. jogador.DisplayName .. " ganhou " .. premio.nome .. " na Roleta da Sorte!", premio.cor)
+		end
+	end)
+end
+
+do
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "GirarRoleta"
+	prompt.ActionText = "Girar a roleta"
+	prompt.ObjectText = "Roleta da Sorte"
+	prompt.HoldDuration = 0.3
+	prompt.MaxActivationDistance = 12
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = mapa.roleta.botao
+	prompt.Triggered:Connect(girarRoleta)
 end
 
 --------------------------------------------------------------------------
@@ -2191,6 +2455,7 @@ task.spawn(function()
 					ganhar(dono, direto)
 				end
 				dono:SetAttribute("RendaPorSegundo", rendaTotal)
+				dono:SetAttribute("Multiplicador", multiplicadorJogador(dono))
 				base.textoPlaca.Text = "BASE DE " .. string.upper(dono.DisplayName)
 				base.textoRenda.Text = "+" .. formatar(rendaTotal) .. "/s"
 			else
@@ -2618,6 +2883,9 @@ local function construirPostes(pasta, comprimento)
 	local metade = comprimento / 2
 	for x = -metade, metade, 30 do
 		for _, z in { -20, 20 } do
+			if x == 0 then
+				continue -- deixa livre a frente da loja e da roleta
+			end
 			enfeite({ Name = "Poste", Size = Vector3.new(0.6, 12, 0.6), CFrame = CFrame.new(x, CHAO + 6, z),
 				Color = Color3.fromRGB(40, 40, 50), Material = Enum.Material.Metal, Parent = pasta })
 			local lampada = enfeite({ Name = "Lampada", Shape = Enum.PartType.Ball, Size = Vector3.new(1.8, 1.8, 1.8),
@@ -2833,8 +3101,25 @@ local function construirQuadro(pasta, categoria)
 end
 
 --------------------------------------------------------------------------
--- BASES
+-- BASES (prédio de 3 andares com elevador)
 --------------------------------------------------------------------------
+local ALTURA_ANDAR = 14
+local ANDARES = 3
+Mapa.ALTURA_ANDAR = ALTURA_ANDAR
+Mapa.ANDARES = ANDARES
+
+-- Coloca um modelo montado na origem no lugar certo (antes de entrar no workspace)
+local function colocarModelo(modelo, cf, pai)
+	for _, p in modelo:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.CFrame = cf * p.CFrame
+			p.Anchored = true
+		end
+	end
+	modelo.Parent = pai
+end
+Mapa.colocarModelo = colocarModelo
+
 local function construirBase(pasta, indice, centro, cor)
 	-- A frente da base (eixo -Z local) aponta para a passarela (z = 0).
 	-- Bases do lado negativo giram 180 graus para olhar para +Z.
@@ -2844,18 +3129,18 @@ local function construirBase(pasta, indice, centro, cor)
 	end
 	local P = ALTURA_PISO
 	local corParede = Color3.fromRGB(45, 48, 62)
+	local corPiso = cor:Lerp(Color3.fromRGB(40, 40, 50), 0.55)
 	local metade = TAMANHO_BASE / 2
+	local alturaTotal = ALTURA_ANDAR * ANDARES
 
 	local modelo = Instance.new("Model")
 	modelo.Name = "Base" .. indice
 	modelo.Parent = pasta
 
+	-- Piso térreo e bordas neon
 	parte({ Name = "Piso", Size = Vector3.new(TAMANHO_BASE, 1, TAMANHO_BASE), CFrame = cf * CFrame.new(0, P - 0.5, 0),
-		Color = cor:Lerp(Color3.fromRGB(40, 40, 50), 0.55), Material = Enum.Material.SmoothPlastic, Parent = modelo })
-
-	-- Bordas neon do piso
+		Color = corPiso, Material = Enum.Material.SmoothPlastic, Parent = modelo })
 	for _, info in {
-		{ Vector3.new(TAMANHO_BASE, 0.15, 0.8), Vector3.new(0, 0, metade - 0.4) },
 		{ Vector3.new(TAMANHO_BASE, 0.15, 0.8), Vector3.new(0, 0, -metade + 0.4) },
 		{ Vector3.new(0.8, 0.15, TAMANHO_BASE), Vector3.new(metade - 0.4, 0, 0) },
 		{ Vector3.new(0.8, 0.15, TAMANHO_BASE), Vector3.new(-metade + 0.4, 0, 0) },
@@ -2864,38 +3149,83 @@ local function construirBase(pasta, indice, centro, cor)
 			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	end
 
-	-- Paredes
+	-- Lajes dos andares de cima e o teto
+	for andar = 2, ANDARES + 1 do
+		local y = P + ALTURA_ANDAR * (andar - 1)
+		local teto = andar > ANDARES
+		parte({ Name = teto and "Teto" or ("Laje" .. andar), Size = Vector3.new(TAMANHO_BASE, 1, TAMANHO_BASE),
+			CFrame = cf * CFrame.new(0, y - 0.5, 0), Color = teto and corParede or corPiso, Material = Enum.Material.SmoothPlastic, Parent = modelo })
+		enfeite({ Name = "BordaLaje", Size = Vector3.new(TAMANHO_BASE + 0.4, 0.5, 0.6), CFrame = cf * CFrame.new(0, y - 0.25, -metade - 0.05),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+		-- Luzes no teto do andar de baixo
+		for _, x in { -12, 12 } do
+			enfeite({ Name = "LuzTeto", Size = Vector3.new(2, 0.15, 30), CFrame = cf * CFrame.new(x, y - 1.08, 2),
+				Color = Color3.fromRGB(255, 245, 225), Material = Enum.Material.Neon, Parent = modelo })
+		end
+		local luz = Instance.new("PointLight")
+		luz.Range = 26
+		luz.Brightness = 0.9
+		luz.Color = Color3.fromRGB(255, 240, 220)
+		luz.Parent = modelo:FindFirstChild(teto and "Teto" or ("Laje" .. andar))
+	end
+
+	-- Paredes do prédio
 	local paredes = {
-		{ "ParedeFundo", Vector3.new(TAMANHO_BASE, 16, 1), Vector3.new(0, P + 8, metade - 0.5) },
-		{ "ParedeEsquerda", Vector3.new(1, 16, TAMANHO_BASE), Vector3.new(-metade + 0.5, P + 8, 0) },
-		{ "ParedeDireita", Vector3.new(1, 16, TAMANHO_BASE), Vector3.new(metade - 0.5, P + 8, 0) },
+		{ "ParedeFundo", Vector3.new(TAMANHO_BASE, alturaTotal, 1), Vector3.new(0, P + alturaTotal / 2, metade - 0.5) },
+		{ "ParedeEsquerda", Vector3.new(1, alturaTotal, TAMANHO_BASE), Vector3.new(-metade + 0.5, P + alturaTotal / 2, 0) },
+		{ "ParedeDireita", Vector3.new(1, alturaTotal, TAMANHO_BASE), Vector3.new(metade - 0.5, P + alturaTotal / 2, 0) },
 	}
 	for _, info in paredes do
 		parte({ Name = info[1], Size = info[2], CFrame = cf * CFrame.new(info[3]), Color = corParede,
 			Material = Enum.Material.SmoothPlastic, Parent = modelo })
 	end
+	-- Janelas de vidro do lado de fora, uma faixa por andar
+	for andar = 1, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		for _, lado in { -1, 1 } do
+			enfeite({ Name = "Janela", Size = Vector3.new(0.4, 6, 34), CFrame = cf * CFrame.new(lado * (metade + 0.15), y0 + 7.5, 0),
+				Color = Color3.fromRGB(150, 205, 255), Material = Enum.Material.Glass, Transparency = 0.25, Parent = modelo })
+			for _, dy in { 4.35, 10.65 } do
+				enfeite({ Name = "MolduraJanela", Size = Vector3.new(0.6, 0.3, 34.4), CFrame = cf * CFrame.new(lado * (metade + 0.2), y0 + dy, 0),
+					Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+			end
+		end
+		-- placa do andar na parede do fundo
+		local placaAndar = parte({ Name = "PlacaAndar", Size = Vector3.new(12, 2.6, 0.3), CFrame = cf * CFrame.new(0, y0 + 10.5, metade - 1.2),
+			Color = Color3.fromRGB(20, 22, 30), Parent = modelo })
+		local gui = superficie(placaAndar, Enum.NormalId.Front, 25)
+		texto(gui, { Text = andar .. "º ANDAR", TextColor3 = cor })
+	end
 	for _, info in {
-		{ Vector3.new(TAMANHO_BASE + 0.6, 0.8, 1.6), Vector3.new(0, P + 16.4, metade - 0.5) },
-		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(-metade + 0.5, P + 16.4, 0) },
-		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(metade - 0.5, P + 16.4, 0) },
+		{ Vector3.new(TAMANHO_BASE + 0.6, 0.8, 1.6), Vector3.new(0, P + alturaTotal + 0.4, metade - 0.5) },
+		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(-metade + 0.5, P + alturaTotal + 0.4, 0) },
+		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(metade - 0.5, P + alturaTotal + 0.4, 0) },
 	} do
-		enfeite({ Name = "Friso", Size = info[1], CFrame = cf * CFrame.new(info[2]), Color = cor,
-			Material = Enum.Material.Neon, Parent = modelo })
+		enfeite({ Name = "Friso", Size = info[1], CFrame = cf * CFrame.new(info[2]), Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	end
 
-	-- Pilares da entrada
+	-- Pilares da frente
 	for _, x in { -metade + 0.5, metade - 0.5 } do
-		parte({ Name = "Pilar", Size = Vector3.new(2.4, 18, 2.4), CFrame = cf * CFrame.new(x, P + 9, -metade + 0.5),
+		parte({ Name = "Pilar", Size = Vector3.new(2.4, alturaTotal + 2, 2.4), CFrame = cf * CFrame.new(x, P + (alturaTotal + 2) / 2, -metade + 0.5),
 			Color = corParede, Material = Enum.Material.SmoothPlastic, Parent = modelo })
-		enfeite({ Name = "TopoPilar", Size = Vector3.new(3, 1, 3), CFrame = cf * CFrame.new(x, P + 18.5, -metade + 0.5),
+		enfeite({ Name = "TopoPilar", Size = Vector3.new(3, 1, 3), CFrame = cf * CFrame.new(x, P + alturaTotal + 2.5, -metade + 0.5),
 			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	end
 
-	-- Barreira laser (só aparece quando a base está trancada)
+	-- Guarda-corpo de vidro na frente dos andares de cima
+	for andar = 2, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		parte({ Name = "GuardaCorpo", Size = Vector3.new(TAMANHO_BASE - 2, 3.5, 0.3), CFrame = cf * CFrame.new(0, y0 + 1.75, -metade + 0.3),
+			Color = Color3.fromRGB(170, 220, 255), Material = Enum.Material.Glass, Transparency = 0.5, Parent = modelo })
+		enfeite({ Name = "Corrimao", Size = Vector3.new(TAMANHO_BASE - 2, 0.3, 0.45), CFrame = cf * CFrame.new(0, y0 + 3.6, -metade + 0.3),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+	end
+
+	-- Barreira laser na entrada do térreo (só aparece quando a base está trancada)
 	local barreira = parte({
 		Name = "Barreira",
-		Size = Vector3.new(TAMANHO_BASE - 1.5, 16, 0.4),
-		CFrame = cf * CFrame.new(0, P + 8, -metade + 0.4),
+		Size = Vector3.new(TAMANHO_BASE - 1.5, ALTURA_ANDAR - 1, 0.4),
+		CFrame = cf * CFrame.new(0, P + (ALTURA_ANDAR - 1) / 2, -metade + 0.4),
 		Color = Color3.fromRGB(255, 40, 40),
 		Material = Enum.Material.Neon,
 		Transparency = 1,
@@ -2904,8 +3234,6 @@ local function construirBase(pasta, indice, centro, cor)
 		CastShadow = false,
 		Parent = modelo,
 	})
-
-	-- Grupos de colisão: a barreira bloqueia todo mundo, menos o dono da base
 	local grupoBarreira = "Barreira" .. indice
 	local grupoDono = "Dono" .. indice
 	for _, grupo in { grupoBarreira, grupoDono } do
@@ -2916,22 +3244,49 @@ local function construirBase(pasta, indice, centro, cor)
 	PhysicsService:CollisionGroupSetCollidable(grupoBarreira, grupoDono, false)
 	barreira.CollisionGroup = grupoBarreira
 
-	-- Placa com o nome do dono
-	local placa = parte({ Name = "Placa", Size = Vector3.new(30, 6, 0.6), CFrame = cf * CFrame.new(0, P + 20, metade - 0.5),
+	-- Placa com o nome do dono no alto do prédio, virada para a passarela
+	local yTeto = P + alturaTotal
+	for _, x in { -12, 12 } do
+		parte({ Name = "SuportePlaca", Size = Vector3.new(0.8, 3, 0.8), CFrame = cf * CFrame.new(x, yTeto + 1.5, -metade + 3),
+			Color = corParede, Parent = modelo })
+	end
+	local placa = parte({ Name = "Placa", Size = Vector3.new(34, 7, 0.8), CFrame = cf * CFrame.new(0, yTeto + 6, -metade + 3),
 		Color = Color3.fromRGB(20, 22, 30), Material = Enum.Material.SmoothPlastic, Parent = modelo })
+	enfeite({ Name = "MolduraPlaca", Size = Vector3.new(35, 8, 0.4), CFrame = cf * CFrame.new(0, yTeto + 6, -metade + 3.5),
+		Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	local guiPlaca = superficie(placa, Enum.NormalId.Front, 25)
 	local textoPlaca = texto(guiPlaca, { Text = "BASE LIVRE", Size = UDim2.fromScale(0.95, 0.6), Position = UDim2.fromScale(0.025, 0.05) })
 	local textoRenda = texto(guiPlaca, { Text = "", TextColor3 = Color3.fromRGB(80, 255, 120),
 		Size = UDim2.fromScale(0.9, 0.32), Position = UDim2.fromScale(0.05, 0.65) })
 
-	-- Botão de trancar
+	-- Botão de trancar (térreo, canto direito da entrada)
 	local botao = cilindroEmPe({ Name = "BotaoTrancar", Size = Vector3.new(0.5, 6, 6), Color = Color3.fromRGB(60, 220, 90),
-		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(-17, P + 0.25, -17))
+		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(16, P + 0.25, -17))
 	local guiBotao = billboard(botao, 200, 50, Vector3.new(0, 3.5, 0), 70)
 	local textoBotao = texto(guiBotao, { Text = "🔒 TRANCAR BASE" })
 
+	-- Elevador de vidro no canto esquerdo da entrada
+	cilindroEmPe({ Name = "PocoElevador", Size = Vector3.new(alturaTotal, 6.2, 6.2), Color = Color3.fromRGB(170, 230, 255),
+		Material = Enum.Material.Glass, Transparency = 0.75, CanCollide = false, CanQuery = false, CastShadow = false, Parent = modelo },
+		cf * CFrame.new(-17, P + alturaTotal / 2, -16))
+	local elevadores = {}
+	for andar = 1, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		local plataforma = cilindroEmPe({ Name = "Elevador" .. andar, Size = Vector3.new(0.3, 5, 5), Color = Color3.fromRGB(80, 230, 255),
+			Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(-17, y0 + 0.15, -16))
+		cilindroEmPe({ Name = "AnelElevador", Size = Vector3.new(0.4, 6.4, 6.4), Color = cor, Material = Enum.Material.Neon,
+			CanCollide = false, Parent = modelo }, cf * CFrame.new(-17, y0 + ALTURA_ANDAR - 1.4, -16))
+		local gui = billboard(plataforma, 180, 44, Vector3.new(0, 4.5, 0), 45)
+		texto(gui, { Text = "🛗 ELEVADOR • " .. andar .. "º" })
+		elevadores[andar] = {
+			plataforma = plataforma,
+			andar = andar,
+			saida = cf * CFrame.new(-17, y0 + 3.2, -10),
+		}
+	end
+
 	-- Ponto de entrega (para a seta de "leve até sua base")
-	local alvo = parte({ Name = "AlvoEntrega", Size = Vector3.new(1, 1, 1), CFrame = cf * CFrame.new(0, P + 3, 0),
+	local alvo = parte({ Name = "AlvoEntrega", Size = Vector3.new(1, 1, 1), CFrame = cf * CFrame.new(0, P + 3, -6),
 		Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false, Parent = modelo })
 	local anexo = Instance.new("Attachment")
 	anexo.Name = "Alvo"
@@ -2950,40 +3305,45 @@ local function construirBase(pasta, indice, centro, cor)
 		grupoDono = grupoDono,
 		spawn = cf * CFrame.new(0, P + 3.2, -16),
 		saida = cf * CFrame.new(0, P + 3.2, -metade - 8),
+		elevadores = elevadores,
 		slots = {},
 	}
 
-	-- 12 pedestais (3 fileiras de 4). Os primeiros são os mais perto da entrada.
-	for _, z in { -4, 7, 18 } do
-		for _, x in { -18, -6, 6, 18 } do
-			local pedestal = cilindroEmPe({ Name = "Pedestal", Size = Vector3.new(1.2, 7, 7), Color = Color3.fromRGB(235, 235, 240),
-				Material = Enum.Material.Marble, Parent = modelo }, cf * CFrame.new(x, P + 0.6, z))
-			local anel = cilindroEmPe({ Name = "Anel", Size = Vector3.new(0.25, 7.8, 7.8), Color = cor,
-				Material = Enum.Material.Neon, CastShadow = false, Parent = modelo }, cf * CFrame.new(x, P + 0.125, z))
-			local pad = parte({ Name = "Coletar", Size = Vector3.new(5, 0.3, 2.4), CFrame = cf * CFrame.new(x, P + 0.15, z - 5.6),
-				Color = Color3.fromRGB(60, 220, 100), Material = Enum.Material.Neon, Parent = modelo })
+	-- 8 pedestais por andar (2 fileiras de 4). A ordem é: térreo, 2º andar, 3º andar.
+	for andar = 1, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		for _, z in { 0, 12 } do
+			for _, x in { -15, -5, 5, 15 } do
+				local pedestal = cilindroEmPe({ Name = "Pedestal", Size = Vector3.new(1.2, 7, 7), Color = Color3.fromRGB(235, 235, 240),
+					Material = Enum.Material.Marble, Parent = modelo }, cf * CFrame.new(x, y0 + 0.6, z))
+				local anel = cilindroEmPe({ Name = "Anel", Size = Vector3.new(0.25, 7.8, 7.8), Color = cor,
+					Material = Enum.Material.Neon, CastShadow = false, Parent = modelo }, cf * CFrame.new(x, y0 + 0.125, z))
+				local pad = parte({ Name = "Coletar", Size = Vector3.new(5, 0.3, 2.4), CFrame = cf * CFrame.new(x, y0 + 0.15, z - 5.6),
+					Color = Color3.fromRGB(60, 220, 100), Material = Enum.Material.Neon, Parent = modelo })
 
-			local guiPad = billboard(pad, 160, 40, Vector3.new(0, 2.2, 0), 50)
-			guiPad.Enabled = false
-			local textoPad = texto(guiPad, { Text = "💰 $0", TextColor3 = Color3.fromRGB(120, 255, 140) })
+				local guiPad = billboard(pad, 160, 40, Vector3.new(0, 2.2, 0), 50)
+				guiPad.Enabled = false
+				local textoPad = texto(guiPad, { Text = "💰 $0", TextColor3 = Color3.fromRGB(120, 255, 140) })
 
-			local guiCadeado = billboard(pedestal, 170, 60, Vector3.new(0, 3, 0), 60)
-			guiCadeado.Enabled = false
-			texto(guiCadeado, { Text = "🔒\nCompre na Loja", Font = Enum.Font.GothamBold })
+				local guiCadeado = billboard(pedestal, 170, 60, Vector3.new(0, 3, 0), 60)
+				guiCadeado.Enabled = false
+				texto(guiCadeado, { Text = "🔒\nCompre na Loja", Font = Enum.Font.GothamBold })
 
-			table.insert(base.slots, {
-				indice = #base.slots + 1,
-				base = base,
-				topo = cf * CFrame.new(x, P + 1.2, z),
-				pedestal = pedestal,
-				anel = anel,
-				pad = pad,
-				guiPad = guiPad,
-				textoPad = textoPad,
-				guiCadeado = guiCadeado,
-				acumulado = 0,
-				heroi = nil,
-			})
+				table.insert(base.slots, {
+					indice = #base.slots + 1,
+					andar = andar,
+					base = base,
+					topo = cf * CFrame.new(x, y0 + 1.2, z),
+					pedestal = pedestal,
+					anel = anel,
+					pad = pad,
+					guiPad = guiPad,
+					textoPad = textoPad,
+					guiCadeado = guiCadeado,
+					acumulado = 0,
+					heroi = nil,
+				})
+			end
 		end
 	end
 
@@ -2991,9 +3351,172 @@ local function construirBase(pasta, indice, centro, cor)
 end
 
 --------------------------------------------------------------------------
+-- TENDA DA LOJA (fica entre as bases 2 e 3)
+--------------------------------------------------------------------------
+local function construirLoja(pasta, Config, Modelos)
+	local centro = Vector3.new(0, CHAO, -30)
+	local cf = CFrame.new(centro) * CFrame.Angles(0, math.pi, 0) -- frente virada para a passarela
+	local modelo = Instance.new("Model")
+	modelo.Name = "Loja"
+	modelo.Parent = pasta
+	local vermelho, branco = Color3.fromRGB(215, 35, 45), Color3.fromRGB(250, 245, 235)
+	local dourado = Color3.fromRGB(255, 200, 40)
+
+	parte({ Name = "Chao", Size = Vector3.new(18, 0.5, 13), CFrame = cf * CFrame.new(0, 0.25, 0),
+		Color = Color3.fromRGB(150, 100, 60), Material = Enum.Material.Wood, Parent = modelo })
+	for _, x in { -8.4, 8.4 } do
+		for _, z in { -6, 6 } do
+			cilindroEmPe({ Name = "Mastro", Size = Vector3.new(8.5, 0.6, 0.6), Color = dourado, Material = Enum.Material.Metal, Parent = modelo },
+				cf * CFrame.new(x, 4.75, z))
+		end
+	end
+	-- Telhado listrado com duas águas
+	local inclinacao = math.atan(3.5 / 6.6)
+	local comprimento = math.sqrt(6.6 ^ 2 + 3.5 ^ 2) + 0.2
+	for i = 0, 5 do
+		local x = -7.5 + i * 3
+		local cor = i % 2 == 0 and vermelho or branco
+		parte({ Name = "Telhado", Size = Vector3.new(3, 0.3, comprimento), CFrame = cf * CFrame.new(x, 10.75, -3.3) * CFrame.Angles(-inclinacao, 0, 0),
+			Color = cor, Material = Enum.Material.Fabric, Parent = modelo })
+		parte({ Name = "Telhado", Size = Vector3.new(3, 0.3, comprimento), CFrame = cf * CFrame.new(x, 10.75, 3.3) * CFrame.Angles(inclinacao, 0, 0),
+			Color = cor, Material = Enum.Material.Fabric, Parent = modelo })
+	end
+	parte({ Name = "Cumeeira", Shape = Enum.PartType.Cylinder, Size = Vector3.new(18.4, 0.6, 0.6), CFrame = cf * CFrame.new(0, 12.55, 0),
+		Color = dourado, Material = Enum.Material.Metal, Parent = modelo })
+	-- Franja de bolinhas nas bordas do telhado
+	for x = -8.5, 8.5, 1 do
+		for _, z in { -6.75, 6.75 } do
+			enfeite({ Name = "Franja", Shape = Enum.PartType.Ball, Size = Vector3.new(0.9, 0.9, 0.9), CFrame = cf * CFrame.new(x, 8.85, z),
+				Color = (math.floor(x + 9) % 2 == 0) and vermelho or branco, Parent = modelo })
+		end
+	end
+	enfeite({ Name = "Bandeira", Size = Vector3.new(0.2, 3, 0.2), CFrame = cf * CFrame.new(0, 14.2, 0), Color = dourado, Parent = modelo })
+	enfeite({ Name = "Bandeirinha", Size = Vector3.new(2, 1.2, 0.1), CFrame = cf * CFrame.new(1.1, 15, 0), Color = dourado,
+		Material = Enum.Material.Neon, Parent = modelo })
+	-- Fundo de pano
+	parte({ Name = "Fundo", Size = Vector3.new(16.8, 8.5, 0.3), CFrame = cf * CFrame.new(0, 4.75, 6.1), Color = vermelho,
+		Material = Enum.Material.Fabric, Parent = modelo })
+
+	-- Balcão com produtos
+	local balcao = parte({ Name = "Balcao", Size = Vector3.new(14, 3.2, 2.2), CFrame = cf * CFrame.new(0, 2.1, -4.4),
+		Color = Color3.fromRGB(130, 85, 45), Material = Enum.Material.Wood, Parent = modelo })
+	parte({ Name = "TampoBalcao", Size = Vector3.new(14.6, 0.3, 2.6), CFrame = cf * CFrame.new(0, 3.85, -4.4),
+		Color = Color3.fromRGB(235, 195, 125), Material = Enum.Material.Wood, Parent = modelo })
+	local plaquinha = parte({ Name = "PlacaBalcao", Size = Vector3.new(10, 1.8, 0.2), CFrame = cf * CFrame.new(0, 2.3, -5.6),
+		Color = Color3.fromRGB(25, 25, 35), Parent = modelo })
+	texto(superficie(plaquinha, Enum.NormalId.Front, 30), { Text = "🥊 LUVAS • 🌀 MOLAS • ⬆ MELHORIAS", TextColor3 = dourado })
+
+	for i, luva in Config.Luvas do
+		local modeloLuva = Modelos.luva(luva)
+		colocarModelo(modeloLuva, cf * CFrame.new(-6.2 + (i - 1) * 2.4, 4.75, -4.4) * CFrame.Angles(0, math.rad(200), 0), modelo)
+	end
+	local mola = Modelos.mola()
+	colocarModelo(mola, cf * CFrame.new(5.8, 4.1, -4.4), modelo)
+
+	-- Vendedor atrás do balcão
+	local vendedorDef = {
+		id = "Vendedor", nome = "Vendedor", raridade = "Comum", preco = 0, renda = 0,
+		visual = { pele = Color3.fromRGB(224, 172, 120), cabelo = Color3.fromRGB(40, 25, 15), camisa = Color3.fromRGB(60, 120, 200),
+			calca = Color3.fromRGB(50, 50, 60), cabeca = "bone", cabecaCor = dourado, corpo = { "avental" } },
+	}
+	parte({ Name = "Degrau", Size = Vector3.new(5, 1.2, 3), CFrame = cf * CFrame.new(0, 1.1, -1.4), Color = Color3.fromRGB(110, 70, 40),
+		Material = Enum.Material.Wood, Parent = modelo })
+	local vendedor = Modelos.heroi(vendedorDef, Config.MutacaoPorId.Normal, Config, { semPlaca = true, escala = 1.6 })
+	colocarModelo(vendedor, cf * CFrame.new(0, 1.7 + 2.03 * 1.6, -1.4), modelo)
+
+	local luz = Instance.new("PointLight")
+	luz.Color = Color3.fromRGB(255, 220, 170)
+	luz.Range = 22
+	luz.Brightness = 1.5
+	luz.Parent = modelo:FindFirstChild("Cumeeira")
+	local guiTitulo = billboard(modelo:FindFirstChild("Cumeeira"), 340, 90, Vector3.new(0, 5, 0), 260)
+	texto(guiTitulo, { Text = "🎪 LOJA DOS HERÓIS", TextColor3 = dourado, Size = UDim2.fromScale(1, 0.6) })
+	texto(guiTitulo, { Text = "Luvas • Molas • Melhorias", Font = Enum.Font.GothamBold, Size = UDim2.fromScale(1, 0.35), Position = UDim2.fromScale(0, 0.62) })
+
+	return { modelo = modelo, balcao = balcao, centro = cf.Position }
+end
+
+--------------------------------------------------------------------------
+-- ROLETA DA SORTE (fica entre as bases 6 e 7)
+--------------------------------------------------------------------------
+local function construirRoleta(pasta, Config)
+	local centro = Vector3.new(0, CHAO, 30)
+	local cf = CFrame.new(centro) -- a frente (-Z) já olha para a passarela
+	local modelo = Instance.new("Model")
+	modelo.Name = "Roleta"
+	modelo.Parent = pasta
+	local dourado = Color3.fromRGB(255, 200, 40)
+
+	parte({ Name = "Base", Size = Vector3.new(16, 0.6, 9), CFrame = cf * CFrame.new(0, 0.3, 0), Color = Color3.fromRGB(35, 30, 50), Parent = modelo })
+	enfeite({ Name = "BordaBase", Size = Vector3.new(16.4, 0.3, 9.4), CFrame = cf * CFrame.new(0, 0.2, 0), Color = Color3.fromRGB(255, 80, 200),
+		Material = Enum.Material.Neon, Parent = modelo })
+	for _, x in { -7, 7 } do
+		parte({ Name = "Coluna", Size = Vector3.new(1.2, 12, 1.2), CFrame = cf * CFrame.new(x, 6.6, 1), Color = dourado,
+			Material = Enum.Material.Metal, Parent = modelo })
+	end
+	parte({ Name = "Travessa", Size = Vector3.new(15.2, 1, 1), CFrame = cf * CFrame.new(0, 11, 1), Color = dourado,
+		Material = Enum.Material.Metal, Parent = modelo })
+
+	-- Roda: tudo soldado num eixo invisível que gira
+	local cf0 = cf * CFrame.new(0, 11, -0.2)
+	local eixo = parte({ Name = "Eixo", Size = Vector3.new(1, 1, 1), CFrame = cf0, Transparency = 1, CanCollide = false,
+		CanQuery = false, CanTouch = false, Parent = modelo })
+	local function pecaRoda(propriedades, local_)
+		propriedades.CFrame = cf0 * local_
+		propriedades.Anchored = false
+		propriedades.CanCollide = false
+		propriedades.Massless = true
+		propriedades.CastShadow = false
+		propriedades.Parent = modelo
+		local p = parte(propriedades)
+		local solda = Instance.new("WeldConstraint")
+		solda.Part0 = eixo
+		solda.Part1 = p
+		solda.Parent = p
+		return p
+	end
+	local DE_FRENTE_RODA = CFrame.Angles(0, math.rad(90), 0)
+	pecaRoda({ Name = "Aro", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.8, 13.4, 13.4), Color = dourado, Material = Enum.Material.Foil },
+		CFrame.new(0, 0, 0.15) * DE_FRENTE_RODA)
+	pecaRoda({ Name = "Disco", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.6, 12.4, 12.4), Color = Color3.fromRGB(30, 28, 45) },
+		DE_FRENTE_RODA)
+	local premios = Config.Roleta.Premios
+	for i, premio in premios do
+		local angulo = (i - 1) * (math.pi * 2 / #premios)
+		local fatia = pecaRoda({ Name = "Fatia" .. i, Size = Vector3.new(3.5, 5.2, 0.12), Color = premio.cor, Material = Enum.Material.SmoothPlastic },
+			CFrame.new(math.sin(angulo) * 3.3, math.cos(angulo) * 3.3, -0.36 - (i % 2) * 0.02) * CFrame.Angles(0, 0, -angulo))
+		local gui = superficie(fatia, Enum.NormalId.Front, 30)
+		texto(gui, { Text = premio.icone, Size = UDim2.fromScale(1, 0.45), Position = UDim2.fromScale(0, 0.08), TextStrokeTransparency = 1 })
+		texto(gui, { Text = premio.curto, Size = UDim2.fromScale(0.9, 0.25), Position = UDim2.fromScale(0.05, 0.55) })
+	end
+	pecaRoda({ Name = "Centro", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.6, 2.2, 2.2), Color = dourado, Material = Enum.Material.Neon },
+		CFrame.new(0, 0, -0.5) * DE_FRENTE_RODA)
+	for i = 1, 16 do
+		local a = (i / 16) * math.pi * 2
+		pecaRoda({ Name = "Lampada", Shape = Enum.PartType.Ball, Size = Vector3.new(0.5, 0.5, 0.5),
+			Color = i % 2 == 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(255, 80, 200), Material = Enum.Material.Neon },
+			CFrame.new(math.sin(a) * 6.35, math.cos(a) * 6.35, -0.35))
+	end
+	-- Ponteiro fixo no topo
+	enfeite({ Name = "Ponteiro", Size = Vector3.new(1.3, 1.3, 0.5), CFrame = cf0 * CFrame.new(0, 7.1, -0.7) * CFrame.Angles(0, 0, math.rad(45)),
+		Color = Color3.fromRGB(255, 40, 60), Material = Enum.Material.Neon, Parent = modelo })
+
+	local botao = cilindroEmPe({ Name = "BotaoRoleta", Size = Vector3.new(0.6, 4, 4), Color = Color3.fromRGB(255, 80, 200),
+		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(0, 0.9, -5.6))
+	local guiBotao = billboard(botao, 180, 44, Vector3.new(0, 3, 0), 60)
+	texto(guiBotao, { Text = "🎡 GIRAR" })
+	local guiTitulo = billboard(modelo:FindFirstChild("Travessa"), 340, 90, Vector3.new(0, 6.5, 0), 260)
+	texto(guiTitulo, { Text = "🎡 ROLETA DA SORTE", TextColor3 = Color3.fromRGB(255, 120, 220), Size = UDim2.fromScale(1, 0.6) })
+	texto(guiTitulo, { Text = "Grátis a cada " .. Config.Roleta.IntervaloHoras .. " horas!", Font = Enum.Font.GothamBold,
+		Size = UDim2.fromScale(1, 0.35), Position = UDim2.fromScale(0, 0.62) })
+
+	return { modelo = modelo, eixo = eixo, cf0 = cf0, botao = botao, centro = cf.Position }
+end
+
+--------------------------------------------------------------------------
 -- MONTAGEM
 --------------------------------------------------------------------------
-function Mapa.construir(Config)
+function Mapa.construir(Config, Modelos)
 	local G = Config.Geral
 
 	if G.RemoverBaseplate then
@@ -3049,10 +3572,15 @@ function Mapa.construir(Config)
 		end
 	end
 
+	local loja = construirLoja(pasta, Config, Modelos)
+	local roleta = construirRoleta(pasta, Config)
+
 	return {
 		pasta = pasta,
 		pastaHerois = pastaHerois,
 		bases = bases,
+		loja = loja,
+		roleta = roleta,
 		inicio = inicio,
 		comprimento = G.ComprimentoPassarela,
 		quadros = quadros,
@@ -3064,16 +3592,1228 @@ return Mapa
 ]]></string>
       </Properties>
     </Item>
+    <Item class="ModuleScript" referent="7">
+      <Properties>
+        <string name="Name">ModelosHerois</string>
+        <string name="Source"><![CDATA[--[[
+	ROUBE UM HERÓI - Modelos 3D (heróis, luvas, mola e vendedor)
+
+	Onde colocar: ServerScriptService -> ModuleScript (nome: ModelosHerois)
+
+	Cada herói é montado com peças em blocos (estilo Roblox) a partir da
+	descrição "visual" que está no ConfigHerois: cores do uniforme, chapéu ou
+	capacete, rosto, itens nas mãos, coisas nas costas e emblema no peito.
+	Todas as peças ficam soldadas na peça principal (o tronco).
+]]
+
+local CollectionService = game:GetService("CollectionService")
+
+local Modelos = {}
+
+local BLOCO, BOLA, CILINDRO = Enum.PartType.Block, Enum.PartType.Ball, Enum.PartType.Cylinder
+local LISO = Enum.Material.SmoothPlastic
+local NEON = Enum.Material.Neon
+local METAL = Enum.Material.Metal
+local VIDRO = Enum.Material.Glass
+local FOLHA = Enum.Material.Foil
+
+local PRETO = Color3.fromRGB(22, 22, 26)
+local BRANCO = Color3.fromRGB(245, 245, 245)
+local OURO = Color3.fromRGB(255, 200, 40)
+local PRATA = Color3.fromRGB(195, 200, 210)
+local VERMELHO = Color3.fromRGB(220, 35, 35)
+local REFLETIVO = Color3.fromRGB(225, 230, 220)
+local CASTANHO_PADRAO = Color3.fromRGB(60, 40, 25)
+
+local V3 = Vector3.new
+local CF = CFrame.new
+local ANG = CFrame.Angles
+local rad = math.rad
+local EM_PE = ANG(0, 0, rad(90)) -- cilindro em pé (o eixo do cilindro no Roblox é o X)
+local DE_FRENTE = ANG(0, rad(90), 0) -- cilindro com a face virada para a frente
+
+--------------------------------------------------------------------------
+-- Construtor: cria peças soldadas na raiz
+--------------------------------------------------------------------------
+local function novoConstrutor(modelo, raiz)
+	local c = {}
+	function c.peca(nome, forma, tamanho, cf, cor, material, opcoes)
+		local p = Instance.new("Part")
+		p.Name = nome
+		p.Shape = forma
+		p.Size = tamanho
+		p.CFrame = raiz.CFrame * cf
+		p.Color = cor
+		p.Material = material or LISO
+		p.TopSurface = Enum.SurfaceType.Smooth
+		p.BottomSurface = Enum.SurfaceType.Smooth
+		p.CanCollide = false
+		p.CanTouch = false
+		p.CanQuery = false
+		p.Massless = true
+		p.Anchored = false
+		if opcoes then
+			if opcoes.transparencia then
+				p.Transparency = opcoes.transparencia
+			end
+			if opcoes.pintavel then
+				p:SetAttribute("Pintavel", true)
+			end
+		end
+		p.Parent = modelo
+		local solda = Instance.new("WeldConstraint")
+		solda.Part0 = raiz
+		solda.Part1 = p
+		solda.Parent = p
+		return p
+	end
+	-- Peça arredondada que pode ser achatada (esfera esticada)
+	function c.elipse(nome, tamanho, cf, cor, material, opcoes)
+		local p = c.peca(nome, BLOCO, tamanho, cf, cor, material, opcoes)
+		local malha = Instance.new("SpecialMesh")
+		malha.MeshType = Enum.MeshType.Sphere
+		malha.Parent = p
+		return p
+	end
+	-- Anel feito de várias peças pequenas (boia, laço)
+	function c.anel(nome, raio, quantidade, tamanho, centro, cores, material)
+		for i = 1, quantidade do
+			local a = (i / quantidade) * math.pi * 2
+			c.peca(nome, BLOCO, tamanho, centro * CF(math.cos(a) * raio, math.sin(a) * raio, 0) * ANG(0, 0, a),
+				cores[(i - 1) % #cores + 1], material)
+		end
+	end
+	return c
+end
+
+local function novaRaiz(modelo, nome, tamanho, cor, material)
+	local raiz = Instance.new("Part")
+	raiz.Name = nome
+	raiz.Size = tamanho
+	raiz.CFrame = CFrame.new()
+	raiz.Color = cor
+	raiz.Material = material or LISO
+	raiz.TopSurface = Enum.SurfaceType.Smooth
+	raiz.BottomSurface = Enum.SurfaceType.Smooth
+	raiz.CanCollide = false
+	raiz.CanTouch = false
+	raiz.CanQuery = false
+	raiz.Massless = true
+	raiz.Anchored = true
+	raiz.Parent = modelo
+	return raiz
+end
+
+--------------------------------------------------------------------------
+-- ROSTOS (ctx: c, s, yC = altura da cabeça, v = visual)
+--------------------------------------------------------------------------
+local function olhosEBoca(ctx, corOlhos)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	for _, lado in { -1, 1 } do
+		c.peca("Olho", BOLA, V3(0.15, 0.15, 0.15) * s, CF(0.19 * s * lado, yC + 0.08 * s, -0.5 * s), corOlhos or PRETO)
+		c.peca("Sobrancelha", BLOCO, V3(0.2, 0.04, 0.04) * s, CF(0.19 * s * lado, yC + 0.22 * s, -0.5 * s) * ANG(0, 0, rad(-8 * lado)),
+			ctx.v.cabelo or PRETO)
+	end
+	c.peca("Boca", BLOCO, V3(0.3, 0.05, 0.05) * s, CF(0, yC - 0.2 * s, -0.51 * s), Color3.fromRGB(120, 40, 40))
+end
+
+local ROSTOS = {}
+function ROSTOS.oculos(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	for _, lado in { -1, 1 } do
+		c.peca("Lente", BLOCO, V3(0.3, 0.22, 0.05) * s, CF(0.2 * s * lado, yC + 0.08 * s, -0.56 * s), Color3.fromRGB(200, 230, 255), VIDRO,
+			{ transparencia = 0.3 })
+		c.peca("Armacao", BLOCO, V3(0.34, 0.04, 0.06) * s, CF(0.2 * s * lado, yC + 0.2 * s, -0.56 * s), PRETO)
+	end
+	c.peca("Ponte", BLOCO, V3(0.12, 0.04, 0.05) * s, CF(0, yC + 0.12 * s, -0.57 * s), PRETO)
+end
+function ROSTOS.oculosSol(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("OculosSol", BLOCO, V3(0.75, 0.2, 0.06) * s, CF(0, yC + 0.08 * s, -0.56 * s), PRETO, VIDRO)
+end
+function ROSTOS.oculosProtecao(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Faixa", BLOCO, V3(1.14, 0.14, 1.14) * s, CF(0, yC + 0.1 * s, 0), Color3.fromRGB(40, 40, 40))
+	c.peca("LenteProtecao", BLOCO, V3(0.8, 0.3, 0.12) * s, CF(0, yC + 0.1 * s, -0.56 * s), Color3.fromRGB(170, 255, 200), VIDRO,
+		{ transparencia = 0.25 })
+end
+function ROSTOS.mascaraCirurgica(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.elipse("Mascara", V3(0.75, 0.4, 0.3) * s, CF(0, yC - 0.17 * s, -0.46 * s), Color3.fromRGB(150, 210, 240))
+end
+function ROSTOS.mascaraMergulho(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Tira", BLOCO, V3(1.16, 0.14, 1.16) * s, CF(0, yC + 0.1 * s, 0), PRETO)
+	c.peca("Moldura", BLOCO, V3(0.85, 0.42, 0.14) * s, CF(0, yC + 0.08 * s, -0.55 * s), PRETO)
+	c.peca("Visor", BLOCO, V3(0.72, 0.3, 0.06) * s, CF(0, yC + 0.08 * s, -0.63 * s), Color3.fromRGB(110, 200, 255), VIDRO,
+		{ transparencia = 0.2 })
+	c.peca("Snorkel", BLOCO, V3(0.1, 0.8, 0.1) * s, CF(0.55 * s, yC + 0.25 * s, -0.1 * s), Color3.fromRGB(255, 200, 0))
+end
+
+--------------------------------------------------------------------------
+-- CABEÇAS (chapéus, capacetes, máscaras de super-herói)
+--------------------------------------------------------------------------
+local CABECAS = {}
+local CABECAS_SEM_ROSTO = { capaceteAstronauta = true, capuzAranha = true, capuzMorcego = true, capaceteArmadura = true }
+
+local function cabelo(ctx, estilo)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabelo or Color3.fromRGB(60, 40, 25)
+	c.elipse("Cabelo", V3(1.16, 0.72, 1.18) * s, CF(0, yC + 0.24 * s, 0.06 * s), cor)
+	if estilo == "coque" then
+		c.peca("Coque", BOLA, V3(0.45, 0.45, 0.45) * s, CF(0, yC + 0.5 * s, 0.45 * s), cor)
+	elseif estilo == "longo" then
+		c.peca("CabeloLongo", BLOCO, V3(1.0, 1.15, 0.3) * s, CF(0, yC - 0.3 * s, 0.42 * s), cor)
+	elseif estilo == "espetado" then
+		for i = -1, 1 do
+			c.peca("Mecha", BLOCO, V3(0.22, 0.45, 0.22) * s, CF(i * 0.3 * s, yC + 0.62 * s, 0.05 * s) * ANG(0, 0, rad(-i * 25)), cor)
+		end
+	elseif estilo == "cacho" then
+		c.peca("Cacho", BOLA, V3(0.2, 0.2, 0.2) * s, CF(0.1 * s, yC + 0.4 * s, -0.5 * s), cor)
+	end
+end
+
+function CABECAS.cabelo(ctx)
+	cabelo(ctx, ctx.v.estiloCabelo)
+end
+function CABECAS.bone(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Bone", V3(1.17, 0.62, 1.18) * s, CF(0, yC + 0.28 * s, 0.02 * s), cor)
+	c.peca("Aba", BLOCO, V3(0.72, 0.07, 0.5) * s, CF(0, yC + 0.12 * s, -0.66 * s), cor)
+end
+function CABECAS.quepe(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Faixa", CILINDRO, V3(0.32, 1.17, 1.17) * s, CF(0, yC + 0.32 * s, 0) * EM_PE, cor)
+	c.peca("Topo", CILINDRO, V3(0.14, 1.38, 1.38) * s, CF(0, yC + 0.52 * s, -0.05 * s) * EM_PE, cor)
+	c.peca("Aba", BLOCO, V3(0.8, 0.06, 0.45) * s, CF(0, yC + 0.18 * s, -0.66 * s), PRETO)
+	c.peca("Insignia", BLOCO, V3(0.2, 0.2, 0.05) * s, CF(0, yC + 0.34 * s, -0.6 * s) * ANG(0, 0, rad(45)), OURO, NEON)
+end
+function CABECAS.capaceteBombeiro(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Capacete", V3(1.3, 0.88, 1.35) * s, CF(0, yC + 0.3 * s, 0), cor, LISO)
+	c.peca("Crista", BLOCO, V3(0.14, 0.24, 1.22) * s, CF(0, yC + 0.7 * s, 0.02 * s), cor)
+	c.peca("AbaTras", BLOCO, V3(1.3, 0.08, 0.6) * s, CF(0, yC + 0.02 * s, 0.6 * s) * ANG(rad(-15), 0, 0), cor)
+	c.peca("Escudo", BLOCO, V3(0.45, 0.42, 0.06) * s, CF(0, yC + 0.5 * s, -0.66 * s), OURO, FOLHA)
+end
+function CABECAS.toucaMedica(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Touca", V3(1.18, 0.72, 1.18) * s, CF(0, yC + 0.27 * s, 0.03 * s), cor)
+	c.peca("CruzA", BLOCO, V3(0.08, 0.24, 0.04) * s, CF(0, yC + 0.4 * s, -0.56 * s), VERMELHO)
+	c.peca("CruzB", BLOCO, V3(0.24, 0.08, 0.04) * s, CF(0, yC + 0.4 * s, -0.56 * s), VERMELHO)
+end
+function CABECAS.chapeuAbas(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Aba", CILINDRO, V3(0.08, 1.95, 1.95) * s, CF(0, yC + 0.36 * s, 0) * EM_PE, cor)
+	c.peca("Copa", CILINDRO, V3(0.5, 1.12, 1.12) * s, CF(0, yC + 0.62 * s, 0) * EM_PE, cor)
+	c.peca("Fita", CILINDRO, V3(0.12, 1.15, 1.15) * s, CF(0, yC + 0.45 * s, 0) * EM_PE, Color3.fromRGB(80, 55, 30))
+end
+function CABECAS.capaceteAstronauta(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Capacete", BOLA, V3(1.55, 1.55, 1.55) * s, CF(0, yC + 0.05 * s, 0), BRANCO)
+	c.elipse("Visor", V3(1.05, 0.8, 0.55) * s, CF(0, yC + 0.05 * s, -0.55 * s), Color3.fromRGB(255, 185, 60), FOLHA)
+	c.peca("Gola", CILINDRO, V3(0.2, 1.3, 1.3) * s, CF(0, yC - 0.72 * s, 0) * EM_PE, PRATA, METAL)
+end
+function CABECAS.capacetePiloto(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Capacete", BOLA, V3(1.3, 1.3, 1.3) * s, CF(0, yC + 0.1 * s, 0.02 * s), cor)
+	c.elipse("Visor", V3(1.0, 0.45, 0.5) * s, CF(0, yC + 0.12 * s, -0.48 * s), Color3.fromRGB(30, 35, 50), VIDRO)
+	c.peca("Faixa", BLOCO, V3(0.18, 0.08, 1.2) * s, CF(0, yC + 0.75 * s, 0.05 * s), VERMELHO)
+end
+function CABECAS.capuzAranha(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Mascara", BOLA, V3(1.13, 1.13, 1.13) * s, CF(0, yC, 0), cor)
+	for _, lado in { -1, 1 } do
+		c.elipse("ContornoOlho", V3(0.42, 0.3, 0.12) * s, CF(0.22 * s * lado, yC + 0.1 * s, -0.52 * s) * ANG(0, 0, rad(28 * lado)), PRETO)
+		c.elipse("Olho", V3(0.34, 0.22, 0.1) * s, CF(0.22 * s * lado, yC + 0.1 * s, -0.56 * s) * ANG(0, 0, rad(28 * lado)), BRANCO)
+	end
+	-- linhas de teia na máscara
+	c.peca("TeiaV", BLOCO, V3(0.03, 1.15, 0.03) * s, CF(0, yC, -0.565 * s), PRETO)
+	c.peca("TeiaH", BLOCO, V3(1.15, 0.03, 0.03) * s, CF(0, yC - 0.28 * s, -0.47 * s), PRETO)
+end
+function CABECAS.capuzMorcego(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	local cor = ctx.v.cabecaCor
+	c.peca("Capuz", BOLA, V3(1.14, 1.14, 1.14) * s, CF(0, yC, 0), cor)
+	for _, lado in { -1, 1 } do
+		c.peca("Orelha", BLOCO, V3(0.18, 0.62, 0.18) * s, CF(0.33 * s * lado, yC + 0.72 * s, 0) * ANG(0, 0, rad(-12 * lado)), cor)
+		c.peca("Olho", BLOCO, V3(0.26, 0.09, 0.05) * s, CF(0.2 * s * lado, yC + 0.1 * s, -0.56 * s) * ANG(0, 0, rad(10 * lado)),
+			Color3.fromRGB(120, 230, 255), NEON)
+	end
+end
+function CABECAS.capaceteEstrela(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Capacete", V3(1.17, 0.82, 1.19) * s, CF(0, yC + 0.16 * s, 0.01 * s), cor)
+	c.peca("EstrelaA", BLOCO, V3(0.24, 0.24, 0.04) * s, CF(0, yC + 0.42 * s, -0.56 * s), BRANCO)
+	c.peca("EstrelaB", BLOCO, V3(0.24, 0.24, 0.04) * s, CF(0, yC + 0.42 * s, -0.565 * s) * ANG(0, 0, rad(45)), BRANCO)
+	for _, lado in { -1, 1 } do
+		c.peca("Asa", BLOCO, V3(0.06, 0.3, 0.18) * s, CF(0.6 * s * lado, yC + 0.2 * s, -0.05 * s) * ANG(rad(-25), 0, 0), BRANCO)
+		c.peca("Olho", BLOCO, V3(0.16, 0.1, 0.05) * s, CF(0.19 * s * lado, yC + 0.08 * s, -0.56 * s), BRANCO)
+	end
+	c.peca("Boca", BLOCO, V3(0.3, 0.05, 0.05) * s, CF(0, yC - 0.2 * s, -0.51 * s), Color3.fromRGB(120, 40, 40))
+	ctx.rostoFeito = true
+end
+function CABECAS.orelhasRaio(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Mascara", V3(1.17, 0.85, 1.19) * s, CF(0, yC + 0.13 * s, 0.01 * s), cor)
+	for _, lado in { -1, 1 } do
+		c.peca("RaioA", BLOCO, V3(0.07, 0.36, 0.12) * s, CF(0.59 * s * lado, yC + 0.28 * s, 0) * ANG(0, 0, rad(-30 * lado)), OURO, NEON)
+		c.peca("RaioB", BLOCO, V3(0.07, 0.3, 0.12) * s, CF(0.64 * s * lado, yC + 0.5 * s, 0.05 * s) * ANG(0, 0, rad(25 * lado)), OURO, NEON)
+		c.peca("Olho", BLOCO, V3(0.18, 0.09, 0.05) * s, CF(0.19 * s * lado, yC + 0.08 * s, -0.57 * s), BRANCO)
+	end
+	c.peca("Boca", BLOCO, V3(0.3, 0.05, 0.05) * s, CF(0, yC - 0.22 * s, -0.51 * s), Color3.fromRGB(120, 40, 40))
+	ctx.rostoFeito = true
+end
+function CABECAS.elmoTrovao(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	cabelo(ctx, "longo")
+	c.elipse("Elmo", V3(1.21, 0.68, 1.23) * s, CF(0, yC + 0.32 * s, 0.01 * s), PRATA, METAL)
+	for _, lado in { -1, 1 } do
+		c.peca("AsaElmo", BLOCO, V3(0.06, 0.55, 0.32) * s, CF(0.62 * s * lado, yC + 0.55 * s, 0.05 * s) * ANG(rad(-20), 0, rad(-20 * lado)), BRANCO)
+	end
+end
+function CABECAS.tiara(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	cabelo(ctx, "longo")
+	c.peca("Tiara", CILINDRO, V3(0.12, 1.19, 1.19) * s, CF(0, yC + 0.32 * s, 0) * EM_PE, OURO, FOLHA)
+	c.peca("EstrelaTiara", BLOCO, V3(0.18, 0.18, 0.05) * s, CF(0, yC + 0.36 * s, -0.6 * s) * ANG(0, 0, rad(45)), VERMELHO, NEON)
+end
+function CABECAS.capaceteArmadura(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Capacete", BOLA, V3(1.16, 1.16, 1.16) * s, CF(0, yC, 0), cor, METAL)
+	c.elipse("Placa", V3(0.8, 0.88, 0.38) * s, CF(0, yC - 0.02 * s, -0.42 * s), OURO, FOLHA)
+	for _, lado in { -1, 1 } do
+		c.peca("Olho", BLOCO, V3(0.22, 0.07, 0.05) * s, CF(0.17 * s * lado, yC + 0.12 * s, -0.6 * s), Color3.fromRGB(200, 250, 255), NEON)
+	end
+end
+
+function ROSTOS.mascaraDomino(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Domino", BLOCO, V3(0.85, 0.22, 0.08) * s, CF(0, yC + 0.1 * s, -0.53 * s), ctx.v.mascaraCor or PRETO)
+	for _, lado in { -1, 1 } do
+		c.peca("OlhoMascara", BLOCO, V3(0.16, 0.08, 0.04) * s, CF(0.19 * s * lado, yC + 0.1 * s, -0.575 * s), BRANCO)
+	end
+end
+function ROSTOS.oculosVoo(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Tira", BLOCO, V3(1.15, 0.12, 1.15) * s, CF(0, yC + 0.12 * s, 0), PRETO)
+	for _, lado in { -1, 1 } do
+		c.elipse("Lente", V3(0.34, 0.28, 0.14) * s, CF(0.2 * s * lado, yC + 0.1 * s, -0.53 * s), Color3.fromRGB(230, 40, 40), VIDRO)
+	end
+end
+function ROSTOS.viseira(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Viseira", BLOCO, V3(1.0, 0.2, 0.12) * s, CF(0, yC + 0.1 * s, -0.53 * s), Color3.fromRGB(255, 30, 30), NEON)
+	c.peca("TiraViseira", BLOCO, V3(1.14, 0.14, 1.14) * s, CF(0, yC + 0.1 * s, 0), Color3.fromRGB(255, 200, 0))
+end
+function ROSTOS.olhosBrancos(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	for _, lado in { -1, 1 } do
+		c.peca("OlhoBranco", BOLA, V3(0.17, 0.17, 0.17) * s, CF(0.19 * s * lado, yC + 0.08 * s, -0.505 * s), BRANCO, NEON)
+	end
+end
+function ROSTOS.barba(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.elipse("Barba", V3(0.85, 0.45, 0.45) * s, CF(0, yC - 0.3 * s, -0.33 * s), ctx.v.cabelo or CASTANHO_PADRAO)
+	c.peca("Boca", BLOCO, V3(0.26, 0.05, 0.05) * s, CF(0, yC - 0.2 * s, -0.53 * s), Color3.fromRGB(120, 40, 40))
+end
+
+function CABECAS.capaceteFormiga(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Capacete", BOLA, V3(1.2, 1.2, 1.2) * s, CF(0, yC, 0), cor, METAL)
+	for _, lado in { -1, 1 } do
+		c.elipse("Lente", V3(0.38, 0.32, 0.14) * s, CF(0.22 * s * lado, yC + 0.1 * s, -0.53 * s), Color3.fromRGB(255, 90, 40), VIDRO)
+		c.peca("Antena", BLOCO, V3(0.05, 0.6, 0.05) * s, CF(0.25 * s * lado, yC + 0.8 * s, -0.1 * s) * ANG(0, 0, rad(-20 * lado)), PRETO)
+		c.peca("Disco", CILINDRO, V3(0.14, 0.4, 0.4) * s, CF(0.62 * s * lado, yC, 0), Color3.fromRGB(190, 30, 30))
+	end
+	c.peca("Grade", BLOCO, V3(0.5, 0.18, 0.1) * s, CF(0, yC - 0.27 * s, -0.55 * s), PRATA, METAL)
+end
+function CABECAS.capuzArqueiro(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Capuz", V3(1.25, 1.3, 1.3) * s, CF(0, yC + 0.1 * s, 0.22 * s), cor)
+	c.peca("PontaCapuz", BLOCO, V3(0.3, 0.3, 0.4) * s, CF(0, yC + 0.55 * s, 0.75 * s) * ANG(rad(35), 0, 0), cor)
+end
+function CABECAS.magoCabelo(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	cabelo(ctx)
+	for _, lado in { -1, 1 } do
+		c.peca("Grisalho", BLOCO, V3(0.08, 0.3, 0.3) * s, CF(0.56 * s * lado, yC + 0.15 * s, 0), Color3.fromRGB(220, 220, 225))
+	end
+	c.peca("Cavanhaque", BLOCO, V3(0.22, 0.22, 0.1) * s, CF(0, yC - 0.38 * s, -0.45 * s), ctx.v.cabelo or PRETO)
+end
+function CABECAS.capuzPantera(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Mascara", BOLA, V3(1.13, 1.13, 1.13) * s, CF(0, yC, 0), PRETO)
+	for _, lado in { -1, 1 } do
+		c.peca("Orelha", BLOCO, V3(0.22, 0.24, 0.12) * s, CF(0.33 * s * lado, yC + 0.55 * s, -0.05 * s) * ANG(0, 0, rad(45)), PRETO)
+		c.peca("Olho", BLOCO, V3(0.24, 0.08, 0.05) * s, CF(0.19 * s * lado, yC + 0.1 * s, -0.565 * s) * ANG(0, 0, rad(12 * lado)), BRANCO, NEON)
+		c.peca("Linha", BLOCO, V3(0.04, 0.5, 0.04) * s, CF(0.12 * s * lado, yC + 0.3 * s, -0.5 * s) * ANG(rad(-25), 0, rad(15 * lado)), PRATA, NEON)
+	end
+end
+function CABECAS.capuzGata(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Mascara", BOLA, V3(1.13, 1.13, 1.13) * s, CF(0, yC, 0), PRETO)
+	for _, lado in { -1, 1 } do
+		c.peca("Orelha", BLOCO, V3(0.22, 0.26, 0.12) * s, CF(0.3 * s * lado, yC + 0.56 * s, 0) * ANG(0, 0, rad(45)), PRETO)
+		c.elipse("Oculos", V3(0.3, 0.22, 0.1) * s, CF(0.2 * s * lado, yC + 0.12 * s, -0.53 * s), Color3.fromRGB(90, 220, 140), VIDRO)
+	end
+	c.peca("Labios", BLOCO, V3(0.22, 0.06, 0.05) * s, CF(0, yC - 0.25 * s, -0.53 * s), Color3.fromRGB(200, 30, 50))
+end
+function CABECAS.capuzSimbionte(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Mascara", BOLA, V3(1.16, 1.16, 1.16) * s, CF(0, yC, 0), PRETO)
+	for _, lado in { -1, 1 } do
+		c.elipse("Olho", V3(0.42, 0.32, 0.1) * s, CF(0.22 * s * lado, yC + 0.12 * s, -0.55 * s) * ANG(0, 0, rad(35 * lado)), BRANCO)
+	end
+	c.peca("Dentes", BLOCO, V3(0.62, 0.12, 0.06) * s, CF(0, yC - 0.25 * s, -0.54 * s), BRANCO)
+	c.peca("Lingua", BLOCO, V3(0.14, 0.3, 0.06) * s, CF(0.05 * s, yC - 0.42 * s, -0.55 * s), Color3.fromRGB(200, 40, 60))
+end
+function CABECAS.mascaraMercenario(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.peca("Mascara", BOLA, V3(1.13, 1.13, 1.13) * s, CF(0, yC, 0), cor)
+	for _, lado in { -1, 1 } do
+		c.elipse("Mancha", V3(0.4, 0.36, 0.1) * s, CF(0.21 * s * lado, yC + 0.1 * s, -0.53 * s), PRETO)
+		c.elipse("Olho", V3(0.2, 0.14, 0.06) * s, CF(0.21 * s * lado, yC + 0.1 * s, -0.585 * s), BRANCO)
+	end
+end
+function CABECAS.mascaraGarra(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	c.elipse("Mascara", V3(1.17, 0.85, 1.19) * s, CF(0, yC + 0.14 * s, 0.01 * s), cor)
+	for _, lado in { -1, 1 } do
+		c.elipse("Mancha", V3(0.36, 0.3, 0.1) * s, CF(0.2 * s * lado, yC + 0.12 * s, -0.53 * s) * ANG(0, 0, rad(20 * lado)), PRETO)
+		c.peca("Olho", BLOCO, V3(0.18, 0.06, 0.04) * s, CF(0.2 * s * lado, yC + 0.12 * s, -0.585 * s), BRANCO)
+		c.peca("Chifre", BLOCO, V3(0.1, 0.55, 0.12) * s, CF(0.42 * s * lado, yC + 0.6 * s, -0.1 * s) * ANG(0, 0, rad(-30 * lado)), PRETO)
+	end
+	c.peca("Boca", BLOCO, V3(0.3, 0.05, 0.05) * s, CF(0, yC - 0.22 * s, -0.51 * s), Color3.fromRGB(120, 40, 40))
+	ctx.rostoFeito = true
+end
+function CABECAS.capaceteCiborgue(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	cabelo(ctx)
+	c.elipse("MetadeMetal", V3(0.62, 1.16, 1.16) * s, CF(0.27 * s, yC, 0), PRATA, METAL)
+	c.peca("OlhoRobo", BOLA, V3(0.2, 0.2, 0.2) * s, CF(0.2 * s, yC + 0.08 * s, -0.52 * s), Color3.fromRGB(255, 30, 30), NEON)
+end
+function CABECAS.cabecaPedra(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	local cor = ctx.v.pele
+	c.peca("CabecaPedra", BLOCO, V3(1.2, 1.1, 1.15) * s, CF(0, yC, 0), cor, Enum.Material.Slate)
+	c.peca("Testa", BLOCO, V3(1.05, 0.22, 0.25) * s, CF(0, yC + 0.25 * s, -0.55 * s), cor:Lerp(PRETO, 0.2), Enum.Material.Slate)
+	for _, lado in { -1, 1 } do
+		c.peca("Olho", BLOCO, V3(0.16, 0.1, 0.05) * s, CF(0.22 * s * lado, yC + 0.08 * s, -0.59 * s), Color3.fromRGB(80, 160, 255))
+	end
+	c.peca("Boca", BLOCO, V3(0.4, 0.06, 0.05) * s, CF(0, yC - 0.25 * s, -0.59 * s), PRETO)
+end
+function CABECAS.cabecaFogo(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	for i = -2, 2 do
+		c.peca("Chama", BLOCO, V3(0.22, 0.5 + (2 - math.abs(i)) * 0.15, 0.22) * s, CF(i * 0.22 * s, yC + 0.6 * s, 0.05 * s) * ANG(0, 0, rad(-i * 12)),
+			i % 2 == 0 and Color3.fromRGB(255, 230, 80) or Color3.fromRGB(255, 140, 20), NEON)
+	end
+end
+function CABECAS.androide(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Gema", BLOCO, V3(0.22, 0.22, 0.06) * s, CF(0, yC + 0.32 * s, -0.5 * s) * ANG(0, 0, rad(45)), Color3.fromRGB(255, 220, 60), NEON)
+	for _, lado in { -1, 1 } do
+		c.peca("Linha", BLOCO, V3(0.04, 0.9, 0.04) * s, CF(0.3 * s * lado, yC + 0.1 * s, -0.42 * s) * ANG(rad(-30), 0, 0), Color3.fromRGB(40, 120, 70))
+	end
+end
+function CABECAS.capuzCorvo(ctx)
+	local c, s, yC, cor = ctx.c, ctx.s, ctx.yC, ctx.v.cabecaCor
+	cabelo(ctx)
+	c.elipse("Capuz", V3(1.3, 1.32, 1.3) * s, CF(0, yC + 0.08 * s, 0.24 * s), cor)
+	c.peca("Gema", BOLA, V3(0.12, 0.12, 0.12) * s, CF(0, yC + 0.3 * s, -0.51 * s), Color3.fromRGB(230, 30, 40), NEON)
+end
+function CABECAS.tiaraBruxa(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	cabelo(ctx, "longo")
+	for _, lado in { -1, 1 } do
+		c.peca("Tiara", BLOCO, V3(0.08, 0.5, 0.06) * s, CF(0.12 * s * lado, yC + 0.42 * s, -0.5 * s) * ANG(0, 0, rad(30 * lado)), Color3.fromRGB(190, 20, 40))
+	end
+	c.peca("TiaraCentro", BLOCO, V3(0.5, 0.08, 0.06) * s, CF(0, yC + 0.26 * s, -0.53 * s), Color3.fromRGB(190, 20, 40))
+end
+function CABECAS.mascaraLorde(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	c.peca("Mascara", BOLA, V3(1.15, 1.15, 1.15) * s, CF(0, yC, 0), Color3.fromRGB(70, 30, 30), METAL)
+	for _, lado in { -1, 1 } do
+		c.elipse("Olho", V3(0.36, 0.3, 0.12) * s, CF(0.22 * s * lado, yC + 0.1 * s, -0.52 * s), Color3.fromRGB(255, 40, 40), NEON)
+		c.peca("Orelha", CILINDRO, V3(0.16, 0.36, 0.36) * s, CF(0.6 * s * lado, yC, 0), PRATA, METAL)
+	end
+	for k = -1, 1 do
+		c.peca("Grade", BLOCO, V3(0.08, 0.22, 0.06) * s, CF(k * 0.14 * s, yC - 0.28 * s, -0.55 * s), PRATA, METAL)
+	end
+end
+function CABECAS.cabeloChamas(ctx)
+	local c, s, yC = ctx.c, ctx.s, ctx.yC
+	cabelo(ctx, "longo")
+	for i = -1, 1 do
+		c.peca("ChamaCabelo", BLOCO, V3(0.25, 0.55, 0.25) * s, CF(i * 0.3 * s, yC + 0.65 * s, 0.25 * s) * ANG(rad(-20), 0, rad(-i * 15)),
+			Color3.fromRGB(255, 150, 30), NEON)
+	end
+end
+CABECAS_SEM_ROSTO.capaceteFormiga = true
+CABECAS_SEM_ROSTO.capuzPantera = true
+CABECAS_SEM_ROSTO.capuzGata = true
+CABECAS_SEM_ROSTO.capuzSimbionte = true
+CABECAS_SEM_ROSTO.mascaraMercenario = true
+CABECAS_SEM_ROSTO.cabecaPedra = true
+CABECAS_SEM_ROSTO.mascaraLorde = true
+
+--------------------------------------------------------------------------
+-- DETALHES DO CORPO
+--------------------------------------------------------------------------
+local CORPO = {}
+function CORPO.faixasRefletivas(ctx)
+	local c, s, L = ctx.c, ctx.s, ctx.L
+	for _, y in { -0.3, 0.25 } do
+		c.peca("Faixa", BLOCO, V3(1.64 * L, 0.13, 0.94) * s, CF(0, y * s, 0), REFLETIVO, NEON)
+	end
+	for _, lado in { -1, 1 } do
+		c.peca("FaixaPerna", BLOCO, V3(0.64 * L, 0.11, 0.64) * s, CF(0.42 * s * L * lado, -1.55 * s, 0), REFLETIVO, NEON)
+		c.peca("FaixaBraco", BLOCO, V3(0.49 * L, 0.1, 0.49 * L) * s, CF(1.08 * s * L * lado, -0.3 * s, 0) * ANG(0, 0, rad(8 * lado)), REFLETIVO, NEON)
+	end
+end
+function CORPO.jaleco(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Jaleco", BLOCO, V3(1.66, 1.62, 0.96) * s, CF(0, 0, 0), BRANCO)
+	c.peca("CamisaV", BLOCO, V3(0.42, 0.7, 0.05) * s, CF(0, 0.42 * s, -0.48 * s), ctx.v.camisa)
+	c.peca("Barra", BLOCO, V3(1.64, 0.85, 0.98) * s, CF(0, -1.2 * s, 0), BRANCO)
+	c.peca("Abertura", BLOCO, V3(0.08, 0.85, 0.06) * s, CF(0, -1.2 * s, -0.5 * s), Color3.fromRGB(200, 200, 205))
+	for _, lado in { -1, 1 } do
+		c.peca("Bolso", BLOCO, V3(0.32, 0.25, 0.04) * s, CF(0.45 * s * lado, -0.35 * s, -0.5 * s), Color3.fromRGB(225, 225, 230))
+	end
+end
+function CORPO.colete(ctx)
+	local c, s = ctx.c, ctx.s
+	local cor = ctx.v.coleteCor or Color3.fromRGB(255, 130, 0)
+	c.peca("Colete", BLOCO, V3(1.66, 1.45, 0.96) * s, CF(0, 0.05 * s, 0), cor)
+	c.peca("FaixaColete", BLOCO, V3(1.68, 0.14, 0.98) * s, CF(0, -0.15 * s, 0), REFLETIVO, NEON)
+	c.peca("CruzA", BLOCO, V3(0.1, 0.34, 0.04) * s, CF(0.4 * s, 0.38 * s, -0.5 * s), BRANCO)
+	c.peca("CruzB", BLOCO, V3(0.34, 0.1, 0.04) * s, CF(0.4 * s, 0.38 * s, -0.5 * s), BRANCO)
+end
+function CORPO.avental(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Avental", BLOCO, V3(1.2, 1.9, 0.06) * s, CF(0, -0.5 * s, -0.48 * s), Color3.fromRGB(240, 220, 160))
+	c.peca("Bolso", BLOCO, V3(0.6, 0.35, 0.04) * s, CF(0, -0.65 * s, -0.52 * s), Color3.fromRGB(220, 190, 120))
+end
+function CORPO.estetoscopio(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("Tubo", BLOCO, V3(0.06, 0.65, 0.06) * s, CF(0.28 * s * lado, 0.38 * s, -0.5 * s) * ANG(0, 0, rad(-10 * lado)), PRETO)
+	end
+	c.peca("TuboBaixo", BLOCO, V3(0.06, 0.4, 0.06) * s, CF(0.2 * s, -0.12 * s, -0.5 * s), PRETO)
+	c.peca("Disco", CILINDRO, V3(0.06, 0.2, 0.2) * s, CF(0.2 * s, -0.36 * s, -0.52 * s) * DE_FRENTE, PRATA, METAL)
+end
+function CORPO.distintivo(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Distintivo", BLOCO, V3(0.24, 0.24, 0.05) * s, CF(0.45 * s, 0.4 * s, -0.48 * s) * ANG(0, 0, rad(45)), OURO, FOLHA)
+	c.peca("Bolso", BLOCO, V3(0.32, 0.22, 0.04) * s, CF(-0.45 * s, 0.35 * s, -0.48 * s), ctx.v.camisa:Lerp(PRETO, 0.25))
+end
+function CORPO.cintoUtilidade(ctx)
+	local c, s, L = ctx.c, ctx.s, ctx.L
+	local cor = ctx.v.cintoCor or Color3.fromRGB(255, 200, 40)
+	c.peca("Cinto", BLOCO, V3(1.66 * L, 0.22, 0.96) * s, CF(0, -0.68 * s, 0), cor)
+	for i = -2, 2 do
+		if i ~= 0 then
+			c.peca("Bolsinha", BLOCO, V3(0.22, 0.24, 0.12) * s, CF(i * 0.3 * s * L, -0.68 * s, -0.52 * s), cor:Lerp(PRETO, 0.25))
+		end
+	end
+	c.peca("Fivela", BLOCO, V3(0.26, 0.2, 0.08) * s, CF(0, -0.68 * s, -0.52 * s), OURO, NEON)
+end
+function CORPO.teia(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("TeiaV", BLOCO, V3(0.03, 1.6, 0.03) * s, CF(0, 0, -0.47 * s), PRETO)
+	for _, y in { -0.45, 0, 0.45 } do
+		c.peca("TeiaH", BLOCO, V3(1.6, 0.03, 0.03) * s, CF(0, y * s, -0.47 * s), PRETO)
+	end
+	for _, lado in { -1, 1 } do
+		c.peca("TeiaD", BLOCO, V3(0.03, 2.1, 0.03) * s, CF(0, 0, -0.47 * s) * ANG(0, 0, rad(40 * lado)), PRETO)
+	end
+end
+function CORPO.listrasPeito(ctx)
+	local c, s = ctx.c, ctx.s
+	for i = 0, 2 do
+		c.peca("Listra", BLOCO, V3(1.62, 0.12, 0.92) * s, CF(0, (-0.35 - i * 0.14) * s, 0), i % 2 == 0 and VERMELHO or BRANCO)
+	end
+end
+function CORPO.discosPeito(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, x in { -0.4, 0.4 } do
+		for _, y in { 0.45, 0.05, -0.35 } do
+			c.peca("Disco", CILINDRO, V3(0.06, 0.32, 0.32) * s, CF(x * s, y * s, -0.47 * s) * DE_FRENTE, PRATA, METAL)
+		end
+	end
+end
+function CORPO.faixasAmarelas(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("Faixa", BLOCO, V3(0.12, 1.62, 0.94) * s, CF(0.72 * s * lado, 0, 0), Color3.fromRGB(255, 210, 0))
+	end
+end
+function CORPO.binoculo(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("Lente", CILINDRO, V3(0.3, 0.2, 0.2) * s, CF(0.12 * s * lado, -0.1 * s, -0.55 * s) * DE_FRENTE, PRETO)
+	end
+	c.peca("Alca", BLOCO, V3(0.05, 0.9, 0.05) * s, CF(0, 0.35 * s, -0.48 * s), Color3.fromRGB(90, 60, 35))
+end
+function CORPO.armaduraOuro(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Peitoral", BLOCO, V3(1.4, 0.7, 0.08) * s, CF(0, 0.4 * s, -0.47 * s), OURO, FOLHA)
+	c.peca("Saia", BLOCO, V3(1.68, 0.5, 0.98) * s, CF(0, -0.95 * s, 0), Color3.fromRGB(30, 60, 160))
+	c.peca("Cinto", BLOCO, V3(1.66, 0.16, 0.96) * s, CF(0, -0.68 * s, 0), OURO, FOLHA)
+end
+
+--------------------------------------------------------------------------
+-- EMBLEMAS NO PEITO
+--------------------------------------------------------------------------
+local EMBLEMAS = {}
+local function emblemaCF(s, y)
+	return CF(0, (y or 0.25) * s, -0.47 * s)
+end
+function EMBLEMAS.cruz(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("CruzFundo", BLOCO, V3(0.42, 0.42, 0.04) * s, CF(-0.42 * s, 0.4 * s, -0.47 * s), BRANCO)
+	c.peca("CruzA", BLOCO, V3(0.1, 0.32, 0.05) * s, CF(-0.42 * s, 0.4 * s, -0.49 * s), VERMELHO)
+	c.peca("CruzB", BLOCO, V3(0.32, 0.1, 0.05) * s, CF(-0.42 * s, 0.4 * s, -0.49 * s), VERMELHO)
+end
+function EMBLEMAS.estrela(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Circulo", CILINDRO, V3(0.05, 0.8, 0.8) * s, emblemaCF(s) * DE_FRENTE, Color3.fromRGB(230, 235, 245))
+	c.peca("EstrelaA", BLOCO, V3(0.38, 0.38, 0.06) * s, emblemaCF(s) * CF(0, 0, -0.03 * s), Color3.fromRGB(30, 60, 170))
+	c.peca("EstrelaB", BLOCO, V3(0.38, 0.38, 0.06) * s, emblemaCF(s) * CF(0, 0, -0.035 * s) * ANG(0, 0, rad(45)), Color3.fromRGB(30, 60, 170))
+end
+function EMBLEMAS.raio(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Circulo", CILINDRO, V3(0.05, 0.85, 0.85) * s, emblemaCF(s) * DE_FRENTE, BRANCO)
+	c.peca("RaioA", BLOCO, V3(0.12, 0.42, 0.05) * s, emblemaCF(s) * CF(0.06 * s, 0.14 * s, -0.04 * s) * ANG(0, 0, rad(-25)), OURO, NEON)
+	c.peca("RaioB", BLOCO, V3(0.3, 0.1, 0.05) * s, emblemaCF(s) * CF(0, 0, -0.045 * s) * ANG(0, 0, rad(-15)), OURO, NEON)
+	c.peca("RaioC", BLOCO, V3(0.12, 0.42, 0.05) * s, emblemaCF(s) * CF(-0.06 * s, -0.14 * s, -0.04 * s) * ANG(0, 0, rad(-25)), OURO, NEON)
+end
+function EMBLEMAS.aranha(ctx)
+	local c, s = ctx.c, ctx.s
+	local cor = ctx.v.emblemaCor or PRETO
+	local esc = ctx.v.largo and 1.6 or 1
+	c.elipse("Corpo", V3(0.18, 0.3, 0.08) * s * esc, emblemaCF(s, 0.2), cor)
+	c.peca("Cabeca", BOLA, V3(0.12, 0.12, 0.12) * s * esc, emblemaCF(s, 0.2 + 0.2 * esc), cor)
+	for _, lado in { -1, 1 } do
+		for k = 0, 3 do
+			local ang = rad(lado * (35 + k * 32))
+			c.peca("Perna", BLOCO, V3(0.03, 0.34 * esc, 0.03) * s, emblemaCF(s, 0.22) * ANG(0, 0, ang) * CF(0, 0.17 * s * esc, -0.01 * s), cor)
+		end
+	end
+end
+function EMBLEMAS.morcego(ctx)
+	-- emblema original: lua crescente com três garras
+	local c, s = ctx.c, ctx.s
+	c.peca("Lua", CILINDRO, V3(0.05, 0.75, 0.75) * s, emblemaCF(s) * DE_FRENTE, Color3.fromRGB(110, 225, 255), NEON)
+	c.peca("Sombra", CILINDRO, V3(0.06, 0.62, 0.62) * s, emblemaCF(s) * CF(0.16 * s, 0.1 * s, -0.01 * s) * DE_FRENTE, ctx.v.camisa)
+	for k = -1, 1 do
+		c.peca("Garra", BLOCO, V3(0.06, 0.5, 0.05) * s, emblemaCF(s) * CF(k * 0.15 * s, 0, -0.04 * s) * ANG(0, 0, rad(-20)),
+			Color3.fromRGB(200, 140, 255), NEON)
+	end
+end
+function EMBLEMAS.reator(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Anel", CILINDRO, V3(0.05, 0.62, 0.62) * s, emblemaCF(s) * DE_FRENTE, PRATA, METAL)
+	c.peca("Reator", CILINDRO, V3(0.06, 0.42, 0.42) * s, emblemaCF(s) * CF(0, 0, -0.02 * s) * DE_FRENTE, Color3.fromRGB(140, 240, 255), NEON)
+end
+function EMBLEMAS.supremo(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Diamante", BLOCO, V3(0.62, 0.62, 0.05) * s, emblemaCF(s) * ANG(0, 0, rad(45)), OURO)
+	c.peca("DiamanteInterno", BLOCO, V3(0.44, 0.44, 0.05) * s, emblemaCF(s) * CF(0, 0, -0.02 * s) * ANG(0, 0, rad(45)), VERMELHO)
+	c.peca("Brilho", BLOCO, V3(0.14, 0.14, 0.05) * s, emblemaCF(s) * CF(0, 0, -0.04 * s) * ANG(0, 0, rad(45)), OURO, NEON)
+end
+function EMBLEMAS.bandeira(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Bandeira", BLOCO, V3(0.4, 0.26, 0.04) * s, CF(-0.45 * s, 0.45 * s, -0.47 * s), Color3.fromRGB(0, 140, 70))
+	c.peca("Losango", BLOCO, V3(0.16, 0.16, 0.05) * s, CF(-0.45 * s, 0.45 * s, -0.49 * s) * ANG(0, 0, rad(45)), Color3.fromRGB(255, 220, 0))
+end
+
+--------------------------------------------------------------------------
+-- ITENS NAS MÃOS (mão direita = +X)
+--------------------------------------------------------------------------
+local MAOS = {}
+function MAOS.extintor(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Extintor", CILINDRO, V3(0.95, 0.42, 0.42) * s, CF(hx, hy - 0.2 * s, -0.3 * s) * EM_PE, VERMELHO)
+	c.peca("Valvula", BLOCO, V3(0.22, 0.18, 0.22) * s, CF(hx, hy + 0.35 * s, -0.3 * s), PRETO)
+	c.peca("Bico", BLOCO, V3(0.08, 0.08, 0.4) * s, CF(hx, hy + 0.38 * s, -0.55 * s), PRETO)
+end
+function MAOS.machado(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Cabo", BLOCO, V3(0.09, 1.5, 0.09) * s, CF(hx, hy + 0.3 * s, -0.1 * s), Color3.fromRGB(120, 80, 40))
+	c.peca("Lamina", BLOCO, V3(0.08, 0.36, 0.5) * s, CF(hx, hy + 0.9 * s, -0.36 * s), VERMELHO)
+	c.peca("Fio", BLOCO, V3(0.09, 0.4, 0.06) * s, CF(hx, hy + 0.9 * s, -0.63 * s), PRATA, METAL)
+end
+function MAOS.vassoura(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Cabo", BLOCO, V3(0.08, 2.3, 0.08) * s, CF(hx, hy - 0.15 * s, -0.15 * s), Color3.fromRGB(255, 200, 40))
+	c.peca("Cerdas", BLOCO, V3(0.7, 0.35, 0.22) * s, CF(hx, hy - 1.3 * s, -0.15 * s), Color3.fromRGB(70, 60, 50))
+end
+function MAOS.livro(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Capa", BLOCO, V3(0.18, 0.62, 0.5) * s, CF(hx + 0.05 * s, hy, -0.15 * s), Color3.fromRGB(40, 90, 200))
+	c.peca("Paginas", BLOCO, V3(0.16, 0.56, 0.44) * s, CF(hx + 0.07 * s, hy, -0.17 * s), BRANCO)
+end
+function MAOS.maleta(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Maleta", BLOCO, V3(0.32, 0.55, 0.75) * s, CF(hx + 0.05 * s, hy - 0.42 * s, 0), BRANCO)
+	c.peca("CruzA", BLOCO, V3(0.34, 0.32, 0.1) * s, CF(hx + 0.05 * s, hy - 0.42 * s, 0), VERMELHO)
+	c.peca("CruzB", BLOCO, V3(0.34, 0.1, 0.32) * s, CF(hx + 0.05 * s, hy - 0.42 * s, 0), VERMELHO)
+	c.peca("Alca", BLOCO, V3(0.08, 0.12, 0.3) * s, CF(hx + 0.05 * s, hy - 0.08 * s, 0), PRETO)
+end
+function MAOS.frasco(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Frasco", BOLA, V3(0.42, 0.42, 0.42) * s, CF(hx, hy + 0.2 * s, -0.25 * s), Color3.fromRGB(80, 255, 140), NEON, { transparencia = 0.1 })
+	c.peca("Gargalo", CILINDRO, V3(0.25, 0.14, 0.14) * s, CF(hx, hy + 0.5 * s, -0.25 * s) * EM_PE, Color3.fromRGB(200, 240, 255), VIDRO)
+end
+function MAOS.boia(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.anel("Boia", 0.42 * s, 10, V3(0.26, 0.24, 0.2) * s, CF(hx + 0.15 * s, hy - 0.2 * s, -0.15 * s) * ANG(0, rad(90), 0),
+		{ VERMELHO, BRANCO })
+end
+function MAOS.prancheta(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Prancheta", BLOCO, V3(0.08, 0.7, 0.55) * s, CF(hx + 0.1 * s, hy + 0.1 * s, -0.2 * s), Color3.fromRGB(150, 100, 50))
+	c.peca("Papel", BLOCO, V3(0.09, 0.58, 0.46) * s, CF(hx + 0.11 * s, hy + 0.06 * s, -0.2 * s), BRANCO)
+	c.peca("Clipe", BLOCO, V3(0.1, 0.08, 0.2) * s, CF(hx + 0.12 * s, hy + 0.42 * s, -0.2 * s), PRATA, METAL)
+end
+function MAOS.lanterna(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Lanterna", CILINDRO, V3(0.6, 0.16, 0.16) * s, CF(hx, hy, -0.35 * s) * DE_FRENTE, PRETO)
+	c.peca("Luz", CILINDRO, V3(0.06, 0.2, 0.2) * s, CF(hx, hy, -0.66 * s) * DE_FRENTE, Color3.fromRGB(255, 250, 200), NEON)
+end
+function MAOS.carta(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Carta", BLOCO, V3(0.06, 0.38, 0.58) * s, CF(hx + 0.08 * s, hy + 0.1 * s, -0.2 * s), BRANCO)
+	c.peca("Selo", BLOCO, V3(0.07, 0.1, 0.1) * s, CF(hx + 0.1 * s, hy + 0.18 * s, -0.4 * s), VERMELHO)
+end
+function MAOS.martelo(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Cabo", BLOCO, V3(0.12, 1.0, 0.12) * s, CF(hx, hy + 0.1 * s, -0.15 * s), Color3.fromRGB(110, 70, 40))
+	c.peca("Cabeca", BLOCO, V3(0.45, 0.42, 0.7) * s, CF(hx, hy + 0.72 * s, -0.15 * s), PRATA, METAL)
+	c.peca("Brilho", BLOCO, V3(0.47, 0.06, 0.72) * s, CF(hx, hy + 0.72 * s, -0.15 * s), Color3.fromRGB(150, 220, 255), NEON)
+end
+function MAOS.laco(ctx)
+	local c, s = ctx.c, ctx.s
+	c.anel("Laco", 0.26 * s, 10, V3(0.1, 0.16, 0.1) * s, CF(0.7 * s, -0.75 * s, -0.25 * s) * ANG(0, rad(70), 0), { OURO }, NEON)
+end
+local MAOS_ESQUERDA = {}
+function MAOS_ESQUERDA.escudo(ctx)
+	local c, s = ctx.c, ctx.s
+	local base = CF(-1.32 * s * ctx.L, -0.15 * s, -0.25 * s) * ANG(0, rad(-70), 0)
+	local aneis = { { 1.35, VERMELHO }, { 1.05, BRANCO }, { 0.75, VERMELHO }, { 0.48, Color3.fromRGB(30, 60, 170) } }
+	for i, info in aneis do
+		c.peca("Escudo", CILINDRO, V3(0.08, info[1], info[1]) * s, base * CF(0, 0, -0.03 * s * i) * DE_FRENTE, info[2], METAL)
+	end
+	c.peca("EstrelaA", BLOCO, V3(0.26, 0.26, 0.05) * s, base * CF(0, 0, -0.16 * s), BRANCO, NEON)
+	c.peca("EstrelaB", BLOCO, V3(0.26, 0.26, 0.05) * s, base * CF(0, 0, -0.165 * s) * ANG(0, 0, rad(45)), BRANCO, NEON)
+end
+
+--------------------------------------------------------------------------
+-- COSTAS
+--------------------------------------------------------------------------
+local COSTAS = {}
+function COSTAS.tanque(ctx)
+	local c, s = ctx.c, ctx.s
+	local cor = ctx.v.tanqueCor or Color3.fromRGB(255, 200, 0)
+	for _, lado in { -1, 1 } do
+		c.peca("Tanque", CILINDRO, V3(1.2, 0.4, 0.4) * s, CF(0.22 * s * lado, 0.05 * s, 0.68 * s) * EM_PE, cor, METAL)
+	end
+	c.peca("Valvula", BLOCO, V3(0.5, 0.12, 0.12) * s, CF(0, 0.7 * s, 0.68 * s), PRATA, METAL)
+end
+function COSTAS.mochilaAstronauta(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Mochila", BLOCO, V3(1.3, 1.35, 0.55) * s, CF(0, 0.1 * s, 0.72 * s), BRANCO)
+	c.peca("Painel", BLOCO, V3(0.5, 0.3, 0.05) * s, CF(0.2 * s, 0.4 * s, 1.0 * s), Color3.fromRGB(60, 140, 255), NEON)
+end
+function COSTAS.bolsaCarteiro(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Bolsa", BLOCO, V3(0.32, 0.6, 0.75) * s, CF(0.98 * s, -0.55 * s, 0.05 * s), Color3.fromRGB(130, 85, 45))
+	c.peca("Alca", BLOCO, V3(0.08, 2.1, 0.06) * s, CF(0, 0.05 * s, -0.48 * s) * ANG(0, 0, rad(42)), Color3.fromRGB(110, 70, 35))
+end
+
+function CORPO.escamas(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, y in { 0.45, 0.15, -0.15, -0.45 } do
+		for _, x in { -0.4, 0, 0.4 } do
+			c.peca("Escama", BLOCO, V3(0.3, 0.05, 0.04) * s, CF((x + (y * 0.3)) * s, y * s, -0.47 * s), Color3.fromRGB(255, 220, 90))
+		end
+	end
+end
+function CORPO.linhasPrata(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("Linha", BLOCO, V3(0.05, 1.2, 0.04) * s, CF(0.35 * s * lado, 0, -0.47 * s) * ANG(0, 0, rad(20 * lado)), PRATA, NEON)
+		c.peca("LinhaPerna", BLOCO, V3(0.04, 1.0, 0.64) * s, CF(0.42 * s * lado, -1.4 * s, 0), PRATA, NEON)
+	end
+end
+function CORPO.colar(ctx)
+	local c, s = ctx.c, ctx.s
+	for k = -3, 3 do
+		c.peca("Dente", BLOCO, V3(0.1, 0.18, 0.05) * s, CF(k * 0.12 * s, (0.62 - math.abs(k) * 0.05) * s, -0.48 * s), PRATA, METAL)
+	end
+end
+function CORPO.robe(ctx)
+	local c, s = ctx.c, ctx.s
+	local cor = ctx.v.robeCor or Color3.fromRGB(30, 60, 130)
+	c.peca("Robe", BLOCO, V3(1.66, 1.62, 0.96) * s, CF(0, 0, 0), cor)
+	c.peca("Barra", BLOCO, V3(1.64, 0.9, 0.98) * s, CF(0, -1.2 * s, 0), cor)
+	c.peca("Faixa", BLOCO, V3(0.25, 1.62, 0.04) * s, CF(0, 0, -0.49 * s), cor:Lerp(BRANCO, 0.25))
+end
+function CORPO.amuleto(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Amuleto", CILINDRO, V3(0.06, 0.42, 0.42) * s, CF(0, 0.45 * s, -0.5 * s) * DE_FRENTE, OURO, FOLHA)
+	c.elipse("Olho", V3(0.2, 0.12, 0.05) * s, CF(0, 0.45 * s, -0.54 * s), Color3.fromRGB(60, 255, 120), NEON)
+end
+function CORPO.metadeMetal(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("PlacaMetal", BLOCO, V3(0.85, 1.64, 0.96) * s, CF(0.4 * s, 0, 0), PRATA, METAL)
+	c.peca("Luz", CILINDRO, V3(0.06, 0.3, 0.3) * s, CF(0.4 * s, 0.35 * s, -0.5 * s) * DE_FRENTE, Color3.fromRGB(255, 40, 40), NEON)
+	c.peca("BracoMetal", BLOCO, V3(0.5, 1.42, 0.5) * s, CF(1.05 * s, 0.05 * s, 0) * ANG(0, 0, rad(8)), PRATA, METAL)
+end
+function CORPO.faixasPretasLaterais(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("FaixaPreta", BLOCO, V3(0.14, 1.62, 0.94) * s, CF(0.73 * s * lado, 0, 0), PRETO)
+		c.peca("PontaPreta", BLOCO, V3(0.5, 0.12, 0.06) * s, CF(0.45 * s * lado, 0.55 * s, -0.47 * s) * ANG(0, 0, rad(-35 * lado)), PRETO)
+	end
+end
+function CORPO.chamas(ctx)
+	local p = Instance.new("ParticleEmitter")
+	p.Color = ColorSequence.new(Color3.fromRGB(255, 220, 80), Color3.fromRGB(255, 60, 0))
+	p.LightEmission = 1
+	p.Rate = 18
+	p.Lifetime = NumberRange.new(0.5, 1)
+	p.Speed = NumberRange.new(1.5, 3)
+	p.SpreadAngle = Vector2.new(25, 25)
+	p.Size = NumberSequence.new(0.6 * ctx.s, 0)
+	p.Parent = ctx.raiz
+	local luz = Instance.new("PointLight")
+	luz.Color = Color3.fromRGB(255, 140, 40)
+	luz.Range = 10
+	luz.Brightness = 2
+	luz.Parent = ctx.raiz
+end
+function CORPO.corpoPedra(ctx)
+	local c, s = ctx.c, ctx.s
+	local cor = ctx.v.pele:Lerp(PRETO, 0.25)
+	for i, info in { { -0.4, 0.45 }, { 0.35, 0.2 }, { -0.2, -0.15 }, { 0.45, -0.4 }, { 0, 0.55 } } do
+		c.peca("Pedra", BLOCO, V3(0.32, 0.26, 0.06) * s, CF(info[1] * s * ctx.L, info[2] * s, -0.47 * s) * ANG(0, 0, rad(i * 17)), cor, Enum.Material.Slate)
+	end
+end
+function CORPO.linhasDouradas(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("LinhaDourada", BLOCO, V3(0.06, 1.6, 0.04) * s, CF(0.5 * s * lado, 0, -0.47 * s), OURO)
+	end
+	c.peca("LinhaCentro", BLOCO, V3(1.0, 0.06, 0.04) * s, CF(0, 0.5 * s, -0.47 * s), OURO)
+end
+function CORPO.faixaAzul(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Faixa", BLOCO, V3(1.64, 0.7, 0.94) * s, CF(0, -0.45 * s, 0), Color3.fromRGB(30, 50, 140))
+	c.peca("FaixaDourada", BLOCO, V3(1.66, 0.08, 0.96) * s, CF(0, -0.08 * s, 0), OURO)
+end
+function CORPO.casaco(ctx)
+	local c, s = ctx.c, ctx.s
+	local cor = ctx.v.camisa
+	c.peca("Barra", BLOCO, V3(1.64, 1.0, 0.98) * s, CF(0, -1.25 * s, 0), cor)
+	c.peca("Abertura", BLOCO, V3(0.1, 1.0, 0.06) * s, CF(0, -1.25 * s, -0.5 * s), PRETO)
+	c.peca("Gola", BLOCO, V3(1.2, 0.25, 0.3) * s, CF(0, 0.8 * s, -0.35 * s), cor:Lerp(PRETO, 0.3))
+end
+
+function EMBLEMAS.raioPeito(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("RaioA", BLOCO, V3(0.16, 0.6, 0.05) * s, emblemaCF(s) * CF(0.1 * s, 0.2 * s, -0.01 * s) * ANG(0, 0, rad(-28)), OURO, NEON)
+	c.peca("RaioB", BLOCO, V3(0.5, 0.13, 0.05) * s, emblemaCF(s) * CF(0, 0, -0.015 * s) * ANG(0, 0, rad(-12)), OURO, NEON)
+	c.peca("RaioC", BLOCO, V3(0.16, 0.6, 0.05) * s, emblemaCF(s) * CF(-0.1 * s, -0.22 * s, -0.01 * s) * ANG(0, 0, rad(-28)), OURO, NEON)
+end
+function EMBLEMAS.estrelaDourada(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("EstrelaA", BLOCO, V3(0.42, 0.42, 0.05) * s, emblemaCF(s), OURO, NEON)
+	c.peca("EstrelaB", BLOCO, V3(0.42, 0.42, 0.05) * s, emblemaCF(s) * CF(0, 0, -0.005 * s) * ANG(0, 0, rad(45)), OURO, NEON)
+end
+function EMBLEMAS.lanterna(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Circulo", CILINDRO, V3(0.05, 0.8, 0.8) * s, emblemaCF(s) * DE_FRENTE, BRANCO)
+	c.peca("Anel", CILINDRO, V3(0.06, 0.55, 0.55) * s, emblemaCF(s) * CF(0, 0, -0.02 * s) * DE_FRENTE, Color3.fromRGB(40, 220, 90), NEON)
+	c.peca("Miolo", CILINDRO, V3(0.07, 0.34, 0.34) * s, emblemaCF(s) * CF(0, 0, -0.03 * s) * DE_FRENTE, BRANCO)
+	for _, y in { 0.38, -0.38 } do
+		c.peca("Barra", BLOCO, V3(0.5, 0.08, 0.05) * s, emblemaCF(s) * CF(0, y * s, -0.02 * s), Color3.fromRGB(40, 220, 90), NEON)
+	end
+end
+function EMBLEMAS.fenix(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Corpo", BLOCO, V3(0.22, 0.22, 0.05) * s, emblemaCF(s) * ANG(0, 0, rad(45)), OURO, NEON)
+	for _, lado in { -1, 1 } do
+		c.peca("Asa", BLOCO, V3(0.5, 0.1, 0.05) * s, emblemaCF(s) * CF(0.28 * s * lado, 0.12 * s, 0) * ANG(0, 0, rad(30 * lado)), OURO, NEON)
+	end
+	c.peca("Cauda", BLOCO, V3(0.1, 0.4, 0.05) * s, emblemaCF(s) * CF(0, -0.3 * s, 0), OURO, NEON)
+end
+
+function MAOS.tridente(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.peca("Haste", BLOCO, V3(0.1, 2.8, 0.1) * s, CF(hx, hy + 0.5 * s, -0.15 * s), OURO, FOLHA)
+	c.peca("Travessa", BLOCO, V3(0.6, 0.08, 0.08) * s, CF(hx, hy + 1.85 * s, -0.15 * s), OURO, FOLHA)
+	for k = -1, 1 do
+		c.peca("Dente", BLOCO, V3(0.07, 0.45, 0.07) * s, CF(hx + k * 0.27 * s, hy + 2.1 * s, -0.15 * s), OURO, FOLHA)
+	end
+end
+function MAOS.garras(ctx)
+	local c, s, hy = ctx.c, ctx.s, ctx.hy
+	for _, lado in { -1, 1 } do
+		for k = -1, 1 do
+			c.peca("Garra", BLOCO, V3(0.04, 0.85, 0.06) * s, CF(ctx.hx * lado + k * 0.1 * s, hy - 0.55 * s, -0.25 * s) * ANG(rad(-25), 0, 0),
+				PRATA, METAL)
+		end
+	end
+end
+function MAOS.blasters(ctx)
+	local c, s, hy = ctx.c, ctx.s, ctx.hy
+	for _, lado in { -1, 1 } do
+		c.peca("Arma", BLOCO, V3(0.22, 0.3, 0.6) * s, CF(ctx.hx * lado, hy, -0.35 * s), Color3.fromRGB(70, 75, 85), METAL)
+		c.peca("Cano", CILINDRO, V3(0.4, 0.14, 0.14) * s, CF(ctx.hx * lado, hy + 0.05 * s, -0.75 * s) * DE_FRENTE, PRETO)
+		c.peca("LuzArma", BLOCO, V3(0.06, 0.06, 0.3) * s, CF(ctx.hx * lado + 0.12 * s * lado, hy + 0.05 * s, -0.4 * s), Color3.fromRGB(80, 200, 255), NEON)
+	end
+end
+function MAOS.prancha(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.elipse("Prancha", V3(0.22, 3.0, 1.0) * s, CF(hx + 0.35 * s, hy - 0.1 * s, 0.2 * s), PRATA, FOLHA)
+end
+function MAOS.anelVerde(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	local brilho = c.peca("Energia", BOLA, V3(0.45, 0.45, 0.45) * s, CF(hx, hy - 0.05 * s, -0.3 * s), Color3.fromRGB(60, 255, 120), NEON,
+		{ transparencia = 0.2 })
+	local luz = Instance.new("PointLight")
+	luz.Color = Color3.fromRGB(60, 255, 120)
+	luz.Range = 8
+	luz.Brightness = 2
+	luz.Parent = brilho
+end
+function MAOS.magia(ctx)
+	local c, s, hy = ctx.c, ctx.s, ctx.hy
+	for _, lado in { -1, 1 } do
+		c.peca("CirculoMagico", CILINDRO, V3(0.04, 0.9, 0.9) * s, CF(ctx.hx * lado, hy, -0.4 * s) * DE_FRENTE, Color3.fromRGB(255, 150, 30), NEON,
+			{ transparencia = 0.2 })
+	end
+end
+function MAOS.energiaVermelha(ctx)
+	local c, s, hy = ctx.c, ctx.s, ctx.hy
+	for _, lado in { -1, 1 } do
+		local bola = c.peca("Energia", BOLA, V3(0.5, 0.5, 0.5) * s, CF(ctx.hx * lado, hy - 0.05 * s, -0.3 * s), Color3.fromRGB(255, 30, 70), NEON,
+			{ transparencia = 0.25 })
+		local p = Instance.new("ParticleEmitter")
+		p.Color = ColorSequence.new(Color3.fromRGB(255, 40, 90))
+		p.LightEmission = 1
+		p.Rate = 10
+		p.Lifetime = NumberRange.new(0.4, 0.8)
+		p.Speed = NumberRange.new(0.5, 1.5)
+		p.Size = NumberSequence.new(0.3 * s, 0)
+		p.Parent = bola
+	end
+end
+function MAOS.raios(ctx)
+	local c, s, hy = ctx.c, ctx.s, ctx.hy
+	for _, lado in { -1, 1 } do
+		c.peca("Raio", BOLA, V3(0.45, 0.45, 0.45) * s, CF(ctx.hx * lado, hy - 0.05 * s, -0.3 * s), Color3.fromRGB(220, 240, 255), NEON,
+			{ transparencia = 0.15 })
+	end
+end
+function MAOS.punhoEnergia(ctx)
+	local c, s, hy = ctx.c, ctx.s, ctx.hy
+	for _, lado in { -1, 1 } do
+		c.peca("Energia", BOLA, V3(0.55, 0.55, 0.55) * s, CF(ctx.hx * lado, hy - 0.05 * s, -0.05 * s), Color3.fromRGB(255, 200, 60), NEON,
+			{ transparencia = 0.35 })
+	end
+end
+function MAOS.chicote(ctx)
+	local c, s, hx, hy = ctx.c, ctx.s, ctx.hx, ctx.hy
+	c.anel("Chicote", 0.3 * s, 10, V3(0.08, 0.2, 0.08) * s, CF(hx + 0.1 * s, hy - 0.35 * s, -0.2 * s) * ANG(0, rad(90), 0),
+		{ Color3.fromRGB(40, 30, 30) })
+	c.peca("PontaChicote", BLOCO, V3(0.06, 1.0, 0.06) * s, CF(hx + 0.1 * s, hy - 1.05 * s, -0.2 * s), Color3.fromRGB(40, 30, 30))
+end
+function MAOS_ESQUERDA.arco(ctx)
+	local c, s = ctx.c, ctx.s
+	local base = CF(-ctx.hx, ctx.hy + 0.2 * s, -0.3 * s)
+	local madeira = Color3.fromRGB(110, 70, 40)
+	c.peca("ArcoMeio", BLOCO, V3(0.1, 0.9, 0.12) * s, base, madeira)
+	c.peca("ArcoCima", BLOCO, V3(0.1, 0.9, 0.12) * s, base * CF(0, 0.82 * s, 0.18 * s) * ANG(rad(25), 0, 0), madeira)
+	c.peca("ArcoBaixo", BLOCO, V3(0.1, 0.9, 0.12) * s, base * CF(0, -0.82 * s, 0.18 * s) * ANG(rad(-25), 0, 0), madeira)
+	c.peca("Corda", BLOCO, V3(0.03, 2.3, 0.03) * s, base * CF(0, 0, 0.42 * s), BRANCO)
+end
+
+function COSTAS.aljava(ctx)
+	local c, s = ctx.c, ctx.s
+	c.peca("Aljava", CILINDRO, V3(1.3, 0.4, 0.4) * s, CF(0.3 * s, 0.2 * s, 0.62 * s) * ANG(0, 0, rad(70)), Color3.fromRGB(110, 70, 40))
+	for k = -1, 1 do
+		c.peca("Flecha", BLOCO, V3(0.05, 0.5, 0.05) * s, CF((0.55 + k * 0.07) * s, 0.95 * s, 0.62 * s) * ANG(0, 0, rad(-20)), Color3.fromRGB(230, 40, 40))
+	end
+end
+function COSTAS.espadas(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		c.peca("Espada", BLOCO, V3(0.1, 2.0, 0.06) * s, CF(0, 0.3 * s, 0.55 * s) * ANG(0, 0, rad(30 * lado)), PRATA, METAL)
+		c.peca("Cabo", BLOCO, V3(0.14, 0.45, 0.12) * s, CF(0.55 * s * lado, 1.25 * s, 0.55 * s) * ANG(0, 0, rad(30 * lado)), PRETO)
+	end
+end
+function COSTAS.asasMetal(ctx)
+	local c, s = ctx.c, ctx.s
+	for _, lado in { -1, 1 } do
+		for k = 0, 2 do
+			c.peca("Pena", BLOCO, V3(1.6 - k * 0.3, 0.32, 0.08) * s,
+				CF((1.0 + k * 0.1) * s * lado, (0.45 - k * 0.35) * s, 0.6 * s) * ANG(0, 0, rad((22 - k * 12) * lado)),
+				k == 0 and Color3.fromRGB(200, 40, 40) or PRATA, METAL)
+		end
+	end
+end
+
+local function capa(ctx, cor, material)
+	local c, s = ctx.c, ctx.s
+	c.peca("Capa", BLOCO, V3(1.5 * ctx.L, 2.35, 0.12) * s, CF(0, -0.3 * s, 0.56 * s) * ANG(rad(10), 0, 0), cor, material)
+	c.peca("Gola", BLOCO, V3(1.65 * ctx.L, 0.2, 0.95) * s, CF(0, 0.78 * s, 0), cor, material)
+end
+
+--------------------------------------------------------------------------
+-- HERÓI COMPLETO
+--------------------------------------------------------------------------
+-- opcoes: { semPlaca = true, escala = número, formatar = função }
+function Modelos.heroi(def, mutacao, Config, opcoes)
+	opcoes = opcoes or {}
+	local raridade = Config.RaridadePorId[def.raridade]
+	local s = opcoes.escala or raridade.escala
+	local v = def.visual
+	local L = v.largo and 1.25 or 1
+
+	local camisa, calca = v.camisa, v.calca
+	local mangas = v.mangas or v.camisa
+	local MATERIAIS = { Metal = METAL, Neon = NEON, Concrete = Enum.Material.Slate, Foil = FOLHA }
+	local material = MATERIAIS[v.material or ""] or LISO
+	local corCapa = v.capa
+	if mutacao.id == "Ouro" then
+		camisa, calca, mangas, material = mutacao.cor, mutacao.cor, mutacao.cor, FOLHA
+	elseif mutacao.id == "Diamante" then
+		camisa, calca, mangas, material = mutacao.cor, mutacao.cor:Lerp(BRANCO, 0.3), mutacao.cor, VIDRO
+	elseif mutacao.id == "Cosmico" then
+		camisa, calca, mangas, material = Color3.fromRGB(50, 0, 110), Color3.fromRGB(30, 0, 70), Color3.fromRGB(50, 0, 110), NEON
+		corCapa = corCapa and mutacao.cor
+	end
+	local vMut = setmetatable({ camisa = camisa }, { __index = v })
+
+	local modelo = Instance.new("Model")
+	modelo.Name = def.nome
+	modelo:SetAttribute("HeroiId", def.id)
+	modelo:SetAttribute("Mutacao", mutacao.id)
+
+	local raiz = novaRaiz(modelo, "Tronco", V3(1.6 * L, 1.6, 0.9) * s, camisa, material)
+	raiz:SetAttribute("Pintavel", true)
+	local c = novoConstrutor(modelo, raiz)
+	local yC = 1.32 * s
+	local ctx = { c = c, s = s, L = L, yC = yC, hx = 1.15 * s * L, hy = -0.72 * s, v = vMut, raiz = raiz, rostoFeito = false }
+
+	-- Corpo base
+	local pele = v.pele
+	local botas = v.botas or PRETO
+	local maos = v.maos or pele
+	for _, lado in { -1, 1 } do
+		c.peca("Perna", BLOCO, V3(0.6 * L, 1.2, 0.6) * s, CF(0.42 * s * L * lado, -1.4 * s, 0), calca, material, { pintavel = true })
+		c.peca("Bota", BLOCO, V3(0.68 * L, 0.45, 0.78) * s, CF(0.42 * s * L * lado, -1.8 * s, -0.05 * s), botas)
+		c.peca("Braco", BLOCO, V3(0.45 * L, 1.4, 0.45 * L) * s, CF(1.05 * s * L * lado, 0.05 * s, 0) * ANG(0, 0, rad(8 * lado)),
+			mangas, material, { pintavel = mangas == camisa })
+		c.peca("Mao", BOLA, V3(0.5, 0.5, 0.5) * s * L, CF(1.15 * s * L * lado, -0.72 * s, 0), maos)
+	end
+	c.peca("Cabeca", BOLA, V3(1.1, 1.1, 1.1) * s, CF(0, yC, 0), pele, v.material == "Neon" and NEON or (v.material == "Foil" and FOLHA or LISO))
+
+	-- Corpo, cabeça, rosto, emblema, mãos e costas
+	for _, nome in v.corpo or {} do
+		CORPO[nome](ctx)
+	end
+	if v.emblema then
+		EMBLEMAS[v.emblema](ctx)
+	end
+	if corCapa then
+		capa(ctx, corCapa, mutacao.id == "Cosmico" and NEON or LISO)
+	end
+	if v.cabeca then
+		CABECAS[v.cabeca](ctx)
+	end
+	if not CABECAS_SEM_ROSTO[v.cabeca or ""] and not ctx.rostoFeito then
+		olhosEBoca(ctx)
+		if v.rosto then
+			ROSTOS[v.rosto](ctx)
+		end
+	end
+	if v.mao then
+		MAOS[v.mao](ctx)
+	end
+	if v.maoEsquerda then
+		MAOS_ESQUERDA[v.maoEsquerda](ctx)
+	end
+	if v.costas then
+		COSTAS[v.costas](ctx)
+	end
+
+	if v.transparencia then
+		for _, p in modelo:GetChildren() do
+			if p:IsA("BasePart") and (p:GetAttribute("Pintavel") or p.Name == "Cabeca" or p.Name == "Mao" or p.Name == "Bota" or p.Name == "Cabelo") then
+				p.Transparency = v.transparencia
+			end
+		end
+	end
+
+	-- Efeitos das raridades altas e mutações
+	if raridade.ordem >= Config.RaridadePorId.Lendario.ordem then
+		local luz = Instance.new("PointLight")
+		luz.Color = raridade.cor
+		luz.Range = 10
+		luz.Brightness = 1.5
+		luz.Parent = raiz
+	end
+	if def.raridade == "Divino" then
+		c.peca("Aureola", CILINDRO, V3(0.12, 1.3, 1.3) * s, CF(0, yC + 1.05 * s, 0) * EM_PE, Color3.fromRGB(255, 240, 150), NEON)
+	end
+	if def.raridade == "Secreto" or mutacao.id == "Cosmico" then
+		local particulas = Instance.new("ParticleEmitter")
+		particulas.Color = def.raridade == "Secreto"
+				and ColorSequence.new(Color3.fromRGB(0, 0, 0), Color3.fromRGB(0, 255, 200))
+			or ColorSequence.new(Color3.fromRGB(150, 70, 255), Color3.fromRGB(255, 120, 255))
+		particulas.LightEmission = 0.6
+		particulas.Rate = 14
+		particulas.Lifetime = NumberRange.new(0.8, 1.6)
+		particulas.Speed = NumberRange.new(1, 3)
+		particulas.SpreadAngle = Vector2.new(180, 180)
+		particulas.Size = NumberSequence.new(0.5 * s, 0)
+		particulas.Parent = raiz
+	end
+	if mutacao.id == "ArcoIris" then
+		CollectionService:AddTag(modelo, "HeroiArcoIris")
+	end
+
+	if not opcoes.semPlaca then
+		local formatar = Config.formatar
+		local placa = Instance.new("BillboardGui")
+		placa.Name = "Info"
+		placa.Size = UDim2.fromOffset(240, 96)
+		placa.StudsOffset = Vector3.new(0, 2.9 * s + 1.4, 0)
+		placa.MaxDistance = 70
+		placa.LightInfluence = 0
+		placa.Parent = raiz
+		local layout = Instance.new("UIListLayout")
+		layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		layout.Parent = placa
+		local function linha(ordem, texto, cor, fonte)
+			local rotulo = Instance.new("TextLabel")
+			rotulo.LayoutOrder = ordem
+			rotulo.Size = UDim2.new(1, 0, 0, 23)
+			rotulo.BackgroundTransparency = 1
+			rotulo.Text = texto
+			rotulo.TextColor3 = cor
+			rotulo.Font = fonte or Enum.Font.FredokaOne
+			rotulo.TextScaled = true
+			rotulo.TextStrokeTransparency = 0
+			rotulo.Parent = placa
+			return rotulo
+		end
+		if mutacao.id ~= "Normal" then
+			local rotulo = linha(1, "✦ " .. mutacao.nome .. " ✦", mutacao.cor)
+			if mutacao.id == "ArcoIris" then
+				rotulo.Name = "TextoArcoIris"
+			end
+		end
+		linha(2, def.nome, Color3.new(1, 1, 1))
+		linha(3, raridade.nome, raridade.cor)
+		linha(4, formatar(def.preco * mutacao.multiplicador) .. "  •  +" .. formatar(def.renda * mutacao.multiplicador) .. "/s",
+			Color3.fromRGB(110, 255, 130), Enum.Font.GothamBold)
+	end
+
+	return modelo, raiz
+end
+
+--------------------------------------------------------------------------
+-- LUVA (estilo luva de boxe). A raiz fica no centro da mão; os dedos
+-- apontam para -Y e o punho (pulso) sobe para +Y.
+--------------------------------------------------------------------------
+function Modelos.luva(def, escala)
+	local modelo = Instance.new("Model")
+	modelo.Name = "Luva" .. def.id
+	local material = def.material == "Metal" and METAL or (def.material == "Neon" and NEON or LISO)
+	local raiz = novaRaiz(modelo, "Luva", V3(1.15, 1.35, 1.2), def.cor, material)
+	local malha = Instance.new("SpecialMesh")
+	malha.MeshType = Enum.MeshType.Sphere
+	malha.Parent = raiz
+	local c = novoConstrutor(modelo, raiz)
+	local escura = def.cor:Lerp(PRETO, 0.25)
+
+	c.elipse("Nos", V3(1.0, 0.62, 0.55), CF(0, -0.38, -0.35), escura, material)
+	c.elipse("Polegar", V3(0.42, 0.78, 0.5), CF(-0.52, 0.05, -0.28) * ANG(0, 0, rad(18)), def.cor, material)
+	c.peca("Punho", CILINDRO, V3(0.65, 1.0, 1.0), CF(0, 0.78, 0) * EM_PE, def.corPunho or BRANCO)
+	c.peca("Faixa", CILINDRO, V3(0.16, 1.05, 1.05), CF(0, 0.6, 0) * EM_PE, def.corDetalhe or VERMELHO, def.neon and NEON or LISO)
+	c.peca("FaixaTopo", CILINDRO, V3(0.1, 1.03, 1.03), CF(0, 1.05, 0) * EM_PE, def.corDetalhe or VERMELHO, def.neon and NEON or LISO)
+	for k = 0, 2 do
+		c.peca("Cadarco", BLOCO, V3(0.42, 0.06, 0.06), CF(0, 0.62 + k * 0.17, 0.52), BRANCO)
+	end
+	c.peca("Emblema", BLOCO, V3(0.3, 0.3, 0.06), CF(0, -0.05, 0.58) * ANG(0, 0, rad(45)), def.corDetalhe or OURO, NEON)
+	if def.particulas then
+		local p = Instance.new("ParticleEmitter")
+		p.Color = ColorSequence.new(def.particulas)
+		p.LightEmission = 1
+		p.Rate = 12
+		p.Lifetime = NumberRange.new(0.4, 0.8)
+		p.Speed = NumberRange.new(0.5, 1.5)
+		p.SpreadAngle = Vector2.new(180, 180)
+		p.Size = NumberSequence.new(0.35, 0)
+		p.Parent = raiz
+	end
+	if def.neon then
+		local luz = Instance.new("PointLight")
+		luz.Color = def.corDetalhe or def.cor
+		luz.Range = 6
+		luz.Brightness = 1.2
+		luz.Parent = raiz
+	end
+	-- Na mão do jogador a luva fica maior, para o punho cobrir o braço
+	if escala and escala ~= 1 then
+		for _, parte in modelo:GetDescendants() do
+			if parte:IsA("BasePart") then
+				parte.Size *= escala
+				parte.CFrame = CF(parte.CFrame.Position * escala) * parte.CFrame.Rotation
+			end
+		end
+	end
+	return modelo, raiz
+end
+
+--------------------------------------------------------------------------
+-- MOLA (enfeite da loja): espiral de bolinhas metálicas
+--------------------------------------------------------------------------
+function Modelos.mola()
+	local modelo = Instance.new("Model")
+	modelo.Name = "Mola"
+	local raiz = novaRaiz(modelo, "Base", V3(1.4, 0.2, 1.4), Color3.fromRGB(60, 60, 70), METAL)
+	local c = novoConstrutor(modelo, raiz)
+	local voltas, pontos = 5, 60
+	for i = 0, pontos do
+		local t = i / pontos
+		local a = t * voltas * math.pi * 2
+		c.peca("Espira", BOLA, V3(0.22, 0.22, 0.22), CF(math.cos(a) * 0.5, 0.15 + t * 1.8, math.sin(a) * 0.5),
+			Color3.fromRGB(80, 220, 255), METAL)
+	end
+	c.peca("Topo", CILINDRO, V3(0.12, 1.2, 1.2), CF(0, 2.0, 0) * EM_PE, Color3.fromRGB(255, 200, 40), METAL)
+	return modelo, raiz
+end
+
+return Modelos
+]]></string>
+      </Properties>
+    </Item>
   </Item>
-  <Item class="StarterPlayer" referent="7">
+  <Item class="StarterPlayer" referent="8">
     <Properties>
       <string name="Name">StarterPlayer</string>
     </Properties>
-    <Item class="StarterPlayerScripts" referent="8">
+    <Item class="StarterPlayerScripts" referent="9">
       <Properties>
         <string name="Name">StarterPlayerScripts</string>
       </Properties>
-      <Item class="LocalScript" referent="9">
+      <Item class="LocalScript" referent="10">
         <Properties>
           <string name="Name">InterfaceHerois</string>
           <string name="Source"><![CDATA[--[[
@@ -3106,6 +4846,8 @@ local Efeito = remotes:WaitForChild("Efeito")
 local Empurrao = remotes:WaitForChild("Empurrao")
 local Acao = remotes:WaitForChild("Acao")
 local ObterRanking = remotes:WaitForChild("ObterRanking")
+local AbrirLoja = remotes:WaitForChild("AbrirLoja")
+local RoletaGiro = remotes:WaitForChild("RoletaGiro")
 
 local formatar = Config.formatar
 
@@ -3645,6 +5387,34 @@ local textoEvento = rotulo({
 	Parent = barraEvento,
 }, { contornoTexto(2) })
 
+local textoBoosts = rotulo({
+	Name = "Bonus",
+	Text = "",
+	Font = FONTE_TITULO,
+	TextColor3 = COR.amarelo,
+	AnchorPoint = Vector2.new(0.5, 0),
+	Position = UDim2.new(0.5, 0, 0, 84),
+	Size = UDim2.fromOffset(420, 26),
+	Visible = false,
+	Parent = gui,
+}, { contornoTexto(2) })
+
+local function atualizarBoosts()
+	local agora = workspace:GetServerTimeNow()
+	local partes = {}
+	local renda = atributo("BoostRenda", 0) - agora
+	if renda > 0 then
+		table.insert(partes, "⚡ Renda x2  " .. Config.formatarTempo(renda))
+	end
+	local velocidade = atributo("BoostVelocidade", 0) - agora
+	if velocidade > 0 then
+		table.insert(partes, "🌀 Super velocidade  " .. Config.formatarTempo(velocidade))
+	end
+	textoBoosts.Visible = #partes > 0
+	textoBoosts.Text = table.concat(partes, "     ")
+	textoBoosts.Position = UDim2.new(0.5, 0, 0, barraEvento.Visible and 124 or 84)
+end
+
 local valorExibido = 0
 local alvoDinheiro = 0
 
@@ -3669,7 +5439,7 @@ local menu = criar("Frame", {
 	Name = "Menu",
 	AnchorPoint = Vector2.new(0, 0.5),
 	Position = UDim2.new(0, 10, 0.5, 0),
-	Size = UDim2.fromOffset(152, 236),
+	Size = UDim2.fromOffset(152, 312),
 	BackgroundTransparency = 1,
 	Parent = gui,
 }, {
@@ -3678,7 +5448,7 @@ local menu = criar("Frame", {
 local escalaMenu = criar("UIScale", { Parent = menu })
 local alertasMenu = {}
 
-local function botaoMenu(ordem, nome, icone, texto, cor)
+local function botaoMenu(ordem, nome, icone, texto, cor, aoClicar)
 	local b = criar("TextButton", {
 		Name = nome,
 		LayoutOrder = ordem,
@@ -3704,17 +5474,88 @@ local function botaoMenu(ordem, nome, icone, texto, cor)
 	animarBotao(b)
 	b.Activated:Connect(function()
 		tocar("clique")
-		abrirPainel(nome)
+		if aoClicar then
+			aoClicar()
+		else
+			abrirPainel(nome)
+		end
 	end)
 	return b
 end
 
-botaoMenu(1, "Loja", "🛒", "Loja", COR.verde)
-botaoMenu(2, "Indice", "📖", "Índice", COR.azul)
-botaoMenu(3, "Ranking", "🏆", "Ranking", COR.amarelo)
-botaoMenu(4, "Renascer", "♻️", "Renascer", COR.roxo)
-botaoMenu(5, "Diario", "🎁", "Diário", COR.rosa)
-botaoMenu(6, "Config", "⚙️", "Opções", COR.desligado)
+--------------------------------------------------------------------------
+-- GUIA: um feixe brilhante que leva até um lugar do mapa (loja, roleta)
+--------------------------------------------------------------------------
+local guia = nil
+
+local function pararGuia()
+	if guia then
+		guia.feixe:Destroy()
+		guia.anexo:Destroy()
+		guia.anexoAlvo:Destroy()
+		guia = nil
+	end
+end
+
+local function lugarDoMapa(nome, parte)
+	local mapa = workspace:FindFirstChild("MapaHerois")
+	local modelo = mapa and mapa:FindFirstChild(nome)
+	local alvo = modelo and modelo:FindFirstChild(parte)
+	if alvo and alvo:IsA("BasePart") then
+		return alvo
+	end
+	return nil
+end
+
+local function distanciaAte(parte)
+	local raiz = jogador.Character and jogador.Character:FindFirstChild("HumanoidRootPart")
+	if not parte or not raiz or not raiz:IsA("BasePart") then
+		return math.huge
+	end
+	return (raiz.Position - parte.Position).Magnitude
+end
+
+local function guiarAte(parte, cor)
+	pararGuia()
+	local raiz = jogador.Character and jogador.Character:FindFirstChild("HumanoidRootPart")
+	if not parte or not raiz then
+		return
+	end
+	local anexo = criar("Attachment", { Name = "AnexoGuia", Parent = raiz })
+	local anexoAlvo = criar("Attachment", { Name = "AnexoGuia", Position = Vector3.new(0, 3, 0), Parent = parte })
+	local feixe = criar("Beam", {
+		Name = "Guia",
+		Attachment0 = anexo,
+		Attachment1 = anexoAlvo,
+		Color = ColorSequence.new(Color3.new(1, 1, 1), cor),
+		Transparency = NumberSequence.new(0.1),
+		LightEmission = 1,
+		FaceCamera = true,
+		Width0 = 0.8,
+		Width1 = 0.8,
+		Segments = 20,
+		Parent = raiz,
+	})
+	guia = { feixe = feixe, anexo = anexo, anexoAlvo = anexoAlvo, alvo = parte, ate = os.clock() + 90 }
+end
+
+local function irParaLoja()
+	local balcao = lugarDoMapa("Loja", "Balcao")
+	if distanciaAte(balcao) <= Config.Geral.DistanciaLoja then
+		abrirPainel("Loja")
+		return
+	end
+	notificar("🎪 A Loja é uma tenda no meio do mapa. Siga a luz verde!", "aviso")
+	guiarAte(balcao, COR.verde)
+end
+
+botaoMenu(1, "Loja", "🎪", "Loja", COR.verde, irParaLoja)
+botaoMenu(2, "Roleta", "🎡", "Roleta", COR.laranja)
+botaoMenu(3, "Indice", "📖", "Índice", COR.azul)
+botaoMenu(4, "Ranking", "🏆", "Ranking", COR.amarelo)
+botaoMenu(5, "Renascer", "♻️", "Renascer", COR.roxo)
+botaoMenu(6, "Diario", "🎁", "Diário", COR.rosa)
+botaoMenu(7, "Config", "⚙️", "Opções", COR.desligado)
 
 -- Ajusta o tamanho em telas pequenas (celular)
 local function ajustarEscala()
@@ -3730,9 +5571,71 @@ end
 --------------------------------------------------------------------------
 local atualizarLoja
 do
-	local painel = criarPainel("Loja", "🛒 LOJA DE MELHORIAS", COR.verde)
-	local lista = listaRolavel(painel.corpo)
+	local painel = criarPainel("Loja", "🎪 LOJA DOS HERÓIS", COR.verde)
+	local abas = criar("Frame", { Name = "Abas", Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, Parent = painel.corpo }, {
+		criar("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
+	})
+	local listaLuvas = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 52), Size = UDim2.new(1, 0, 1, -52) })
+	criar("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = listaLuvas })
+	local lista = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 52), Size = UDim2.new(1, 0, 1, -52), Visible = false })
 	criar("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = lista })
+
+	local botoesAba = {}
+	local function mostrarAba(nome)
+		listaLuvas.Visible = nome == "Luvas"
+		lista.Visible = nome == "Melhorias"
+		for id, b in botoesAba do
+			b.BackgroundColor3 = id == nome and COR.amarelo or COR.fundo3
+		end
+	end
+	botoesAba.Luvas = botao({ Text = "🥊 Luvas", LayoutOrder = 1, Size = UDim2.fromOffset(170, 42), Parent = abas }, function()
+		mostrarAba("Luvas")
+	end)
+	botoesAba.Melhorias = botao({ Text = "🌀 Melhorias", LayoutOrder = 2, Size = UDim2.fromOffset(170, 42), Parent = abas }, function()
+		mostrarAba("Melhorias")
+	end)
+	mostrarAba("Luvas")
+
+	-- Luvas: cada uma soca mais forte, mais longe e mais rápido
+	local cartoesLuva = {}
+	for i, luva in Config.Luvas do
+		local cartao = criar("Frame", { LayoutOrder = i, Size = UDim2.new(1, 0, 0, 80), BackgroundColor3 = COR.fundo2, Parent = listaLuvas }, {
+			canto(14),
+			borda(luva.cor, 2, 0.35),
+		})
+		rotulo({ Text = luva.icone, Size = UDim2.fromOffset(56, 56), Position = UDim2.fromOffset(10, 12), Parent = cartao })
+		rotulo({
+			Text = luva.nome,
+			Font = FONTE_TITULO,
+			TextColor3 = luva.cor:Lerp(Color3.new(1, 1, 1), 0.35),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -230, 0, 28),
+			Position = UDim2.fromOffset(76, 10),
+			Parent = cartao,
+		}, { limiteTexto(26), contornoTexto(1.5) })
+		rotulo({
+			Text = "💥 Força " .. luva.forca .. "  •  📏 Alcance " .. luva.alcance .. "\n⏱ Recarga " .. luva.recarga .. "s  •  😵 Atordoa " .. luva.atordoar .. "s",
+			Font = FONTE_TEXTO,
+			TextColor3 = COR.cinza,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -230, 0, 32),
+			Position = UDim2.fromOffset(76, 40),
+			TextWrapped = true,
+			Parent = cartao,
+		}, { limiteTexto(15) })
+		local b = botao({
+			Text = "",
+			Cor = COR.verde,
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -12, 0.5, 0),
+			Size = UDim2.fromOffset(140, 50),
+			Parent = cartao,
+		}, function()
+			local ok, mensagem = invocar("Luva", luva.id)
+			notificar(mensagem, ok and "sucesso" or "erro")
+		end)
+		cartoesLuva[luva.id] = { botao = b, luva = luva }
+	end
 
 	local cartoes = {}
 	for i, melhoria in Config.Melhorias do
@@ -3832,6 +5735,28 @@ do
 
 	function atualizarLoja()
 		local dinheiro = atributo("Dinheiro", 0)
+		local minhas = {}
+		local ok, listaMinhas = pcall(function()
+			return HttpService:JSONDecode(atributo("Luvas", "[]"))
+		end)
+		if ok and type(listaMinhas) == "table" then
+			for _, id in listaMinhas do
+				minhas[id] = true
+			end
+		end
+		local equipada = atributo("LuvaEquipada", "Basica")
+		for id, cartao in cartoesLuva do
+			if id == equipada then
+				cartao.botao.Text = "✔ EQUIPADA"
+				cartao.botao.BackgroundColor3 = COR.amarelo
+			elseif minhas[id] then
+				cartao.botao.Text = "EQUIPAR"
+				cartao.botao.BackgroundColor3 = COR.azul
+			else
+				cartao.botao.Text = formatar(cartao.luva.preco)
+				cartao.botao.BackgroundColor3 = dinheiro >= cartao.luva.preco and COR.verde or COR.desligado
+			end
+		end
 		for id, cartao in cartoes do
 			local nivel = atributo("Nivel" .. id, 0)
 			local precos = cartao.melhoria.precos
@@ -3859,6 +5784,86 @@ do
 		end
 	end
 	painel.aoAbrir = atualizarLoja
+end
+
+--------------------------------------------------------------------------
+-- PAINEL: ROLETA DA SORTE
+--------------------------------------------------------------------------
+local atualizarRoleta
+do
+	local painel = criarPainel("Roleta", "🎡 ROLETA DA SORTE", COR.laranja)
+	local textoTempo = rotulo({ Text = "", Font = FONTE_TITULO, Size = UDim2.new(1, 0, 0, 34), Parent = painel.corpo }, { contornoTexto(2) })
+	rotulo({
+		Text = "Gire de graça a cada " .. Config.Roleta.IntervaloHoras .. " horas! A roleta gigante fica no meio do mapa.",
+		Font = FONTE_TEXTO,
+		TextColor3 = COR.cinza,
+		Size = UDim2.new(1, 0, 0, 20),
+		Position = UDim2.fromOffset(0, 36),
+		Parent = painel.corpo,
+	}, { limiteTexto(16) })
+	local grade = listaRolavel(painel.corpo, { Position = UDim2.fromOffset(0, 64), Size = UDim2.new(1, 0, 1, -128) })
+	criar("UIGridLayout", {
+		CellSize = UDim2.new(0.5, -6, 0, 52),
+		CellPadding = UDim2.fromOffset(8, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = grade,
+	})
+	local pesoTotal = 0
+	for _, premio in Config.Roleta.Premios do
+		pesoTotal += premio.peso
+	end
+	for i, premio in Config.Roleta.Premios do
+		local cartao = criar("Frame", { LayoutOrder = i, BackgroundColor3 = COR.fundo2, Parent = grade }, { canto(12), borda(premio.cor, 2, 0.2) })
+		rotulo({ Text = premio.icone, Size = UDim2.fromOffset(38, 38), Position = UDim2.fromOffset(8, 7), Parent = cartao })
+		rotulo({
+			Text = premio.nome,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Size = UDim2.new(1, -110, 0, 36),
+			Position = UDim2.fromOffset(52, 8),
+			TextWrapped = true,
+			Parent = cartao,
+		}, { limiteTexto(17) })
+		rotulo({
+			Text = math.floor(premio.peso / pesoTotal * 100 + 0.5) .. "%",
+			Font = FONTE_TITULO,
+			TextColor3 = premio.cor:Lerp(Color3.new(1, 1, 1), 0.3),
+			AnchorPoint = Vector2.new(1, 0),
+			Size = UDim2.fromOffset(52, 36),
+			Position = UDim2.new(1, -6, 0, 8),
+			Parent = cartao,
+		}, { contornoTexto(1.5) })
+	end
+	botao({
+		Text = "📍 Ir até a roleta",
+		Cor = COR.laranja,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, 0),
+		Size = UDim2.fromOffset(250, 52),
+		Parent = painel.corpo,
+	}, function()
+		fecharPainel()
+		guiarAte(lugarDoMapa("Roleta", "BotaoRoleta"), COR.laranja)
+		notificar("🎡 Siga a luz até a roleta e aperte E no botão rosa!", "info")
+	end)
+
+	local estavaPronta = nil
+	function atualizarRoleta()
+		local falta = atributo("UltimaRoleta", 0) + Config.Roleta.IntervaloHoras * 3600 - workspace:GetServerTimeNow()
+		local pronta = falta <= 0
+		if pronta then
+			textoTempo.Text = "✅ PRONTA PARA GIRAR!"
+			textoTempo.TextColor3 = COR.verde
+		else
+			textoTempo.Text = "⏳ Próximo giro em " .. Config.formatarTempo(falta)
+			textoTempo.TextColor3 = COR.amarelo
+		end
+		alertasMenu.Roleta.Visible = pronta
+		if pronta and estavaPronta == false then
+			notificar("🎡 A Roleta da Sorte está pronta para girar!", "sucesso")
+		end
+		estavaPronta = pronta
+	end
+	painel.aoAbrir = atualizarRoleta
 end
 
 --------------------------------------------------------------------------
@@ -4064,7 +6069,7 @@ do
 	}, { contornoTexto(2) })
 	local progresso = barraProgresso(corpo, UDim2.fromOffset(0, 78), UDim2.new(1, 0, 0, 30), COR.roxo)
 	rotulo({
-		Text = "❌ Você PERDE: seu dinheiro e seus heróis\n✅ Você MANTÉM: melhorias da Loja e o Índice\n⭐ Bônus: +50% de renda PARA SEMPRE!",
+		Text = "❌ Você PERDE: seu dinheiro e seus heróis\n✅ Você MANTÉM: melhorias, luvas e o Índice\n⭐ Bônus: +50% de renda PARA SEMPRE!",
 		Font = FONTE_TEXTO,
 		TextColor3 = COR.cinza,
 		TextWrapped = true,
@@ -4278,7 +6283,7 @@ do
 		{ "💰", "Ganhe dinheiro", "Cada herói gera dinheiro por segundo. O dinheiro fica guardado no botão verde na frente do pedestal: pise nele para coletar!" },
 		{ "🦹", "Roube heróis!", "Entre na base de outro jogador e SEGURE E perto de um herói. Corra de volta para a sua base carregando ele. Você fica mais lento!" },
 		{ "🥊", "Defenda sua base", "Use a Luva Heroica (tecla 1) e clique para socar: o ladrão derruba o herói. Pise no botão verde da entrada para trancar sua base." },
-		{ "🚀", "Fique cada vez mais forte", "Compre melhorias na Loja, complete o Índice, resgate o prêmio diário e Renasça para multiplicar sua renda. Bom jogo, herói!" },
+		{ "🚀", "Fique cada vez mais forte", "Vá até a tenda da Loja comprar luvas e a Mola Turbo, gire a Roleta a cada 12h, complete o Índice, resgate o prêmio diário e Renasça para multiplicar sua renda. Bom jogo, herói!" },
 	}
 	local pagina = 1
 	local icone = rotulo({ Text = "", Size = UDim2.new(1, 0, 0, 70), Parent = corpo })
@@ -4471,6 +6476,29 @@ local function confete()
 	end
 end
 
+local function mostrarPremio(icone, mensagem)
+	local quadro = criar("Frame", {
+		Name = "Premio",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.42),
+		Size = UDim2.fromOffset(460, 210),
+		BackgroundColor3 = COR.fundo,
+		ZIndex = 20,
+		Parent = gui,
+	}, { canto(24), borda(COR.amarelo, 4), gradiente(Color3.new(1, 1, 1), Color3.fromRGB(190, 190, 210), 90) })
+	local escala = criar("UIScale", { Scale = 0.3, Parent = quadro })
+	rotulo({ Text = "🎉 PRÊMIO DA ROLETA!", Font = FONTE_TITULO, TextColor3 = COR.amarelo, Size = UDim2.new(1, -20, 0, 36), Position = UDim2.fromOffset(10, 10), ZIndex = 21, Parent = quadro }, { contornoTexto(2.5) })
+	rotulo({ Text = icone or "🎁", Size = UDim2.fromOffset(80, 80), AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 48), ZIndex = 21, Parent = quadro })
+	rotulo({ Text = mensagem or "", Size = UDim2.new(1, -30, 0, 56), Position = UDim2.fromOffset(15, 140), TextWrapped = true, ZIndex = 21, Parent = quadro }, { contornoTexto(2), limiteTexto(24) })
+	TweenService:Create(escala, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+	confete()
+	tocar("compra")
+	task.delay(4.5, function()
+		TweenService:Create(escala, TweenInfo.new(0.25), { Scale = 0 }):Play()
+		Debris:AddItem(quadro, 0.3)
+	end)
+end
+
 local function piscarAlarme(ladrao, heroi)
 	anunciar("🚨 " .. tostring(ladrao) .. " está roubando seu " .. tostring(heroi) .. "! Soque ele com a Luva!", COR.vermelho, 5)
 	task.spawn(function()
@@ -4577,10 +6605,12 @@ Efeito.OnClientEvent:Connect(function(tipo, a, b)
 		tocar("compra")
 	elseif tipo == "offline" then
 		mostrarBemVindo(a, b)
+	elseif tipo == "premio" then
+		mostrarPremio(a, b)
 	end
 end)
 
-Empurrao.OnClientEvent:Connect(function(velocidade)
+Empurrao.OnClientEvent:Connect(function(velocidade, atordoar)
 	local personagem = jogador.Character
 	local raiz = personagem and personagem:FindFirstChild("HumanoidRootPart")
 	local humanoid = personagem and personagem:FindFirstChildOfClass("Humanoid")
@@ -4590,10 +6620,49 @@ Empurrao.OnClientEvent:Connect(function(velocidade)
 	humanoid.PlatformStand = true
 	raiz.AssemblyLinearVelocity = velocidade
 	tremerCamera(0.35, 0.8)
-	task.delay(0.8, function()
+	task.delay(atordoar or 0.8, function()
 		if humanoid.Parent then
 			humanoid.PlatformStand = false
 			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)
+end)
+
+AbrirLoja.OnClientEvent:Connect(function()
+	if guia and guia.alvo.Name == "Balcao" then
+		pararGuia()
+	end
+	if painelAberto ~= "Loja" then
+		abrirPainel("Loja")
+	end
+end)
+
+-- A roleta gira igual para todo mundo; o servidor só manda de onde até onde
+RoletaGiro.OnClientEvent:Connect(function(cf0, de, para, duracao)
+	local eixo = lugarDoMapa("Roleta", "Eixo")
+	if not eixo then
+		return
+	end
+	if guia and guia.alvo.Name == "BotaoRoleta" then
+		pararGuia()
+	end
+	local fatia = math.pi * 2 / #Config.Roleta.Premios
+	local inicio = os.clock()
+	local fatiaAnterior = math.floor(de / fatia + 0.5)
+	local conexao
+	conexao = RunService.RenderStepped:Connect(function()
+		local t = math.min(1, (os.clock() - inicio) / duracao)
+		local angulo = de + (para - de) * (1 - (1 - t) ^ 3)
+		eixo.CFrame = cf0 * CFrame.Angles(0, 0, angulo)
+		local atual = math.floor(angulo / fatia + 0.5)
+		if atual ~= fatiaAnterior then
+			fatiaAnterior = atual
+			if distanciaAte(eixo) < 60 then
+				tocar("clique")
+			end
+		end
+		if t >= 1 then
+			conexao:Disconnect()
 		end
 	end)
 end)
@@ -4627,6 +6696,12 @@ jogador.AttributeChanged:Connect(function(nome)
 		atualizarDiario()
 	elseif nome == "Carregando" then
 		atualizarCarregando()
+	elseif nome == "Luvas" or nome == "LuvaEquipada" then
+		atualizarLoja()
+	elseif nome == "UltimaRoleta" then
+		atualizarRoleta()
+	elseif nome == "BoostRenda" or nome == "BoostVelocidade" then
+		atualizarBoosts()
 	elseif nome == "Musica" or nome == "Sons" then
 		configLocal.musica = atributo("Musica", true)
 		configLocal.sons = atributo("Sons", true)
@@ -4679,6 +6754,14 @@ task.spawn(function()
 			barraEvento.Visible = false
 		end
 		atualizarDiario()
+		atualizarRoleta()
+		atualizarBoosts()
+		if guia and (distanciaAte(guia.alvo) < 12 or os.clock() > guia.ate or not guia.alvo.Parent) then
+			pararGuia()
+		end
+		if painelAberto == "Loja" and distanciaAte(lugarDoMapa("Loja", "Balcao")) > Config.Geral.DistanciaLoja + 10 then
+			fecharPainel()
+		end
 		if painelAberto == "Ranking" then
 			atualizarRankingPainel(true)
 		end
@@ -4750,6 +6833,8 @@ aplicarMusica()
 atualizarRenda()
 atualizarLoja()
 atualizarIndice()
+atualizarRoleta()
+atualizarBoosts()
 atualizarRenascer()
 atualizarDiario()
 atualizarConfig()

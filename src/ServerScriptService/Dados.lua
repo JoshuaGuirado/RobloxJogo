@@ -27,8 +27,11 @@ function Dados.padrao()
 		renascimentos = 0,
 		roubos = 0,
 		niveis = { Velocidade = 0, Pedestais = 0, Tranca = 0, Coletor = 0 },
-		herois = {}, -- { {slot = 1, id = "GarotoBolha", mut = "Normal"}, ... }
+		herois = {}, -- { {slot = 1, id = "FormigaAtomica", mut = "Normal"}, ... }
 		descobertos = {}, -- [id] = true
+		luvas = { Basica = true }, -- [id] = true
+		luvaEquipada = "Basica",
+		ultimaRoleta = 0,
 		ultimaDiaria = 0,
 		sequenciaDiaria = 0,
 		ultimoLogin = 0,

@@ -303,6 +303,9 @@ local function construirPostes(pasta, comprimento)
 	local metade = comprimento / 2
 	for x = -metade, metade, 30 do
 		for _, z in { -20, 20 } do
+			if x == 0 then
+				continue -- deixa livre a frente da loja e da roleta
+			end
 			enfeite({ Name = "Poste", Size = Vector3.new(0.6, 12, 0.6), CFrame = CFrame.new(x, CHAO + 6, z),
 				Color = Color3.fromRGB(40, 40, 50), Material = Enum.Material.Metal, Parent = pasta })
 			local lampada = enfeite({ Name = "Lampada", Shape = Enum.PartType.Ball, Size = Vector3.new(1.8, 1.8, 1.8),
@@ -518,8 +521,25 @@ local function construirQuadro(pasta, categoria)
 end
 
 --------------------------------------------------------------------------
--- BASES
+-- BASES (prédio de 3 andares com elevador)
 --------------------------------------------------------------------------
+local ALTURA_ANDAR = 14
+local ANDARES = 3
+Mapa.ALTURA_ANDAR = ALTURA_ANDAR
+Mapa.ANDARES = ANDARES
+
+-- Coloca um modelo montado na origem no lugar certo (antes de entrar no workspace)
+local function colocarModelo(modelo, cf, pai)
+	for _, p in modelo:GetDescendants() do
+		if p:IsA("BasePart") then
+			p.CFrame = cf * p.CFrame
+			p.Anchored = true
+		end
+	end
+	modelo.Parent = pai
+end
+Mapa.colocarModelo = colocarModelo
+
 local function construirBase(pasta, indice, centro, cor)
 	-- A frente da base (eixo -Z local) aponta para a passarela (z = 0).
 	-- Bases do lado negativo giram 180 graus para olhar para +Z.
@@ -529,18 +549,18 @@ local function construirBase(pasta, indice, centro, cor)
 	end
 	local P = ALTURA_PISO
 	local corParede = Color3.fromRGB(45, 48, 62)
+	local corPiso = cor:Lerp(Color3.fromRGB(40, 40, 50), 0.55)
 	local metade = TAMANHO_BASE / 2
+	local alturaTotal = ALTURA_ANDAR * ANDARES
 
 	local modelo = Instance.new("Model")
 	modelo.Name = "Base" .. indice
 	modelo.Parent = pasta
 
+	-- Piso térreo e bordas neon
 	parte({ Name = "Piso", Size = Vector3.new(TAMANHO_BASE, 1, TAMANHO_BASE), CFrame = cf * CFrame.new(0, P - 0.5, 0),
-		Color = cor:Lerp(Color3.fromRGB(40, 40, 50), 0.55), Material = Enum.Material.SmoothPlastic, Parent = modelo })
-
-	-- Bordas neon do piso
+		Color = corPiso, Material = Enum.Material.SmoothPlastic, Parent = modelo })
 	for _, info in {
-		{ Vector3.new(TAMANHO_BASE, 0.15, 0.8), Vector3.new(0, 0, metade - 0.4) },
 		{ Vector3.new(TAMANHO_BASE, 0.15, 0.8), Vector3.new(0, 0, -metade + 0.4) },
 		{ Vector3.new(0.8, 0.15, TAMANHO_BASE), Vector3.new(metade - 0.4, 0, 0) },
 		{ Vector3.new(0.8, 0.15, TAMANHO_BASE), Vector3.new(-metade + 0.4, 0, 0) },
@@ -549,38 +569,83 @@ local function construirBase(pasta, indice, centro, cor)
 			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	end
 
-	-- Paredes
+	-- Lajes dos andares de cima e o teto
+	for andar = 2, ANDARES + 1 do
+		local y = P + ALTURA_ANDAR * (andar - 1)
+		local teto = andar > ANDARES
+		parte({ Name = teto and "Teto" or ("Laje" .. andar), Size = Vector3.new(TAMANHO_BASE, 1, TAMANHO_BASE),
+			CFrame = cf * CFrame.new(0, y - 0.5, 0), Color = teto and corParede or corPiso, Material = Enum.Material.SmoothPlastic, Parent = modelo })
+		enfeite({ Name = "BordaLaje", Size = Vector3.new(TAMANHO_BASE + 0.4, 0.5, 0.6), CFrame = cf * CFrame.new(0, y - 0.25, -metade - 0.05),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+		-- Luzes no teto do andar de baixo
+		for _, x in { -12, 12 } do
+			enfeite({ Name = "LuzTeto", Size = Vector3.new(2, 0.15, 30), CFrame = cf * CFrame.new(x, y - 1.08, 2),
+				Color = Color3.fromRGB(255, 245, 225), Material = Enum.Material.Neon, Parent = modelo })
+		end
+		local luz = Instance.new("PointLight")
+		luz.Range = 26
+		luz.Brightness = 0.9
+		luz.Color = Color3.fromRGB(255, 240, 220)
+		luz.Parent = modelo:FindFirstChild(teto and "Teto" or ("Laje" .. andar))
+	end
+
+	-- Paredes do prédio
 	local paredes = {
-		{ "ParedeFundo", Vector3.new(TAMANHO_BASE, 16, 1), Vector3.new(0, P + 8, metade - 0.5) },
-		{ "ParedeEsquerda", Vector3.new(1, 16, TAMANHO_BASE), Vector3.new(-metade + 0.5, P + 8, 0) },
-		{ "ParedeDireita", Vector3.new(1, 16, TAMANHO_BASE), Vector3.new(metade - 0.5, P + 8, 0) },
+		{ "ParedeFundo", Vector3.new(TAMANHO_BASE, alturaTotal, 1), Vector3.new(0, P + alturaTotal / 2, metade - 0.5) },
+		{ "ParedeEsquerda", Vector3.new(1, alturaTotal, TAMANHO_BASE), Vector3.new(-metade + 0.5, P + alturaTotal / 2, 0) },
+		{ "ParedeDireita", Vector3.new(1, alturaTotal, TAMANHO_BASE), Vector3.new(metade - 0.5, P + alturaTotal / 2, 0) },
 	}
 	for _, info in paredes do
 		parte({ Name = info[1], Size = info[2], CFrame = cf * CFrame.new(info[3]), Color = corParede,
 			Material = Enum.Material.SmoothPlastic, Parent = modelo })
 	end
+	-- Janelas de vidro do lado de fora, uma faixa por andar
+	for andar = 1, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		for _, lado in { -1, 1 } do
+			enfeite({ Name = "Janela", Size = Vector3.new(0.4, 6, 34), CFrame = cf * CFrame.new(lado * (metade + 0.15), y0 + 7.5, 0),
+				Color = Color3.fromRGB(150, 205, 255), Material = Enum.Material.Glass, Transparency = 0.25, Parent = modelo })
+			for _, dy in { 4.35, 10.65 } do
+				enfeite({ Name = "MolduraJanela", Size = Vector3.new(0.6, 0.3, 34.4), CFrame = cf * CFrame.new(lado * (metade + 0.2), y0 + dy, 0),
+					Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+			end
+		end
+		-- placa do andar na parede do fundo
+		local placaAndar = parte({ Name = "PlacaAndar", Size = Vector3.new(12, 2.6, 0.3), CFrame = cf * CFrame.new(0, y0 + 10.5, metade - 1.2),
+			Color = Color3.fromRGB(20, 22, 30), Parent = modelo })
+		local gui = superficie(placaAndar, Enum.NormalId.Front, 25)
+		texto(gui, { Text = andar .. "º ANDAR", TextColor3 = cor })
+	end
 	for _, info in {
-		{ Vector3.new(TAMANHO_BASE + 0.6, 0.8, 1.6), Vector3.new(0, P + 16.4, metade - 0.5) },
-		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(-metade + 0.5, P + 16.4, 0) },
-		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(metade - 0.5, P + 16.4, 0) },
+		{ Vector3.new(TAMANHO_BASE + 0.6, 0.8, 1.6), Vector3.new(0, P + alturaTotal + 0.4, metade - 0.5) },
+		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(-metade + 0.5, P + alturaTotal + 0.4, 0) },
+		{ Vector3.new(1.6, 0.8, TAMANHO_BASE + 0.6), Vector3.new(metade - 0.5, P + alturaTotal + 0.4, 0) },
 	} do
-		enfeite({ Name = "Friso", Size = info[1], CFrame = cf * CFrame.new(info[2]), Color = cor,
-			Material = Enum.Material.Neon, Parent = modelo })
+		enfeite({ Name = "Friso", Size = info[1], CFrame = cf * CFrame.new(info[2]), Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	end
 
-	-- Pilares da entrada
+	-- Pilares da frente
 	for _, x in { -metade + 0.5, metade - 0.5 } do
-		parte({ Name = "Pilar", Size = Vector3.new(2.4, 18, 2.4), CFrame = cf * CFrame.new(x, P + 9, -metade + 0.5),
+		parte({ Name = "Pilar", Size = Vector3.new(2.4, alturaTotal + 2, 2.4), CFrame = cf * CFrame.new(x, P + (alturaTotal + 2) / 2, -metade + 0.5),
 			Color = corParede, Material = Enum.Material.SmoothPlastic, Parent = modelo })
-		enfeite({ Name = "TopoPilar", Size = Vector3.new(3, 1, 3), CFrame = cf * CFrame.new(x, P + 18.5, -metade + 0.5),
+		enfeite({ Name = "TopoPilar", Size = Vector3.new(3, 1, 3), CFrame = cf * CFrame.new(x, P + alturaTotal + 2.5, -metade + 0.5),
 			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	end
 
-	-- Barreira laser (só aparece quando a base está trancada)
+	-- Guarda-corpo de vidro na frente dos andares de cima
+	for andar = 2, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		parte({ Name = "GuardaCorpo", Size = Vector3.new(TAMANHO_BASE - 2, 3.5, 0.3), CFrame = cf * CFrame.new(0, y0 + 1.75, -metade + 0.3),
+			Color = Color3.fromRGB(170, 220, 255), Material = Enum.Material.Glass, Transparency = 0.5, Parent = modelo })
+		enfeite({ Name = "Corrimao", Size = Vector3.new(TAMANHO_BASE - 2, 0.3, 0.45), CFrame = cf * CFrame.new(0, y0 + 3.6, -metade + 0.3),
+			Color = cor, Material = Enum.Material.Neon, Parent = modelo })
+	end
+
+	-- Barreira laser na entrada do térreo (só aparece quando a base está trancada)
 	local barreira = parte({
 		Name = "Barreira",
-		Size = Vector3.new(TAMANHO_BASE - 1.5, 16, 0.4),
-		CFrame = cf * CFrame.new(0, P + 8, -metade + 0.4),
+		Size = Vector3.new(TAMANHO_BASE - 1.5, ALTURA_ANDAR - 1, 0.4),
+		CFrame = cf * CFrame.new(0, P + (ALTURA_ANDAR - 1) / 2, -metade + 0.4),
 		Color = Color3.fromRGB(255, 40, 40),
 		Material = Enum.Material.Neon,
 		Transparency = 1,
@@ -589,8 +654,6 @@ local function construirBase(pasta, indice, centro, cor)
 		CastShadow = false,
 		Parent = modelo,
 	})
-
-	-- Grupos de colisão: a barreira bloqueia todo mundo, menos o dono da base
 	local grupoBarreira = "Barreira" .. indice
 	local grupoDono = "Dono" .. indice
 	for _, grupo in { grupoBarreira, grupoDono } do
@@ -601,22 +664,49 @@ local function construirBase(pasta, indice, centro, cor)
 	PhysicsService:CollisionGroupSetCollidable(grupoBarreira, grupoDono, false)
 	barreira.CollisionGroup = grupoBarreira
 
-	-- Placa com o nome do dono
-	local placa = parte({ Name = "Placa", Size = Vector3.new(30, 6, 0.6), CFrame = cf * CFrame.new(0, P + 20, metade - 0.5),
+	-- Placa com o nome do dono no alto do prédio, virada para a passarela
+	local yTeto = P + alturaTotal
+	for _, x in { -12, 12 } do
+		parte({ Name = "SuportePlaca", Size = Vector3.new(0.8, 3, 0.8), CFrame = cf * CFrame.new(x, yTeto + 1.5, -metade + 3),
+			Color = corParede, Parent = modelo })
+	end
+	local placa = parte({ Name = "Placa", Size = Vector3.new(34, 7, 0.8), CFrame = cf * CFrame.new(0, yTeto + 6, -metade + 3),
 		Color = Color3.fromRGB(20, 22, 30), Material = Enum.Material.SmoothPlastic, Parent = modelo })
+	enfeite({ Name = "MolduraPlaca", Size = Vector3.new(35, 8, 0.4), CFrame = cf * CFrame.new(0, yTeto + 6, -metade + 3.5),
+		Color = cor, Material = Enum.Material.Neon, Parent = modelo })
 	local guiPlaca = superficie(placa, Enum.NormalId.Front, 25)
 	local textoPlaca = texto(guiPlaca, { Text = "BASE LIVRE", Size = UDim2.fromScale(0.95, 0.6), Position = UDim2.fromScale(0.025, 0.05) })
 	local textoRenda = texto(guiPlaca, { Text = "", TextColor3 = Color3.fromRGB(80, 255, 120),
 		Size = UDim2.fromScale(0.9, 0.32), Position = UDim2.fromScale(0.05, 0.65) })
 
-	-- Botão de trancar
+	-- Botão de trancar (térreo, canto direito da entrada)
 	local botao = cilindroEmPe({ Name = "BotaoTrancar", Size = Vector3.new(0.5, 6, 6), Color = Color3.fromRGB(60, 220, 90),
-		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(-17, P + 0.25, -17))
+		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(16, P + 0.25, -17))
 	local guiBotao = billboard(botao, 200, 50, Vector3.new(0, 3.5, 0), 70)
 	local textoBotao = texto(guiBotao, { Text = "🔒 TRANCAR BASE" })
 
+	-- Elevador de vidro no canto esquerdo da entrada
+	cilindroEmPe({ Name = "PocoElevador", Size = Vector3.new(alturaTotal, 6.2, 6.2), Color = Color3.fromRGB(170, 230, 255),
+		Material = Enum.Material.Glass, Transparency = 0.75, CanCollide = false, CanQuery = false, CastShadow = false, Parent = modelo },
+		cf * CFrame.new(-17, P + alturaTotal / 2, -16))
+	local elevadores = {}
+	for andar = 1, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		local plataforma = cilindroEmPe({ Name = "Elevador" .. andar, Size = Vector3.new(0.3, 5, 5), Color = Color3.fromRGB(80, 230, 255),
+			Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(-17, y0 + 0.15, -16))
+		cilindroEmPe({ Name = "AnelElevador", Size = Vector3.new(0.4, 6.4, 6.4), Color = cor, Material = Enum.Material.Neon,
+			CanCollide = false, Parent = modelo }, cf * CFrame.new(-17, y0 + ALTURA_ANDAR - 1.4, -16))
+		local gui = billboard(plataforma, 180, 44, Vector3.new(0, 4.5, 0), 45)
+		texto(gui, { Text = "🛗 ELEVADOR • " .. andar .. "º" })
+		elevadores[andar] = {
+			plataforma = plataforma,
+			andar = andar,
+			saida = cf * CFrame.new(-17, y0 + 3.2, -10),
+		}
+	end
+
 	-- Ponto de entrega (para a seta de "leve até sua base")
-	local alvo = parte({ Name = "AlvoEntrega", Size = Vector3.new(1, 1, 1), CFrame = cf * CFrame.new(0, P + 3, 0),
+	local alvo = parte({ Name = "AlvoEntrega", Size = Vector3.new(1, 1, 1), CFrame = cf * CFrame.new(0, P + 3, -6),
 		Transparency = 1, CanCollide = false, CanQuery = false, CanTouch = false, Parent = modelo })
 	local anexo = Instance.new("Attachment")
 	anexo.Name = "Alvo"
@@ -635,40 +725,45 @@ local function construirBase(pasta, indice, centro, cor)
 		grupoDono = grupoDono,
 		spawn = cf * CFrame.new(0, P + 3.2, -16),
 		saida = cf * CFrame.new(0, P + 3.2, -metade - 8),
+		elevadores = elevadores,
 		slots = {},
 	}
 
-	-- 12 pedestais (3 fileiras de 4). Os primeiros são os mais perto da entrada.
-	for _, z in { -4, 7, 18 } do
-		for _, x in { -18, -6, 6, 18 } do
-			local pedestal = cilindroEmPe({ Name = "Pedestal", Size = Vector3.new(1.2, 7, 7), Color = Color3.fromRGB(235, 235, 240),
-				Material = Enum.Material.Marble, Parent = modelo }, cf * CFrame.new(x, P + 0.6, z))
-			local anel = cilindroEmPe({ Name = "Anel", Size = Vector3.new(0.25, 7.8, 7.8), Color = cor,
-				Material = Enum.Material.Neon, CastShadow = false, Parent = modelo }, cf * CFrame.new(x, P + 0.125, z))
-			local pad = parte({ Name = "Coletar", Size = Vector3.new(5, 0.3, 2.4), CFrame = cf * CFrame.new(x, P + 0.15, z - 5.6),
-				Color = Color3.fromRGB(60, 220, 100), Material = Enum.Material.Neon, Parent = modelo })
+	-- 8 pedestais por andar (2 fileiras de 4). A ordem é: térreo, 2º andar, 3º andar.
+	for andar = 1, ANDARES do
+		local y0 = P + ALTURA_ANDAR * (andar - 1)
+		for _, z in { 0, 12 } do
+			for _, x in { -15, -5, 5, 15 } do
+				local pedestal = cilindroEmPe({ Name = "Pedestal", Size = Vector3.new(1.2, 7, 7), Color = Color3.fromRGB(235, 235, 240),
+					Material = Enum.Material.Marble, Parent = modelo }, cf * CFrame.new(x, y0 + 0.6, z))
+				local anel = cilindroEmPe({ Name = "Anel", Size = Vector3.new(0.25, 7.8, 7.8), Color = cor,
+					Material = Enum.Material.Neon, CastShadow = false, Parent = modelo }, cf * CFrame.new(x, y0 + 0.125, z))
+				local pad = parte({ Name = "Coletar", Size = Vector3.new(5, 0.3, 2.4), CFrame = cf * CFrame.new(x, y0 + 0.15, z - 5.6),
+					Color = Color3.fromRGB(60, 220, 100), Material = Enum.Material.Neon, Parent = modelo })
 
-			local guiPad = billboard(pad, 160, 40, Vector3.new(0, 2.2, 0), 50)
-			guiPad.Enabled = false
-			local textoPad = texto(guiPad, { Text = "💰 $0", TextColor3 = Color3.fromRGB(120, 255, 140) })
+				local guiPad = billboard(pad, 160, 40, Vector3.new(0, 2.2, 0), 50)
+				guiPad.Enabled = false
+				local textoPad = texto(guiPad, { Text = "💰 $0", TextColor3 = Color3.fromRGB(120, 255, 140) })
 
-			local guiCadeado = billboard(pedestal, 170, 60, Vector3.new(0, 3, 0), 60)
-			guiCadeado.Enabled = false
-			texto(guiCadeado, { Text = "🔒\nCompre na Loja", Font = Enum.Font.GothamBold })
+				local guiCadeado = billboard(pedestal, 170, 60, Vector3.new(0, 3, 0), 60)
+				guiCadeado.Enabled = false
+				texto(guiCadeado, { Text = "🔒\nCompre na Loja", Font = Enum.Font.GothamBold })
 
-			table.insert(base.slots, {
-				indice = #base.slots + 1,
-				base = base,
-				topo = cf * CFrame.new(x, P + 1.2, z),
-				pedestal = pedestal,
-				anel = anel,
-				pad = pad,
-				guiPad = guiPad,
-				textoPad = textoPad,
-				guiCadeado = guiCadeado,
-				acumulado = 0,
-				heroi = nil,
-			})
+				table.insert(base.slots, {
+					indice = #base.slots + 1,
+					andar = andar,
+					base = base,
+					topo = cf * CFrame.new(x, y0 + 1.2, z),
+					pedestal = pedestal,
+					anel = anel,
+					pad = pad,
+					guiPad = guiPad,
+					textoPad = textoPad,
+					guiCadeado = guiCadeado,
+					acumulado = 0,
+					heroi = nil,
+				})
+			end
 		end
 	end
 
@@ -676,9 +771,172 @@ local function construirBase(pasta, indice, centro, cor)
 end
 
 --------------------------------------------------------------------------
+-- TENDA DA LOJA (fica entre as bases 2 e 3)
+--------------------------------------------------------------------------
+local function construirLoja(pasta, Config, Modelos)
+	local centro = Vector3.new(0, CHAO, -30)
+	local cf = CFrame.new(centro) * CFrame.Angles(0, math.pi, 0) -- frente virada para a passarela
+	local modelo = Instance.new("Model")
+	modelo.Name = "Loja"
+	modelo.Parent = pasta
+	local vermelho, branco = Color3.fromRGB(215, 35, 45), Color3.fromRGB(250, 245, 235)
+	local dourado = Color3.fromRGB(255, 200, 40)
+
+	parte({ Name = "Chao", Size = Vector3.new(18, 0.5, 13), CFrame = cf * CFrame.new(0, 0.25, 0),
+		Color = Color3.fromRGB(150, 100, 60), Material = Enum.Material.Wood, Parent = modelo })
+	for _, x in { -8.4, 8.4 } do
+		for _, z in { -6, 6 } do
+			cilindroEmPe({ Name = "Mastro", Size = Vector3.new(8.5, 0.6, 0.6), Color = dourado, Material = Enum.Material.Metal, Parent = modelo },
+				cf * CFrame.new(x, 4.75, z))
+		end
+	end
+	-- Telhado listrado com duas águas
+	local inclinacao = math.atan(3.5 / 6.6)
+	local comprimento = math.sqrt(6.6 ^ 2 + 3.5 ^ 2) + 0.2
+	for i = 0, 5 do
+		local x = -7.5 + i * 3
+		local cor = i % 2 == 0 and vermelho or branco
+		parte({ Name = "Telhado", Size = Vector3.new(3, 0.3, comprimento), CFrame = cf * CFrame.new(x, 10.75, -3.3) * CFrame.Angles(-inclinacao, 0, 0),
+			Color = cor, Material = Enum.Material.Fabric, Parent = modelo })
+		parte({ Name = "Telhado", Size = Vector3.new(3, 0.3, comprimento), CFrame = cf * CFrame.new(x, 10.75, 3.3) * CFrame.Angles(inclinacao, 0, 0),
+			Color = cor, Material = Enum.Material.Fabric, Parent = modelo })
+	end
+	parte({ Name = "Cumeeira", Shape = Enum.PartType.Cylinder, Size = Vector3.new(18.4, 0.6, 0.6), CFrame = cf * CFrame.new(0, 12.55, 0),
+		Color = dourado, Material = Enum.Material.Metal, Parent = modelo })
+	-- Franja de bolinhas nas bordas do telhado
+	for x = -8.5, 8.5, 1 do
+		for _, z in { -6.75, 6.75 } do
+			enfeite({ Name = "Franja", Shape = Enum.PartType.Ball, Size = Vector3.new(0.9, 0.9, 0.9), CFrame = cf * CFrame.new(x, 8.85, z),
+				Color = (math.floor(x + 9) % 2 == 0) and vermelho or branco, Parent = modelo })
+		end
+	end
+	enfeite({ Name = "Bandeira", Size = Vector3.new(0.2, 3, 0.2), CFrame = cf * CFrame.new(0, 14.2, 0), Color = dourado, Parent = modelo })
+	enfeite({ Name = "Bandeirinha", Size = Vector3.new(2, 1.2, 0.1), CFrame = cf * CFrame.new(1.1, 15, 0), Color = dourado,
+		Material = Enum.Material.Neon, Parent = modelo })
+	-- Fundo de pano
+	parte({ Name = "Fundo", Size = Vector3.new(16.8, 8.5, 0.3), CFrame = cf * CFrame.new(0, 4.75, 6.1), Color = vermelho,
+		Material = Enum.Material.Fabric, Parent = modelo })
+
+	-- Balcão com produtos
+	local balcao = parte({ Name = "Balcao", Size = Vector3.new(14, 3.2, 2.2), CFrame = cf * CFrame.new(0, 2.1, -4.4),
+		Color = Color3.fromRGB(130, 85, 45), Material = Enum.Material.Wood, Parent = modelo })
+	parte({ Name = "TampoBalcao", Size = Vector3.new(14.6, 0.3, 2.6), CFrame = cf * CFrame.new(0, 3.85, -4.4),
+		Color = Color3.fromRGB(235, 195, 125), Material = Enum.Material.Wood, Parent = modelo })
+	local plaquinha = parte({ Name = "PlacaBalcao", Size = Vector3.new(10, 1.8, 0.2), CFrame = cf * CFrame.new(0, 2.3, -5.6),
+		Color = Color3.fromRGB(25, 25, 35), Parent = modelo })
+	texto(superficie(plaquinha, Enum.NormalId.Front, 30), { Text = "🥊 LUVAS • 🌀 MOLAS • ⬆ MELHORIAS", TextColor3 = dourado })
+
+	for i, luva in Config.Luvas do
+		local modeloLuva = Modelos.luva(luva)
+		colocarModelo(modeloLuva, cf * CFrame.new(-6.2 + (i - 1) * 2.4, 4.75, -4.4) * CFrame.Angles(0, math.rad(200), 0), modelo)
+	end
+	local mola = Modelos.mola()
+	colocarModelo(mola, cf * CFrame.new(5.8, 4.1, -4.4), modelo)
+
+	-- Vendedor atrás do balcão
+	local vendedorDef = {
+		id = "Vendedor", nome = "Vendedor", raridade = "Comum", preco = 0, renda = 0,
+		visual = { pele = Color3.fromRGB(224, 172, 120), cabelo = Color3.fromRGB(40, 25, 15), camisa = Color3.fromRGB(60, 120, 200),
+			calca = Color3.fromRGB(50, 50, 60), cabeca = "bone", cabecaCor = dourado, corpo = { "avental" } },
+	}
+	parte({ Name = "Degrau", Size = Vector3.new(5, 1.2, 3), CFrame = cf * CFrame.new(0, 1.1, -1.4), Color = Color3.fromRGB(110, 70, 40),
+		Material = Enum.Material.Wood, Parent = modelo })
+	local vendedor = Modelos.heroi(vendedorDef, Config.MutacaoPorId.Normal, Config, { semPlaca = true, escala = 1.6 })
+	colocarModelo(vendedor, cf * CFrame.new(0, 1.7 + 2.03 * 1.6, -1.4), modelo)
+
+	local luz = Instance.new("PointLight")
+	luz.Color = Color3.fromRGB(255, 220, 170)
+	luz.Range = 22
+	luz.Brightness = 1.5
+	luz.Parent = modelo:FindFirstChild("Cumeeira")
+	local guiTitulo = billboard(modelo:FindFirstChild("Cumeeira"), 340, 90, Vector3.new(0, 5, 0), 260)
+	texto(guiTitulo, { Text = "🎪 LOJA DOS HERÓIS", TextColor3 = dourado, Size = UDim2.fromScale(1, 0.6) })
+	texto(guiTitulo, { Text = "Luvas • Molas • Melhorias", Font = Enum.Font.GothamBold, Size = UDim2.fromScale(1, 0.35), Position = UDim2.fromScale(0, 0.62) })
+
+	return { modelo = modelo, balcao = balcao, centro = cf.Position }
+end
+
+--------------------------------------------------------------------------
+-- ROLETA DA SORTE (fica entre as bases 6 e 7)
+--------------------------------------------------------------------------
+local function construirRoleta(pasta, Config)
+	local centro = Vector3.new(0, CHAO, 30)
+	local cf = CFrame.new(centro) -- a frente (-Z) já olha para a passarela
+	local modelo = Instance.new("Model")
+	modelo.Name = "Roleta"
+	modelo.Parent = pasta
+	local dourado = Color3.fromRGB(255, 200, 40)
+
+	parte({ Name = "Base", Size = Vector3.new(16, 0.6, 9), CFrame = cf * CFrame.new(0, 0.3, 0), Color = Color3.fromRGB(35, 30, 50), Parent = modelo })
+	enfeite({ Name = "BordaBase", Size = Vector3.new(16.4, 0.3, 9.4), CFrame = cf * CFrame.new(0, 0.2, 0), Color = Color3.fromRGB(255, 80, 200),
+		Material = Enum.Material.Neon, Parent = modelo })
+	for _, x in { -7, 7 } do
+		parte({ Name = "Coluna", Size = Vector3.new(1.2, 12, 1.2), CFrame = cf * CFrame.new(x, 6.6, 1), Color = dourado,
+			Material = Enum.Material.Metal, Parent = modelo })
+	end
+	parte({ Name = "Travessa", Size = Vector3.new(15.2, 1, 1), CFrame = cf * CFrame.new(0, 11, 1), Color = dourado,
+		Material = Enum.Material.Metal, Parent = modelo })
+
+	-- Roda: tudo soldado num eixo invisível que gira
+	local cf0 = cf * CFrame.new(0, 11, -0.2)
+	local eixo = parte({ Name = "Eixo", Size = Vector3.new(1, 1, 1), CFrame = cf0, Transparency = 1, CanCollide = false,
+		CanQuery = false, CanTouch = false, Parent = modelo })
+	local function pecaRoda(propriedades, local_)
+		propriedades.CFrame = cf0 * local_
+		propriedades.Anchored = false
+		propriedades.CanCollide = false
+		propriedades.Massless = true
+		propriedades.CastShadow = false
+		propriedades.Parent = modelo
+		local p = parte(propriedades)
+		local solda = Instance.new("WeldConstraint")
+		solda.Part0 = eixo
+		solda.Part1 = p
+		solda.Parent = p
+		return p
+	end
+	local DE_FRENTE_RODA = CFrame.Angles(0, math.rad(90), 0)
+	pecaRoda({ Name = "Aro", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.8, 13.4, 13.4), Color = dourado, Material = Enum.Material.Foil },
+		CFrame.new(0, 0, 0.15) * DE_FRENTE_RODA)
+	pecaRoda({ Name = "Disco", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.6, 12.4, 12.4), Color = Color3.fromRGB(30, 28, 45) },
+		DE_FRENTE_RODA)
+	local premios = Config.Roleta.Premios
+	for i, premio in premios do
+		local angulo = (i - 1) * (math.pi * 2 / #premios)
+		local fatia = pecaRoda({ Name = "Fatia" .. i, Size = Vector3.new(3.5, 5.2, 0.12), Color = premio.cor, Material = Enum.Material.SmoothPlastic },
+			CFrame.new(math.sin(angulo) * 3.3, math.cos(angulo) * 3.3, -0.36 - (i % 2) * 0.02) * CFrame.Angles(0, 0, -angulo))
+		local gui = superficie(fatia, Enum.NormalId.Front, 30)
+		texto(gui, { Text = premio.icone, Size = UDim2.fromScale(1, 0.45), Position = UDim2.fromScale(0, 0.08), TextStrokeTransparency = 1 })
+		texto(gui, { Text = premio.curto, Size = UDim2.fromScale(0.9, 0.25), Position = UDim2.fromScale(0.05, 0.55) })
+	end
+	pecaRoda({ Name = "Centro", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.6, 2.2, 2.2), Color = dourado, Material = Enum.Material.Neon },
+		CFrame.new(0, 0, -0.5) * DE_FRENTE_RODA)
+	for i = 1, 16 do
+		local a = (i / 16) * math.pi * 2
+		pecaRoda({ Name = "Lampada", Shape = Enum.PartType.Ball, Size = Vector3.new(0.5, 0.5, 0.5),
+			Color = i % 2 == 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(255, 80, 200), Material = Enum.Material.Neon },
+			CFrame.new(math.sin(a) * 6.35, math.cos(a) * 6.35, -0.35))
+	end
+	-- Ponteiro fixo no topo
+	enfeite({ Name = "Ponteiro", Size = Vector3.new(1.3, 1.3, 0.5), CFrame = cf0 * CFrame.new(0, 7.1, -0.7) * CFrame.Angles(0, 0, math.rad(45)),
+		Color = Color3.fromRGB(255, 40, 60), Material = Enum.Material.Neon, Parent = modelo })
+
+	local botao = cilindroEmPe({ Name = "BotaoRoleta", Size = Vector3.new(0.6, 4, 4), Color = Color3.fromRGB(255, 80, 200),
+		Material = Enum.Material.Neon, Parent = modelo }, cf * CFrame.new(0, 0.9, -5.6))
+	local guiBotao = billboard(botao, 180, 44, Vector3.new(0, 3, 0), 60)
+	texto(guiBotao, { Text = "🎡 GIRAR" })
+	local guiTitulo = billboard(modelo:FindFirstChild("Travessa"), 340, 90, Vector3.new(0, 6.5, 0), 260)
+	texto(guiTitulo, { Text = "🎡 ROLETA DA SORTE", TextColor3 = Color3.fromRGB(255, 120, 220), Size = UDim2.fromScale(1, 0.6) })
+	texto(guiTitulo, { Text = "Grátis a cada " .. Config.Roleta.IntervaloHoras .. " horas!", Font = Enum.Font.GothamBold,
+		Size = UDim2.fromScale(1, 0.35), Position = UDim2.fromScale(0, 0.62) })
+
+	return { modelo = modelo, eixo = eixo, cf0 = cf0, botao = botao, centro = cf.Position }
+end
+
+--------------------------------------------------------------------------
 -- MONTAGEM
 --------------------------------------------------------------------------
-function Mapa.construir(Config)
+function Mapa.construir(Config, Modelos)
 	local G = Config.Geral
 
 	if G.RemoverBaseplate then
@@ -734,10 +992,15 @@ function Mapa.construir(Config)
 		end
 	end
 
+	local loja = construirLoja(pasta, Config, Modelos)
+	local roleta = construirRoleta(pasta, Config)
+
 	return {
 		pasta = pasta,
 		pastaHerois = pastaHerois,
 		bases = bases,
+		loja = loja,
+		roleta = roleta,
 		inicio = inicio,
 		comprimento = G.ComprimentoPassarela,
 		quadros = quadros,
